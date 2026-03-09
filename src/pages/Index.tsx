@@ -36,6 +36,7 @@ const Index = () => {
     }
 
     setIsProcessing(true);
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch(
@@ -47,6 +48,7 @@ const Index = () => {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality }),
+          signal: abortControllerRef.current.signal,
         }
       );
 
@@ -68,15 +70,24 @@ const Index = () => {
         throw new Error("No image returned");
       }
     } catch (err: any) {
-      console.error("Generation error:", err);
-      toast({
-        title: "Something went wrong",
-        description: err.message || "Failed to edit photo. Please try again.",
-        variant: "destructive",
-      });
+      if (err.name === "AbortError") {
+        toast({ title: "Cancelled", description: "Edit was cancelled." });
+      } else {
+        console.error("Generation error:", err);
+        toast({
+          title: "Something went wrong",
+          description: err.message || "Failed to edit photo. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsProcessing(false);
+      abortControllerRef.current = null;
     }
+  };
+
+  const handleCancel = () => {
+    abortControllerRef.current?.abort();
   };
 
   const handleReset = () => {
