@@ -33,12 +33,27 @@ const Index = () => {
     setResultImage(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("edit-photo", {
-        body: { imageBase64: image, description, mode: editMode },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/edit-photo`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ imageBase64: image, description, mode: editMode }),
+        }
+      );
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || `Server error (${response.status})`);
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       if (data?.resultImage) {
         setResultImage(data.resultImage);
