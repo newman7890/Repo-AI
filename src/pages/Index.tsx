@@ -8,6 +8,7 @@ import EditModeSelector, { editModes, type EditMode } from "@/components/EditMod
 import QualitySelector, { type QualityMode } from "@/components/QualitySelector";
 import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
+import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import { useEditHistory } from "@/hooks/useEditHistory";
 
@@ -120,7 +121,9 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
-        {currentEdit && image ? (
+        {isProcessing ? (
+          <ProcessingSkeleton />
+        ) : currentEdit && image ? (
           <ResultDisplay
             originalImage={image}
             resultImage={currentEdit.resultImage}
