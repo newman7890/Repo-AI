@@ -6,29 +6,47 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const REALISM_SUFFIX = `
-CRITICAL REQUIREMENTS FOR PHOTOREALISM:
-- Maintain absolutely realistic human skin texture with natural pores, subtle imperfections, and proper subsurface scattering
-- Preserve exact skin tone, undertones, and natural color variations across the body
-- Ensure realistic lighting on skin with proper highlights, shadows, and ambient occlusion
-- Keep natural skin details: veins, freckles, moles, wrinkles exactly as they appear
-- Body proportions must remain anatomically correct and consistent
+const REALISM_REQUIREMENTS = `
+
+CRITICAL PHOTOREALISM REQUIREMENTS:
+- Create a highly realistic professional photograph that looks like it was taken with a professional DSLR camera
+- Maintain the person's true facial structure, skin texture, skin tone, and identity exactly - DO NOT change their identity
+- Ultra-photorealistic natural skin texture with real visible pores, realistic lighting, accurate shadows, natural facial proportions
+- Shot on 85mm lens style, shallow depth of field, high dynamic range, professional studio lighting, sharp focus, 8K resolution quality
+- Natural skin with visible pores, realistic subsurface scattering, proper highlights and shadows, accurate facial anatomy
+- Preserve all natural skin details: veins, freckles, moles, wrinkles, skin imperfections exactly as they appear
+- Body proportions must remain anatomically correct and consistent with the original
 - Hands, fingers, and all body parts must look completely natural and human
-- No artificial smoothing, no plastic/wax appearance, no uncanny valley effects
-- Match the original photo's lighting, color grading, and atmosphere perfectly
-- Output must be indistinguishable from a real photograph`;
+
+STRICTLY FORBIDDEN - DO NOT CREATE:
+- NO cartoon style, NO illustration, NO anime, NO 3D render, NO CGI
+- NO doll-like skin, NO plastic texture, NO avatar style, NO artificial smoothing
+- NO wax appearance, NO uncanny valley effects, NO facial distortion
+- NO painting style, NO digital art look
+
+The output MUST be indistinguishable from a real photograph taken by a professional photographer.`;
 
 function buildPrompt(mode: string, description: string): string {
   switch (mode) {
     case "background":
-      return `Change the background of this photo to: ${description}. Keep the person/subject exactly as they are — same pose, same appearance, same clothing, same realistic human skin with all natural details. Only replace the background. Match lighting naturally to the new scene.${REALISM_SUFFIX}`;
+      return `Change ONLY the background of this photo to: ${description}. 
+Keep the person/subject EXACTLY as they are — same pose, same appearance, same clothing, same realistic human skin with all natural details. 
+Only replace the background environment. Match lighting naturally to the new scene while maintaining the photorealistic quality of the person.${REALISM_REQUIREMENTS}`;
     case "clothing":
-      return `Change the clothing/outfit of the person in this photo to: ${description}. Keep the person's face, hair, skin texture, body, pose, and background exactly the same. The exposed skin must retain its exact natural appearance with realistic texture and tone. Only change what they are wearing. The new outfit must fit naturally on their real body.${REALISM_SUFFIX}`;
+      return `Change ONLY the clothing/outfit of the person in this photo to: ${description}. 
+Keep the person's face, hair, skin texture, body shape, pose, and background EXACTLY the same. 
+The exposed skin must retain its exact natural appearance with realistic texture, pores, and tone. 
+Only change what they are wearing. The new outfit must fit naturally on their real body with realistic fabric texture and proper shadows.${REALISM_REQUIREMENTS}`;
     case "action":
-      return `Modify this photo so that the person is: ${description}. Keep the person's face, identity, and natural human skin exactly the same. Adjust their pose, hands, and body naturally to match the action while maintaining completely realistic human anatomy and skin appearance. Keep the background consistent.${REALISM_SUFFIX}`;
+      return `Modify this photo so that the person is: ${description}. 
+Keep the person's face, identity, and natural human skin EXACTLY the same. 
+Adjust their pose, hands, and body naturally to match the action while maintaining completely realistic human anatomy and skin appearance. 
+Keep the background consistent. All body parts must look anatomically correct and photorealistic.${REALISM_REQUIREMENTS}`;
     case "custom":
     default:
-      return `Edit this photo with the following instruction: ${description}. Keep the person's identity, face, and natural human skin appearance fully intact and photorealistic. Any body parts shown must look completely real with natural skin texture.${REALISM_SUFFIX}`;
+      return `Edit this photo with the following instruction: ${description}. 
+Keep the person's identity, face, and natural human skin appearance fully intact and photorealistic. 
+Any body parts shown must look completely real with natural skin texture, pores, and proper lighting.${REALISM_REQUIREMENTS}`;
   }
 }
 
