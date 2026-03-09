@@ -7,19 +7,49 @@ interface ImageUploadProps {
   currentImage: string | null;
 }
 
+function compressImage(file: File, maxWidth = 1024, quality = 0.8): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let w = img.width;
+        let h = img.height;
+        if (w > maxWidth) {
+          h = (h * maxWidth) / w;
+          w = maxWidth;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 const ImageUpload = ({ onImageSelect, currentImage }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
-    (file: File) => {
+    async (file: File) => {
       if (!file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        onImageSelect(result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        onImageSelect(compressed);
+      } catch {
+        // fallback to raw
+        const reader = new FileReader();
+        reader.onload = (e) => onImageSelect(e.target?.result as string);
+        reader.readAsDataURL(file);
+      }
     },
     [onImageSelect]
   );
@@ -36,11 +66,7 @@ const ImageUpload = ({ onImageSelect, currentImage }: ImageUploadProps) => {
   if (currentImage) {
     return (
       <div className="relative w-full aspect-[3/4] max-h-[50vh] rounded-2xl overflow-hidden border-2 border-border">
-        <img
-          src={currentImage}
-          alt="Uploaded photo"
-          className="w-full h-full object-cover"
-        />
+        <img src={currentImage} alt="Uploaded photo" className="w-full h-full object-cover" />
         <button
           onClick={() => onImageSelect("")}
           className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold hover:bg-destructive hover:text-destructive-foreground transition-colors"
@@ -69,39 +95,20 @@ const ImageUpload = ({ onImageSelect, currentImage }: ImageUploadProps) => {
         <Button
           variant="outline"
           size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            cameraInputRef.current?.click();
-          }}
+          onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
         >
           <Camera className="w-4 h-4 mr-1" /> Camera
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            fileInputRef.current?.click();
-          }}
+          onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
         >
           <Upload className="w-4 h-4 mr-1" /> Gallery
         </Button>
       </div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-      />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="user"
-        className="hidden"
-        onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-      />
+      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
     </div>
   );
 };
