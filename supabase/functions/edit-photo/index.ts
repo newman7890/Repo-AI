@@ -6,17 +6,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function buildPrompt(mode: string, description: string): string {
+  switch (mode) {
+    case "background":
+      return `Change the background of this photo to: ${description}. Keep the person/subject exactly as they are — same pose, same appearance, same clothing. Only replace the background. Make it look natural and realistic with proper lighting that matches the new background.`;
+    case "clothing":
+      return `Change the clothing/outfit of the person in this photo to: ${description}. Keep the person's face, hair, pose, and background exactly the same. Only change what they are wearing. Make the new outfit look natural and realistic with proper fit and lighting.`;
+    case "action":
+      return `Modify this photo so that the person is: ${description}. Keep the person's face and identity exactly the same. Adjust their pose, hands, and body naturally to match the action. Keep the background and overall scene consistent. Make it look natural and realistic.`;
+    case "custom":
+    default:
+      return `Edit this photo with the following instruction: ${description}. Keep the person's identity and face recognizable. Make the changes look natural and realistic with proper lighting and consistency.`;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageBase64, backgroundDescription } = await req.json();
+    const { imageBase64, description, mode = "background" } = await req.json();
 
-    if (!imageBase64 || !backgroundDescription) {
+    if (!imageBase64 || !description) {
       return new Response(
-        JSON.stringify({ error: "Image and background description are required" }),
+        JSON.stringify({ error: "Image and description are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -26,7 +40,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const prompt = `Change the background of this photo to: ${backgroundDescription}. Keep the person/subject exactly as they are — same pose, same appearance, same clothing. Only replace the background. Make it look natural and realistic with proper lighting that matches the new background.`;
+    const prompt = buildPrompt(mode, description);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -41,10 +55,7 @@ serve(async (req) => {
             role: "user",
             content: [
               { type: "text", text: prompt },
-              {
-                type: "image_url",
-                image_url: { url: imageBase64 },
-              },
+              { type: "image_url", image_url: { url: imageBase64 } },
             ],
           },
         ],
@@ -88,7 +99,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
-    console.error("change-background error:", e);
+    console.error("edit-photo error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

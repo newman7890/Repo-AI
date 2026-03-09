@@ -1,25 +1,29 @@
 import { useState } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
-import BackgroundPresets from "@/components/BackgroundPresets";
+import EditModeSelector, { editModes, type EditMode } from "@/components/EditModeSelector";
+import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [image, setImage] = useState<string | null>(null);
-  const [backgroundDesc, setBackgroundDesc] = useState("");
+  const [editMode, setEditMode] = useState<EditMode>("background");
+  const [description, setDescription] = useState("");
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
+  const currentMode = editModes.find((m) => m.id === editMode)!;
+
   const handleGenerate = async () => {
-    if (!image || !backgroundDesc.trim()) {
+    if (!image || !description.trim()) {
       toast({
         title: "Missing info",
-        description: "Please upload a photo and describe the background you want.",
+        description: "Please upload a photo and describe the edit you want.",
         variant: "destructive",
       });
       return;
@@ -29,19 +33,16 @@ const Index = () => {
     setResultImage(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("change-background", {
-        body: { imageBase64: image, backgroundDescription: backgroundDesc },
+      const { data, error } = await supabase.functions.invoke("edit-photo", {
+        body: { imageBase64: image, description, mode: editMode },
       });
 
       if (error) throw error;
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
+      if (data?.error) throw new Error(data.error);
 
       if (data?.resultImage) {
         setResultImage(data.resultImage);
-        toast({ title: "Done! ✨", description: "Your new background is ready." });
+        toast({ title: "Done! ✨", description: "Your edited photo is ready." });
       } else {
         throw new Error("No image returned");
       }
@@ -49,7 +50,7 @@ const Index = () => {
       console.error("Generation error:", err);
       toast({
         title: "Something went wrong",
-        description: err.message || "Failed to change background. Please try again.",
+        description: err.message || "Failed to edit photo. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -60,26 +61,31 @@ const Index = () => {
   const handleReset = () => {
     setResultImage(null);
     setImage(null);
-    setBackgroundDesc("");
+    setDescription("");
+  };
+
+  const handleModeChange = (mode: EditMode) => {
+    setEditMode(mode);
+    setDescription("");
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-primary" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+            <Wand2 className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">BG Swap</h1>
-            <p className="text-xs text-muted-foreground">AI Background Changer</p>
+            <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
+            <p className="text-xs text-muted-foreground">AI Photo Editor</p>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-5 pb-8 flex flex-col gap-6">
+      <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
         {resultImage && image ? (
           <ResultDisplay
             originalImage={image}
@@ -95,31 +101,41 @@ const Index = () => {
 
             {image && (
               <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Mode Selector */}
+                <EditModeSelector activeMode={editMode} onModeChange={handleModeChange} />
+
+                {/* Mode Description */}
+                <p className="text-sm text-muted-foreground">{currentMode.description}</p>
+
+                {/* Quick Presets */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
-                    Choose a background
+                    Quick picks
                   </label>
-                  <BackgroundPresets
-                    onSelect={setBackgroundDesc}
-                    selected={backgroundDesc}
+                  <QuickPresets
+                    presets={currentMode.presets}
+                    onSelect={setDescription}
+                    selected={description}
                   />
                 </div>
 
+                {/* Custom Description */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
-                    Or describe your own
+                    Or describe it yourself
                   </label>
                   <Textarea
-                    placeholder="e.g. A cozy coffee shop with warm lighting..."
-                    value={backgroundDesc}
-                    onChange={(e) => setBackgroundDesc(e.target.value)}
+                    placeholder={currentMode.placeholder}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     className="bg-card border-border resize-none h-20 text-sm"
                   />
                 </div>
 
+                {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={isProcessing || !backgroundDesc.trim()}
+                  disabled={isProcessing || !description.trim()}
                   className="w-full h-14 text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isProcessing ? (
@@ -130,7 +146,7 @@ const Index = () => {
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5 mr-2" />
-                      Change Background
+                      Transform Photo
                     </>
                   )}
                 </Button>
