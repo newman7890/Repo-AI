@@ -83,6 +83,11 @@ const Index = () => {
     setDescription("");
   };
 
+  const handleReEdit = () => {
+    editHistory.reset();
+    setDescription("");
+  };
+
   const handleModeChange = (mode: EditMode) => {
     setEditMode(mode);
     setDescription("");
@@ -120,6 +125,7 @@ const Index = () => {
             originalImage={image}
             resultImage={currentEdit.resultImage}
             onReset={handleReset}
+            onReEdit={handleReEdit}
             canUndo={editHistory.canUndo}
             canRedo={editHistory.canRedo}
             onUndo={editHistory.undo}
