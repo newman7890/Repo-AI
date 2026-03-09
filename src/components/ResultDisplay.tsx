@@ -1,4 +1,4 @@
-import { Download, RotateCcw, Undo2, Redo2 } from "lucide-react";
+import { Download, RotateCcw, Undo2, Redo2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import ShareButtons from "@/components/ShareButtons";
@@ -7,6 +7,7 @@ interface ResultDisplayProps {
   originalImage: string;
   resultImage: string;
   onReset: () => void;
+  onReEdit: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
