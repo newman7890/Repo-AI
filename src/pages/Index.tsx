@@ -83,6 +83,11 @@ const Index = () => {
     setDescription("");
   };
 
+  const handleReEdit = () => {
+    editHistory.reset();
+    setDescription("");
+  };
+
   const handleModeChange = (mode: EditMode) => {
     setEditMode(mode);
     setDescription("");
