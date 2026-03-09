@@ -1,6 +1,6 @@
-import { ImageIcon, Shirt, Hand, Wand2 } from "lucide-react";
+import { ImageIcon, Shirt, Hand, Wand2, User } from "lucide-react";
 
-export type EditMode = "background" | "clothing" | "action" | "custom";
+export type EditMode = "background" | "clothing" | "action" | "headshot" | "custom";
 
 interface EditMode_Info {
   id: EditMode;
@@ -58,6 +58,21 @@ export const editModes: EditMode_Info[] = [
     ],
   },
   {
+    id: "headshot",
+    label: "Headshot",
+    icon: <User className="w-4 h-4" />,
+    description: "Professional corporate headshot",
+    placeholder: "e.g. Professional LinkedIn headshot with gray background...",
+    presets: [
+      { label: "💼 Corporate", value: "professional corporate headshot with clean gray background, business attire" },
+      { label: "🔵 LinkedIn", value: "professional LinkedIn profile photo with soft blue gradient background" },
+      { label: "⚪ Clean White", value: "clean white background studio headshot, professional lighting" },
+      { label: "🏢 Office", value: "professional headshot with blurred modern office background" },
+      { label: "🎨 Creative", value: "creative professional headshot with warm artistic lighting" },
+      { label: "👔 Executive", value: "executive-level professional headshot with dark premium background" },
+    ],
+  },
+  {
     id: "custom",
     label: "Magic",
     icon: <Wand2 className="w-4 h-4" />,
@@ -81,19 +96,19 @@ interface EditModeSelectorProps {
 
 const EditModeSelector = ({ activeMode, onModeChange }: EditModeSelectorProps) => {
   return (
-    <div className="flex gap-1.5 p-1 bg-card rounded-2xl border border-border">
+    <div className="flex gap-1 p-1 bg-card rounded-2xl border border-border overflow-x-auto">
       {editModes.map((mode) => (
         <button
           key={mode.id}
           onClick={() => onModeChange(mode.id)}
-          className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-medium transition-all ${
+          className={`flex-1 flex flex-col items-center gap-1 py-2 px-2 rounded-xl text-xs font-medium transition-all min-w-[60px] ${
             activeMode === mode.id
               ? "bg-primary text-primary-foreground shadow-md"
               : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
           }`}
         >
           {mode.icon}
-          <span>{mode.label}</span>
+          <span className="truncate">{mode.label}</span>
         </button>
       ))}
     </div>
