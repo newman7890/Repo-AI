@@ -1,5 +1,7 @@
 import { Download, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import ShareButtons from "@/components/ShareButtons";
 
 interface ResultDisplayProps {
   originalImage: string;
@@ -18,20 +20,11 @@ const ResultDisplay = ({ originalImage, resultImage, onReset }: ResultDisplayPro
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-2">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Original</span>
-          <div className="rounded-xl overflow-hidden border border-border aspect-[3/4]">
-            <img src={originalImage} alt="Original" className="w-full h-full object-cover" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Result</span>
-          <div className="rounded-xl overflow-hidden border-2 border-primary/30 aspect-[3/4] shadow-lg">
-            <img src={resultImage} alt="Result" className="w-full h-full object-cover" />
-          </div>
-        </div>
+    <div className="flex flex-col gap-5 w-full">
+      <BeforeAfterSlider beforeImage={originalImage} afterImage={resultImage} />
+
+      <div className="flex items-center justify-between">
+        <ShareButtons resultImage={resultImage} />
       </div>
 
       <div className="flex gap-3">

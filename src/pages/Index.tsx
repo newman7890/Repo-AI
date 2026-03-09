@@ -8,6 +8,7 @@ import EditModeSelector, { editModes, type EditMode } from "@/components/EditMod
 import QualitySelector, { type QualityMode } from "@/components/QualitySelector";
 import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
+import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 
 const Index = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -58,6 +59,7 @@ const Index = () => {
 
       if (data?.resultImage) {
         setResultImage(data.resultImage);
+        saveToHistory({ originalImage: image!, resultImage: data.resultImage, description, mode: editMode });
         toast({ title: "Done! ✨", description: "Your edited photo is ready." });
       } else {
         throw new Error("No image returned");
@@ -85,18 +87,28 @@ const Index = () => {
     setDescription("");
   };
 
+  const handleHistorySelect = (item: HistoryItem) => {
+    setImage(item.originalImage);
+    setResultImage(item.resultImage);
+    setDescription(item.description);
+    setEditMode(item.mode as EditMode);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-            <Wand2 className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
+              <p className="text-xs text-muted-foreground">AI Photo Editor</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
-            <p className="text-xs text-muted-foreground">AI Photo Editor</p>
-          </div>
+          <HistoryGallery onSelect={handleHistorySelect} />
         </div>
       </header>
 
