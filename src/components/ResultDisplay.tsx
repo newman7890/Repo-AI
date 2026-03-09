@@ -1,4 +1,4 @@
-import { Download, RotateCcw } from "lucide-react";
+import { Download, RotateCcw, Undo2, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import ShareButtons from "@/components/ShareButtons";
@@ -7,9 +7,25 @@ interface ResultDisplayProps {
   originalImage: string;
   resultImage: string;
   onReset: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  editCount: number;
+  editIndex: number;
 }
 
-const ResultDisplay = ({ originalImage, resultImage, onReset }: ResultDisplayProps) => {
+const ResultDisplay = ({
+  originalImage,
+  resultImage,
+  onReset,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+  editCount,
+  editIndex,
+}: ResultDisplayProps) => {
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = resultImage;
@@ -22,6 +38,21 @@ const ResultDisplay = ({ originalImage, resultImage, onReset }: ResultDisplayPro
   return (
     <div className="flex flex-col gap-5 w-full">
       <BeforeAfterSlider beforeImage={originalImage} afterImage={resultImage} />
+
+      {/* Undo / Redo bar */}
+      {editCount > 1 && (
+        <div className="flex items-center justify-center gap-3">
+          <Button onClick={onUndo} disabled={!canUndo} variant="ghost" size="icon" className="h-9 w-9">
+            <Undo2 className="w-4 h-4" />
+          </Button>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {editIndex + 1} / {editCount}
+          </span>
+          <Button onClick={onRedo} disabled={!canRedo} variant="ghost" size="icon" className="h-9 w-9">
+            <Redo2 className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <ShareButtons resultImage={resultImage} />

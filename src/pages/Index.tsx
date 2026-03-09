@@ -9,17 +9,19 @@ import QualitySelector, { type QualityMode } from "@/components/QualitySelector"
 import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
+import { useEditHistory } from "@/hooks/useEditHistory";
 
 const Index = () => {
   const [image, setImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
-  const [resultImage, setResultImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const editHistory = useEditHistory();
 
   const currentMode = editModes.find((m) => m.id === editMode)!;
+  const currentEdit = editHistory.current;
 
   const handleGenerate = async () => {
     if (!image || !description.trim()) {
@@ -32,7 +34,6 @@ const Index = () => {
     }
 
     setIsProcessing(true);
-    setResultImage(null);
 
     try {
       const response = await fetch(
@@ -58,7 +59,7 @@ const Index = () => {
       }
 
       if (data?.resultImage) {
-        setResultImage(data.resultImage);
+        editHistory.push({ resultImage: data.resultImage, description, mode: editMode });
         saveToHistory({ originalImage: image!, resultImage: data.resultImage, description, mode: editMode });
         toast({ title: "Done! ✨", description: "Your edited photo is ready." });
       } else {
@@ -77,7 +78,7 @@ const Index = () => {
   };
 
   const handleReset = () => {
-    setResultImage(null);
+    editHistory.reset();
     setImage(null);
     setDescription("");
   };
@@ -89,7 +90,7 @@ const Index = () => {
 
   const handleHistorySelect = (item: HistoryItem) => {
     setImage(item.originalImage);
-    setResultImage(item.resultImage);
+    editHistory.push({ resultImage: item.resultImage, description: item.description, mode: item.mode });
     setDescription(item.description);
     setEditMode(item.mode as EditMode);
   };
@@ -114,11 +115,17 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
-        {resultImage && image ? (
+        {currentEdit && image ? (
           <ResultDisplay
             originalImage={image}
-            resultImage={resultImage}
+            resultImage={currentEdit.resultImage}
             onReset={handleReset}
+            canUndo={editHistory.canUndo}
+            canRedo={editHistory.canRedo}
+            onUndo={editHistory.undo}
+            onRedo={editHistory.redo}
+            editCount={editHistory.count}
+            editIndex={editHistory.currentIndex}
           />
         ) : (
           <>
