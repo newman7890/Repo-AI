@@ -59,6 +59,7 @@ const Index = () => {
 
       if (data?.resultImage) {
         setResultImage(data.resultImage);
+        saveToHistory({ originalImage: image!, resultImage: data.resultImage, description, mode: editMode });
         toast({ title: "Done! ✨", description: "Your edited photo is ready." });
       } else {
         throw new Error("No image returned");
