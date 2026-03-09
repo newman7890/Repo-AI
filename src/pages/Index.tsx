@@ -87,18 +87,28 @@ const Index = () => {
     setDescription("");
   };
 
+  const handleHistorySelect = (item: HistoryItem) => {
+    setImage(item.originalImage);
+    setResultImage(item.resultImage);
+    setDescription(item.description);
+    setEditMode(item.mode as EditMode);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-            <Wand2 className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
+              <p className="text-xs text-muted-foreground">AI Photo Editor</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
-            <p className="text-xs text-muted-foreground">AI Photo Editor</p>
-          </div>
+          <HistoryGallery onSelect={handleHistorySelect} />
         </div>
       </header>
 
