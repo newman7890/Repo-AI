@@ -125,6 +125,7 @@ const Index = () => {
             originalImage={image}
             resultImage={currentEdit.resultImage}
             onReset={handleReset}
+            onReEdit={handleReEdit}
             canUndo={editHistory.canUndo}
             canRedo={editHistory.canRedo}
             onUndo={editHistory.undo}
