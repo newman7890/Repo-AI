@@ -121,7 +121,9 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
-        {currentEdit && image ? (
+        {isProcessing ? (
+          <ProcessingSkeleton />
+        ) : currentEdit && image ? (
           <ResultDisplay
             originalImage={image}
             resultImage={currentEdit.resultImage}
