@@ -20,6 +20,7 @@ const ResultDisplay = ({
   originalImage,
   resultImage,
   onReset,
+  onReEdit,
   canUndo,
   canRedo,
   onUndo,
