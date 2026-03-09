@@ -1,14 +1,23 @@
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const ProcessingSkeleton = () => {
+interface ProcessingSkeletonProps {
+  onCancel: () => void;
+}
+
+const ProcessingSkeleton = ({ onCancel }: ProcessingSkeletonProps) => {
   return (
     <div className="flex flex-col gap-5 w-full animate-fade-in">
       {/* Image skeleton with shimmer */}
       <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-muted">
         <Skeleton className="absolute inset-0 w-full h-full" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
           <div className="w-12 h-12 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           <p className="text-sm text-muted-foreground animate-pulse">Creating magic...</p>
+          <Button onClick={onCancel} variant="secondary" size="sm" className="gap-1.5 mt-2">
+            <X className="w-4 h-4" /> Cancel
+          </Button>
         </div>
       </div>
 
