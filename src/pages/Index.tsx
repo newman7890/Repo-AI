@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Sparkles, Loader2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ const Index = () => {
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const editHistory = useEditHistory();
 
@@ -35,6 +36,7 @@ const Index = () => {
     }
 
     setIsProcessing(true);
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch(
@@ -46,6 +48,7 @@ const Index = () => {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality }),
+          signal: abortControllerRef.current.signal,
         }
       );
 
@@ -67,15 +70,24 @@ const Index = () => {
         throw new Error("No image returned");
       }
     } catch (err: any) {
-      console.error("Generation error:", err);
-      toast({
-        title: "Something went wrong",
-        description: err.message || "Failed to edit photo. Please try again.",
-        variant: "destructive",
-      });
+      if (err.name === "AbortError") {
+        toast({ title: "Cancelled", description: "Edit was cancelled." });
+      } else {
+        console.error("Generation error:", err);
+        toast({
+          title: "Something went wrong",
+          description: err.message || "Failed to edit photo. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsProcessing(false);
+      abortControllerRef.current = null;
     }
+  };
+
+  const handleCancel = () => {
+    abortControllerRef.current?.abort();
   };
 
   const handleReset = () => {
@@ -122,7 +134,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
         {isProcessing ? (
-          <ProcessingSkeleton />
+          <ProcessingSkeleton onCancel={handleCancel} />
         ) : currentEdit && image ? (
           <ResultDisplay
             originalImage={image}
