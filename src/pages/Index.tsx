@@ -5,13 +5,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import EditModeSelector, { editModes, type EditMode } from "@/components/EditModeSelector";
+import QualitySelector, { type QualityMode } from "@/components/QualitySelector";
 import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
-import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [image, setImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<EditMode>("background");
+  const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,7 +42,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ imageBase64: image, description, mode: editMode }),
+          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality }),
         }
       );
 
@@ -122,6 +123,14 @@ const Index = () => {
                 {/* Mode Description */}
                 <p className="text-sm text-muted-foreground">{currentMode.description}</p>
 
+                {/* Quality Selector */}
+                <div>
+                  <label className="text-sm font-semibold text-foreground mb-2 block">
+                    Quality
+                  </label>
+                  <QualitySelector activeQuality={quality} onQualityChange={setQuality} />
+                </div>
+
                 {/* Quick Presets */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
@@ -156,7 +165,7 @@ const Index = () => {
                   {isProcessing ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Creating magic...
+                      {quality === "ultra" ? "Creating ultra-realistic magic..." : "Creating magic..."}
                     </>
                   ) : (
                     <>

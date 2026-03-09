@@ -42,11 +42,30 @@ Only change what they are wearing. The new outfit must fit naturally on their re
 Keep the person's face, identity, and natural human skin EXACTLY the same. 
 Adjust their pose, hands, and body naturally to match the action while maintaining completely realistic human anatomy and skin appearance. 
 Keep the background consistent. All body parts must look anatomically correct and photorealistic.${REALISM_REQUIREMENTS}`;
+    case "headshot":
+      return `Transform this photo into a professional corporate headshot: ${description}.
+Create a hyper-realistic corporate headshot of this person that looks EXACTLY like a real studio photograph taken by a professional photographer.
+Maintain the person's EXACT facial features, skin texture, skin tone, and identity - do not change who they are.
+Natural skin texture with visible pores, realistic lighting, soft studio shadows, accurate facial anatomy, no facial distortion.
+Professional business attire if not specified, clean background, shallow depth of field, shot on 85mm DSLR lens style.
+Ultra-detailed, high-resolution, photorealistic result.${REALISM_REQUIREMENTS}`;
     case "custom":
     default:
       return `Edit this photo with the following instruction: ${description}. 
 Keep the person's identity, face, and natural human skin appearance fully intact and photorealistic. 
 Any body parts shown must look completely real with natural skin texture, pores, and proper lighting.${REALISM_REQUIREMENTS}`;
+  }
+}
+
+function getModelForQuality(quality: string): string {
+  switch (quality) {
+    case "ultra":
+      return "google/gemini-3-pro-image-preview";
+    case "high":
+      return "google/gemini-3-pro-image-preview";
+    case "fast":
+    default:
+      return "google/gemini-2.5-flash-image";
   }
 }
 
@@ -56,7 +75,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, description, mode = "background" } = await req.json();
+    const { imageBase64, description, mode = "background", quality = "high" } = await req.json();
 
     if (!imageBase64 || !description) {
       return new Response(
@@ -71,6 +90,9 @@ serve(async (req) => {
     }
 
     const prompt = buildPrompt(mode, description);
+    const model = getModelForQuality(quality);
+
+    console.log(`Processing with model: ${model}, mode: ${mode}, quality: ${quality}`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -79,7 +101,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model,
         messages: [
           {
             role: "user",
