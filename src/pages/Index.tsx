@@ -8,6 +8,7 @@ import EditModeSelector, { editModes, type EditMode } from "@/components/EditMod
 import QualitySelector, { type QualityMode } from "@/components/QualitySelector";
 import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
+import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import { useEditHistory } from "@/hooks/useEditHistory";
 
