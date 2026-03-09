@@ -134,7 +134,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
         {isProcessing ? (
-          <ProcessingSkeleton />
+          <ProcessingSkeleton onCancel={handleCancel} />
         ) : currentEdit && image ? (
           <ResultDisplay
             originalImage={image}
