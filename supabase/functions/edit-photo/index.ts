@@ -91,11 +91,18 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, description, mode = "background", quality = "high" } = await req.json();
+    const { imageBase64, description, mode = "background", quality = "high", referenceImage } = await req.json();
 
-    if (!imageBase64 || !description) {
+    if (!imageBase64 || (!description.trim() && mode !== "faceswap")) {
       return new Response(
         JSON.stringify({ error: "Image and description are required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (mode === "faceswap" && !referenceImage) {
+      return new Response(
+        JSON.stringify({ error: "A reference face image is required for face swap" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -105,10 +112,20 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const prompt = buildPrompt(mode, description);
+    const hasReferenceImage = !!referenceImage;
+    const prompt = buildPrompt(mode, description, hasReferenceImage);
     const model = getModelForQuality(quality);
 
-    console.log(`Processing with model: ${model}, mode: ${mode}, quality: ${quality}`);
+    console.log(`Processing with model: ${model}, mode: ${mode}, quality: ${quality}, hasRef: ${hasReferenceImage}`);
+
+    const contentParts: any[] = [
+      { type: "text", text: prompt },
+      { type: "image_url", image_url: { url: imageBase64 } },
+    ];
+
+    if (referenceImage) {
+      contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -121,10 +138,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
+            content: contentParts,
           },
         ],
         modalities: ["image", "text"],
