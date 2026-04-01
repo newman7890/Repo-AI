@@ -15,6 +15,7 @@ import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
