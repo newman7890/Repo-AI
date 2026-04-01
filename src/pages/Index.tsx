@@ -33,11 +33,7 @@ const Index = () => {
       toast({ title: "Missing photo", description: "Please upload a photo first.", variant: "destructive" });
       return;
     }
-    if (editMode === "faceswap" && !referenceImage) {
-      toast({ title: "Missing face photo", description: "Please add a reference face image for face swap.", variant: "destructive" });
-      return;
-    }
-    if (!description.trim() && editMode !== "faceswap") {
+    if (!description.trim()) {
       toast({ title: "Missing description", description: "Please describe the edit you want.", variant: "destructive" });
       return;
     }
