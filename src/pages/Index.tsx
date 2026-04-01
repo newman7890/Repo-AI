@@ -12,6 +12,7 @@ import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import PromptImageAttachment from "@/components/PromptImageAttachment";
 import { useEditHistory } from "@/hooks/useEditHistory";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [image, setImage] = useState<string | null>(null);
