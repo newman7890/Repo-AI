@@ -1,6 +1,6 @@
-import { ImageIcon, Shirt, Hand, Wand2, User } from "lucide-react";
+import { ImageIcon, Shirt, Hand, Wand2, User, Repeat } from "lucide-react";
 
-export type EditMode = "background" | "clothing" | "action" | "headshot" | "custom";
+export type EditMode = "background" | "clothing" | "action" | "headshot" | "faceswap" | "custom";
 
 interface EditMode_Info {
   id: EditMode;
