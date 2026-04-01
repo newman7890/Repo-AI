@@ -26,7 +26,7 @@ STRICTLY FORBIDDEN - DO NOT CREATE:
 
 The output MUST be indistinguishable from a real photograph taken by a professional photographer.`;
 
-function buildPrompt(mode: string, description: string): string {
+function buildPrompt(mode: string, description: string, hasReferenceImage: boolean): string {
   switch (mode) {
     case "background":
       return `Change ONLY the background of this photo to: ${description}. 
@@ -49,11 +49,27 @@ Maintain the person's EXACT facial features, skin texture, skin tone, and identi
 Natural skin texture with visible pores, realistic lighting, soft studio shadows, accurate facial anatomy, no facial distortion.
 Professional business attire if not specified, clean background, shallow depth of field, shot on 85mm DSLR lens style.
 Ultra-detailed, high-resolution, photorealistic result.${REALISM_REQUIREMENTS}`;
+    case "faceswap":
+      return `FACE SWAP TASK: Take the face from the second reference image and place it onto the person in the first/main image.
+${description ? `Additional instructions: ${description}` : ""}
+
+CRITICAL FACE SWAP REQUIREMENTS:
+- Extract the face (facial features, skin tone, facial structure) from the REFERENCE image (second image)
+- Place that face onto the person in the MAIN image (first image)
+- Keep the MAIN image's body, pose, clothing, hair style, and background EXACTLY the same
+- Blend the swapped face seamlessly: match lighting, shadows, skin tone transition at the jawline and hairline
+- Maintain natural proportions — the face must fit the head size of the person in the main image
+- The result must look like a real, unedited photograph — no visible seams, no artifacts
+${REALISM_REQUIREMENTS}`;
     case "custom":
-    default:
-      return `Edit this photo with the following instruction: ${description}. 
+    default: {
+      const refNote = hasReferenceImage
+        ? " Use the reference image provided as visual guidance for the edit."
+        : "";
+      return `Edit this photo with the following instruction: ${description}.${refNote}
 Keep the person's identity, face, and natural human skin appearance fully intact and photorealistic. 
 Any body parts shown must look completely real with natural skin texture, pores, and proper lighting.${REALISM_REQUIREMENTS}`;
+    }
   }
 }
 
