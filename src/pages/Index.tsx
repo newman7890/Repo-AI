@@ -10,6 +10,7 @@ import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
+import PromptImageAttachment from "@/components/PromptImageAttachment";
 import { useEditHistory } from "@/hooks/useEditHistory";
 
 const Index = () => {
@@ -17,6 +18,7 @@ const Index = () => {
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
