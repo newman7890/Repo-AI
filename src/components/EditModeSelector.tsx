@@ -74,19 +74,6 @@ export const editModes: EditMode_Info[] = [
     ],
   },
   {
-    id: "faceswap",
-    label: "Face Swap",
-    icon: <Repeat className="w-4 h-4" />,
-    description: "Swap the face with a reference photo",
-    placeholder: "Add any extra instructions (optional)...",
-    presets: [
-      { label: "🎭 Natural blend", value: "swap the face naturally, match skin tone and lighting perfectly" },
-      { label: "😄 Keep expression", value: "swap the face but keep the original expression and emotion" },
-      { label: "🎬 Movie style", value: "swap the face with cinematic lighting and dramatic effect" },
-    ],
-    requiresReferenceImage: true,
-  },
-  {
     id: "custom",
     label: "Magic",
     icon: <Wand2 className="w-4 h-4" />,
