@@ -9,6 +9,7 @@ interface EditMode_Info {
   description: string;
   placeholder: string;
   presets: { label: string; value: string }[];
+  requiresReferenceImage?: boolean;
 }
 
 export const editModes: EditMode_Info[] = [
