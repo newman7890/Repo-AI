@@ -1,6 +1,6 @@
-import { ImageIcon, Shirt, Hand, Wand2, User, Repeat } from "lucide-react";
+import { ImageIcon, Shirt, Hand, Wand2, User } from "lucide-react";
 
-export type EditMode = "background" | "clothing" | "action" | "headshot" | "faceswap" | "custom";
+export type EditMode = "background" | "clothing" | "action" | "headshot" | "custom";
 
 interface EditMode_Info {
   id: EditMode;
@@ -72,19 +72,6 @@ export const editModes: EditMode_Info[] = [
       { label: "🎨 Creative", value: "creative professional headshot with warm artistic lighting" },
       { label: "👔 Executive", value: "executive-level professional headshot with dark premium background" },
     ],
-  },
-  {
-    id: "faceswap",
-    label: "Face Swap",
-    icon: <Repeat className="w-4 h-4" />,
-    description: "Swap the face with a reference photo",
-    placeholder: "Add any extra instructions (optional)...",
-    presets: [
-      { label: "🎭 Natural blend", value: "swap the face naturally, match skin tone and lighting perfectly" },
-      { label: "😄 Keep expression", value: "swap the face but keep the original expression and emotion" },
-      { label: "🎬 Movie style", value: "swap the face with cinematic lighting and dramatic effect" },
-    ],
-    requiresReferenceImage: true,
   },
   {
     id: "custom",

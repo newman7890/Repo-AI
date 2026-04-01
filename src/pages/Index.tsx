@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Sparkles, Loader2, Wand2 } from "lucide-react";
+import { Sparkles, Loader2, Wand2, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -10,15 +10,16 @@ import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
-import PromptImageAttachment from "@/components/PromptImageAttachment";
+
 import { useEditHistory } from "@/hooks/useEditHistory";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
-  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
@@ -32,11 +33,7 @@ const Index = () => {
       toast({ title: "Missing photo", description: "Please upload a photo first.", variant: "destructive" });
       return;
     }
-    if (editMode === "faceswap" && !referenceImage) {
-      toast({ title: "Missing face photo", description: "Please add a reference face image for face swap.", variant: "destructive" });
-      return;
-    }
-    if (!description.trim() && editMode !== "faceswap") {
+    if (!description.trim()) {
       toast({ title: "Missing description", description: "Please describe the edit you want.", variant: "destructive" });
       return;
     }
@@ -53,7 +50,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage }),
+          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage: null }),
           signal: abortControllerRef.current.signal,
         }
       );
@@ -100,7 +97,6 @@ const Index = () => {
     editHistory.reset();
     setImage(null);
     setDescription("");
-    setReferenceImage(null);
   };
 
   const handleReEdit = () => {
@@ -111,7 +107,6 @@ const Index = () => {
   const handleModeChange = (mode: EditMode) => {
     setEditMode(mode);
     setDescription("");
-    setReferenceImage(null);
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
@@ -135,7 +130,18 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">AI Photo Editor</p>
             </div>
           </div>
-          <HistoryGallery onSelect={handleHistorySelect} />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/face-swap")}
+              className="gap-1.5 rounded-xl"
+            >
+              <Repeat className="w-4 h-4" />
+              Face Swap
+            </Button>
+            <HistoryGallery onSelect={handleHistorySelect} />
+          </div>
         </div>
       </header>
 
@@ -191,34 +197,11 @@ const Index = () => {
                   />
                 </div>
 
-                {/* Reference Image Attachment */}
-                {currentMode.requiresReferenceImage ? (
-                  <div>
-                    <label className="text-sm font-semibold text-foreground mb-2 block">
-                      Face reference photo <span className="text-destructive">*</span>
-                    </label>
-                    <PromptImageAttachment
-                      referenceImage={referenceImage}
-                      onImageSelect={setReferenceImage}
-                      label="Add face photo"
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="text-sm font-semibold text-foreground mb-2 block">
-                      Reference image (optional)
-                    </label>
-                    <PromptImageAttachment
-                      referenceImage={referenceImage}
-                      onImageSelect={setReferenceImage}
-                    />
-                  </div>
-                )}
 
                 {/* Custom Description */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
-                    {currentMode.requiresReferenceImage ? "Extra instructions (optional)" : "Or describe it yourself"}
+                    Or describe it yourself
                   </label>
                   <Textarea
                     placeholder={currentMode.placeholder}
@@ -231,7 +214,7 @@ const Index = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={isProcessing || (!description.trim() && editMode !== "faceswap") || (editMode === "faceswap" && !referenceImage)}
+                  disabled={isProcessing || !description.trim()}
                   className="w-full h-14 text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isProcessing ? (
