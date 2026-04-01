@@ -26,7 +26,7 @@ STRICTLY FORBIDDEN - DO NOT CREATE:
 
 The output MUST be indistinguishable from a real photograph taken by a professional photographer.`;
 
-function buildPrompt(mode: string, description: string): string {
+function buildPrompt(mode: string, description: string, hasReferenceImage: boolean): string {
   switch (mode) {
     case "background":
       return `Change ONLY the background of this photo to: ${description}. 
@@ -49,11 +49,27 @@ Maintain the person's EXACT facial features, skin texture, skin tone, and identi
 Natural skin texture with visible pores, realistic lighting, soft studio shadows, accurate facial anatomy, no facial distortion.
 Professional business attire if not specified, clean background, shallow depth of field, shot on 85mm DSLR lens style.
 Ultra-detailed, high-resolution, photorealistic result.${REALISM_REQUIREMENTS}`;
+    case "faceswap":
+      return `FACE SWAP TASK: Take the face from the second reference image and place it onto the person in the first/main image.
+${description ? `Additional instructions: ${description}` : ""}
+
+CRITICAL FACE SWAP REQUIREMENTS:
+- Extract the face (facial features, skin tone, facial structure) from the REFERENCE image (second image)
+- Place that face onto the person in the MAIN image (first image)
+- Keep the MAIN image's body, pose, clothing, hair style, and background EXACTLY the same
+- Blend the swapped face seamlessly: match lighting, shadows, skin tone transition at the jawline and hairline
+- Maintain natural proportions — the face must fit the head size of the person in the main image
+- The result must look like a real, unedited photograph — no visible seams, no artifacts
+${REALISM_REQUIREMENTS}`;
     case "custom":
-    default:
-      return `Edit this photo with the following instruction: ${description}. 
+    default: {
+      const refNote = hasReferenceImage
+        ? " Use the reference image provided as visual guidance for the edit."
+        : "";
+      return `Edit this photo with the following instruction: ${description}.${refNote}
 Keep the person's identity, face, and natural human skin appearance fully intact and photorealistic. 
 Any body parts shown must look completely real with natural skin texture, pores, and proper lighting.${REALISM_REQUIREMENTS}`;
+    }
   }
 }
 
@@ -75,11 +91,18 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, description, mode = "background", quality = "high" } = await req.json();
+    const { imageBase64, description, mode = "background", quality = "high", referenceImage } = await req.json();
 
-    if (!imageBase64 || !description) {
+    if (!imageBase64 || (!description.trim() && mode !== "faceswap")) {
       return new Response(
         JSON.stringify({ error: "Image and description are required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (mode === "faceswap" && !referenceImage) {
+      return new Response(
+        JSON.stringify({ error: "A reference face image is required for face swap" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -89,10 +112,20 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const prompt = buildPrompt(mode, description);
+    const hasReferenceImage = !!referenceImage;
+    const prompt = buildPrompt(mode, description, hasReferenceImage);
     const model = getModelForQuality(quality);
 
-    console.log(`Processing with model: ${model}, mode: ${mode}, quality: ${quality}`);
+    console.log(`Processing with model: ${model}, mode: ${mode}, quality: ${quality}, hasRef: ${hasReferenceImage}`);
+
+    const contentParts: any[] = [
+      { type: "text", text: prompt },
+      { type: "image_url", image_url: { url: imageBase64 } },
+    ];
+
+    if (referenceImage) {
+      contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -105,10 +138,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
+            content: contentParts,
           },
         ],
         modalities: ["image", "text"],

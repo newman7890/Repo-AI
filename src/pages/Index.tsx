@@ -10,6 +10,7 @@ import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
+import PromptImageAttachment from "@/components/PromptImageAttachment";
 import { useEditHistory } from "@/hooks/useEditHistory";
 
 const Index = () => {
@@ -17,6 +18,7 @@ const Index = () => {
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
@@ -26,12 +28,16 @@ const Index = () => {
   const currentEdit = editHistory.current;
 
   const handleGenerate = async () => {
-    if (!image || !description.trim()) {
-      toast({
-        title: "Missing info",
-        description: "Please upload a photo and describe the edit you want.",
-        variant: "destructive",
-      });
+    if (!image) {
+      toast({ title: "Missing photo", description: "Please upload a photo first.", variant: "destructive" });
+      return;
+    }
+    if (editMode === "faceswap" && !referenceImage) {
+      toast({ title: "Missing face photo", description: "Please add a reference face image for face swap.", variant: "destructive" });
+      return;
+    }
+    if (!description.trim() && editMode !== "faceswap") {
+      toast({ title: "Missing description", description: "Please describe the edit you want.", variant: "destructive" });
       return;
     }
 
@@ -47,7 +53,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality }),
+          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage }),
           signal: abortControllerRef.current.signal,
         }
       );
@@ -94,6 +100,7 @@ const Index = () => {
     editHistory.reset();
     setImage(null);
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleReEdit = () => {
@@ -104,6 +111,7 @@ const Index = () => {
   const handleModeChange = (mode: EditMode) => {
     setEditMode(mode);
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
@@ -183,10 +191,34 @@ const Index = () => {
                   />
                 </div>
 
+                {/* Reference Image Attachment */}
+                {currentMode.requiresReferenceImage ? (
+                  <div>
+                    <label className="text-sm font-semibold text-foreground mb-2 block">
+                      Face reference photo <span className="text-destructive">*</span>
+                    </label>
+                    <PromptImageAttachment
+                      referenceImage={referenceImage}
+                      onImageSelect={setReferenceImage}
+                      label="Add face photo"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-sm font-semibold text-foreground mb-2 block">
+                      Reference image (optional)
+                    </label>
+                    <PromptImageAttachment
+                      referenceImage={referenceImage}
+                      onImageSelect={setReferenceImage}
+                    />
+                  </div>
+                )}
+
                 {/* Custom Description */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
-                    Or describe it yourself
+                    {currentMode.requiresReferenceImage ? "Extra instructions (optional)" : "Or describe it yourself"}
                   </label>
                   <Textarea
                     placeholder={currentMode.placeholder}
@@ -199,7 +231,7 @@ const Index = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={isProcessing || !description.trim()}
+                  disabled={isProcessing || (!description.trim() && editMode !== "faceswap") || (editMode === "faceswap" && !referenceImage)}
                   className="w-full h-14 text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isProcessing ? (
