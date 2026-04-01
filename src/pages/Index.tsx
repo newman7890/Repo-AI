@@ -190,7 +190,7 @@ const Index = () => {
                 {/* Custom Description */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
-                    {currentMode.requiresReferenceImage ? "Extra instructions (optional)" : "Or describe it yourself"}
+                    Or describe it yourself
                   </label>
                   <Textarea
                     placeholder={currentMode.placeholder}
