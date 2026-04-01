@@ -186,29 +186,6 @@ const Index = () => {
                   />
                 </div>
 
-                {/* Reference Image Attachment */}
-                {currentMode.requiresReferenceImage ? (
-                  <div>
-                    <label className="text-sm font-semibold text-foreground mb-2 block">
-                      Face reference photo <span className="text-destructive">*</span>
-                    </label>
-                    <PromptImageAttachment
-                      referenceImage={referenceImage}
-                      onImageSelect={setReferenceImage}
-                      label="Add face photo"
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="text-sm font-semibold text-foreground mb-2 block">
-                      Reference image (optional)
-                    </label>
-                    <PromptImageAttachment
-                      referenceImage={referenceImage}
-                      onImageSelect={setReferenceImage}
-                    />
-                  </div>
-                )}
 
                 {/* Custom Description */}
                 <div>
