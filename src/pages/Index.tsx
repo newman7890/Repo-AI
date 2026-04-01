@@ -191,10 +191,34 @@ const Index = () => {
                   />
                 </div>
 
+                {/* Reference Image Attachment */}
+                {currentMode.requiresReferenceImage ? (
+                  <div>
+                    <label className="text-sm font-semibold text-foreground mb-2 block">
+                      Face reference photo <span className="text-destructive">*</span>
+                    </label>
+                    <PromptImageAttachment
+                      referenceImage={referenceImage}
+                      onImageSelect={setReferenceImage}
+                      label="Add face photo"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-sm font-semibold text-foreground mb-2 block">
+                      Reference image (optional)
+                    </label>
+                    <PromptImageAttachment
+                      referenceImage={referenceImage}
+                      onImageSelect={setReferenceImage}
+                    />
+                  </div>
+                )}
+
                 {/* Custom Description */}
                 <div>
                   <label className="text-sm font-semibold text-foreground mb-2 block">
-                    Or describe it yourself
+                    {currentMode.requiresReferenceImage ? "Extra instructions (optional)" : "Or describe it yourself"}
                   </label>
                   <Textarea
                     placeholder={currentMode.placeholder}
@@ -207,7 +231,7 @@ const Index = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={isProcessing || !description.trim()}
+                  disabled={isProcessing || (!description.trim() && editMode !== "faceswap") || (editMode === "faceswap" && !referenceImage)}
                   className="w-full h-14 text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isProcessing ? (
