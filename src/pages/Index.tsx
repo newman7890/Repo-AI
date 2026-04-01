@@ -130,7 +130,18 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">AI Photo Editor</p>
             </div>
           </div>
-          <HistoryGallery onSelect={handleHistorySelect} />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/face-swap")}
+              className="gap-1.5 rounded-xl"
+            >
+              <Repeat className="w-4 h-4" />
+              Face Swap
+            </Button>
+            <HistoryGallery onSelect={handleHistorySelect} />
+          </div>
         </div>
       </header>
 
