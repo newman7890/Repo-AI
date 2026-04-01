@@ -203,7 +203,7 @@ const Index = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={isProcessing || (!description.trim() && editMode !== "faceswap") || (editMode === "faceswap" && !referenceImage)}
+                  disabled={isProcessing || !description.trim()}
                   className="w-full h-14 text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isProcessing ? (
