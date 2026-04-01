@@ -111,6 +111,7 @@ const Index = () => {
   const handleModeChange = (mode: EditMode) => {
     setEditMode(mode);
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleHistorySelect = (item: HistoryItem) => {
