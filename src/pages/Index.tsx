@@ -50,7 +50,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage }),
+          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage: null }),
           signal: abortControllerRef.current.signal,
         }
       );
