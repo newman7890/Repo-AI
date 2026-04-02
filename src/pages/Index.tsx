@@ -123,26 +123,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-6 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-              <Wand2 className="w-5 h-5 text-white" />
+      <header className="px-4 pt-4 pb-3 sm:px-5 sm:pt-6 sm:pb-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
-              <p className="text-xs text-muted-foreground">AI Photo Editor</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight">PhotoMagic</h1>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">AI Photo Editor</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate("/face-swap")}
-              className="gap-1.5 rounded-xl"
+              className="gap-1 sm:gap-1.5 rounded-xl text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
             >
-              <Repeat className="w-4 h-4" />
-              Face Swap
+              <Repeat className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Face Swap</span>
+              <span className="xs:hidden">Swap</span>
             </Button>
             <HistoryGallery onSelect={handleHistorySelect} />
           </div>
