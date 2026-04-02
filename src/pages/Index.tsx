@@ -213,6 +213,13 @@ const Index = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     className="bg-card border-border resize-none h-20 text-sm"
                   />
+                  <div className="mt-2">
+                    <PromptImageAttachment
+                      referenceImage={referenceImage}
+                      onImageSelect={setReferenceImage}
+                      label="Add reference image"
+                    />
+                  </div>
                 </div>
 
                 {/* Generate Button */}
