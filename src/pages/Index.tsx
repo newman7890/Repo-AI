@@ -151,7 +151,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
+      <main className="flex-1 px-4 pb-6 sm:px-5 sm:pb-8 flex flex-col gap-4 sm:gap-5">
         {isProcessing ? (
           <ProcessingSkeleton onCancel={handleCancel} />
         ) : currentEdit && image ? (
