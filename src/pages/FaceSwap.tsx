@@ -219,10 +219,10 @@ const FaceSwap = () => {
         ) : (
           <>
             {/* Step indicators */}
-            <div className="flex items-center justify-center gap-2 py-2">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 py-2 flex-wrap">
               {["Your photo", "Face to use", "Swap!"].map((label, i) => (
-                <div key={label} className="flex items-center gap-2">
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                <div key={label} className="flex items-center gap-1 sm:gap-2">
+                  <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium transition-all ${
                     i === 0 && currentStep === "source" ? "bg-primary text-primary-foreground" :
                     i === 1 && currentStep === "target" ? "bg-primary text-primary-foreground" :
                     i === 2 && currentStep === "review" ? "bg-primary text-primary-foreground" :
