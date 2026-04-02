@@ -99,11 +99,13 @@ const Index = () => {
     editHistory.reset();
     setImage(null);
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleReEdit = () => {
     editHistory.reset();
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleModeChange = (mode: EditMode) => {
