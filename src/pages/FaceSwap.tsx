@@ -183,24 +183,24 @@ const FaceSwap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0">
+      <header className="px-4 pt-4 pb-3 sm:px-5 sm:pt-6 sm:pb-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-9 w-9">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent/20">
-              <Repeat className="w-5 h-5 text-accent" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center bg-accent/20">
+              <Repeat className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Face Swap</h1>
-              <p className="text-xs text-muted-foreground">Swap faces between two photos</p>
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight">Face Swap</h1>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Swap faces between two photos</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
+      <main className="flex-1 px-4 pb-6 sm:px-5 sm:pb-8 flex flex-col gap-4 sm:gap-5">
         {isProcessing ? (
           <ProcessingSkeleton onCancel={() => abortRef.current?.abort()} />
         ) : currentEdit && sourceImage ? (
@@ -219,10 +219,10 @@ const FaceSwap = () => {
         ) : (
           <>
             {/* Step indicators */}
-            <div className="flex items-center justify-center gap-2 py-2">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 py-2 flex-wrap">
               {["Your photo", "Face to use", "Swap!"].map((label, i) => (
-                <div key={label} className="flex items-center gap-2">
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                <div key={label} className="flex items-center gap-1 sm:gap-2">
+                  <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium transition-all ${
                     i === 0 && currentStep === "source" ? "bg-primary text-primary-foreground" :
                     i === 1 && currentStep === "target" ? "bg-primary text-primary-foreground" :
                     i === 2 && currentStep === "review" ? "bg-primary text-primary-foreground" :
@@ -258,7 +258,7 @@ const FaceSwap = () => {
             )}
 
             {/* Image upload grid */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <ImageSlot
                 image={sourceImage}
                 onSelect={setSourceImage}

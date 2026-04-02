@@ -1,6 +1,7 @@
-import { Download, RotateCcw, Undo2, Redo2, Pencil } from "lucide-react";
+import { Download, RotateCcw, Undo2, Redo2, Pencil, Wand2, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNavigate, useLocation } from "react-router-dom";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import ShareButtons from "@/components/ShareButtons";
 
@@ -29,10 +30,14 @@ const ResultDisplay = ({
   editCount,
   editIndex,
 }: ResultDisplayProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isFaceSwap = location.pathname === "/face-swap";
+
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = resultImage;
-    link.download = `background-changed-${Date.now()}.png`;
+    link.download = `edited-photo-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -40,7 +45,7 @@ const ResultDisplay = ({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col gap-5 w-full">
+      <div className="flex flex-col gap-4 w-full">
         <BeforeAfterSlider beforeImage={originalImage} afterImage={resultImage} />
 
         {/* Undo / Redo bar */}
@@ -72,27 +77,45 @@ const ResultDisplay = ({
           <ShareButtons resultImage={resultImage} />
         </div>
 
-        <div className="flex gap-3">
-          <Button onClick={handleDownload} className="flex-1 h-12 text-base font-semibold bg-primary hover:bg-primary/90">
-            <Download className="w-5 h-5 mr-2" /> Download
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          <Button onClick={handleDownload} className="flex-1 h-12 text-sm font-semibold bg-primary hover:bg-primary/90">
+            <Download className="w-4 h-4 mr-1.5" /> Download
           </Button>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={onReEdit} variant="secondary" className="h-12 px-4">
-                <Pencil className="w-5 h-5" />
+              <Button onClick={onReEdit} variant="secondary" className="h-12 px-3">
+                <Pencil className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Edit again</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={onReset} variant="outline" className="h-12 px-4">
-                <RotateCcw className="w-5 h-5" />
+              <Button onClick={onReset} variant="outline" className="h-12 px-3">
+                <RotateCcw className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Start over</TooltipContent>
           </Tooltip>
         </div>
+
+        {/* Navigate to other feature */}
+        <Button
+          variant="outline"
+          className="w-full h-11 rounded-xl gap-2 text-sm"
+          onClick={() => navigate(isFaceSwap ? "/" : "/face-swap")}
+        >
+          {isFaceSwap ? (
+            <>
+              <Wand2 className="w-4 h-4" /> Go to Photo Editor
+            </>
+          ) : (
+            <>
+              <Repeat className="w-4 h-4" /> Try Face Swap
+            </>
+          )}
+        </Button>
       </div>
     </TooltipProvider>
   );

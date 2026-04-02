@@ -10,6 +10,7 @@ import QuickPresets from "@/components/QuickPresets";
 import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
+import PromptImageAttachment from "@/components/PromptImageAttachment";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ const Index = () => {
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
@@ -50,7 +52,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage: null }),
+          body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage }),
           signal: abortControllerRef.current.signal,
         }
       );
@@ -97,11 +99,13 @@ const Index = () => {
     editHistory.reset();
     setImage(null);
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleReEdit = () => {
     editHistory.reset();
     setDescription("");
+    setReferenceImage(null);
   };
 
   const handleModeChange = (mode: EditMode) => {
@@ -119,26 +123,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-6 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-              <Wand2 className="w-5 h-5 text-white" />
+      <header className="px-4 pt-4 pb-3 sm:px-5 sm:pt-6 sm:pb-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">PhotoMagic</h1>
-              <p className="text-xs text-muted-foreground">AI Photo Editor</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight">PhotoMagic</h1>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">AI Photo Editor</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate("/face-swap")}
-              className="gap-1.5 rounded-xl"
+              className="gap-1 sm:gap-1.5 rounded-xl text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
             >
-              <Repeat className="w-4 h-4" />
-              Face Swap
+              <Repeat className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Face Swap</span>
+              <span className="xs:hidden">Swap</span>
             </Button>
             <HistoryGallery onSelect={handleHistorySelect} />
           </div>
@@ -146,7 +151,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-5 pb-8 flex flex-col gap-5">
+      <main className="flex-1 px-4 pb-6 sm:px-5 sm:pb-8 flex flex-col gap-4 sm:gap-5">
         {isProcessing ? (
           <ProcessingSkeleton onCancel={handleCancel} />
         ) : currentEdit && image ? (
@@ -209,6 +214,13 @@ const Index = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     className="bg-card border-border resize-none h-20 text-sm"
                   />
+                  <div className="mt-2">
+                    <PromptImageAttachment
+                      referenceImage={referenceImage}
+                      onImageSelect={setReferenceImage}
+                      label="Add reference image"
+                    />
+                  </div>
                 </div>
 
                 {/* Generate Button */}
