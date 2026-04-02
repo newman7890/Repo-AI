@@ -258,7 +258,7 @@ const FaceSwap = () => {
             )}
 
             {/* Image upload grid */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <ImageSlot
                 image={sourceImage}
                 onSelect={setSourceImage}
