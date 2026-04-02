@@ -97,12 +97,12 @@ interface EditModeSelectorProps {
 
 const EditModeSelector = ({ activeMode, onModeChange }: EditModeSelectorProps) => {
   return (
-    <div className="flex gap-1 p-1 bg-card rounded-2xl border border-border overflow-x-auto">
+    <div className="flex gap-1 p-1 bg-card rounded-xl border border-border overflow-x-auto scrollbar-none">
       {editModes.map((mode) => (
         <button
           key={mode.id}
           onClick={() => onModeChange(mode.id)}
-          className={`flex-1 flex flex-col items-center gap-1 py-2 px-2 rounded-xl text-xs font-medium transition-all min-w-[60px] ${
+          className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1.5 rounded-lg text-[10px] font-medium transition-all min-w-[52px] ${
             activeMode === mode.id
               ? "bg-primary text-primary-foreground shadow-md"
               : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"

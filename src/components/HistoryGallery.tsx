@@ -50,36 +50,36 @@ const HistoryGallery = ({ onSelect }: HistoryGalleryProps) => {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-        <History className="w-4 h-4" /> History
+      <Button onClick={() => setOpen(true)} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+        <History className="w-4 h-4" />
       </Button>
     );
   }
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-        <h2 className="text-lg font-bold">Edit History</h2>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-base font-bold">Edit History</h2>
+        <div className="flex gap-1.5">
           {items.length > 0 && (
-            <Button onClick={clearHistory} variant="ghost" size="sm" className="text-destructive gap-1">
-              <Trash2 className="w-4 h-4" /> Clear
+            <Button onClick={clearHistory} variant="ghost" size="sm" className="text-destructive gap-1 h-8 text-xs">
+              <Trash2 className="w-3.5 h-3.5" /> Clear
             </Button>
           )}
-          <Button onClick={() => setOpen(false)} variant="ghost" size="icon">
-            <X className="w-5 h-5" />
+          <Button onClick={() => setOpen(false)} variant="ghost" size="icon" className="h-8 w-8">
+            <X className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-3">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <History className="w-12 h-12 mb-3 opacity-30" />
-            <p className="text-sm">No edits yet</p>
+            <History className="w-10 h-10 mb-2 opacity-30" />
+            <p className="text-xs">No edits yet</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {items.map((item) => (
               <button
                 key={item.id}
@@ -89,9 +89,9 @@ const HistoryGallery = ({ onSelect }: HistoryGalleryProps) => {
                 <div className="aspect-square">
                   <img src={item.resultImage} alt={item.description} className="w-full h-full object-cover" />
                 </div>
-                <div className="p-2">
-                  <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                  <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <div className="p-1.5">
+                  <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
+                  <p className="text-[9px] text-muted-foreground/60 mt-0.5">
                     {new Date(item.createdAt).toLocaleDateString()}
                   </p>
                 </div>

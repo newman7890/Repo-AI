@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Repeat, Upload, Camera, ArrowLeft, Sparkles, Loader2, X, ArrowRight } from "lucide-react";
+import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -61,16 +61,16 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
 
   if (image) {
     return (
-      <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-primary/30 bg-card">
+      <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-primary/30 bg-card">
         <img src={image} alt={label} className="w-full h-full object-cover" />
         <button
           onClick={onClear}
-          className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-7 h-7 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+          className="absolute top-1.5 right-1.5 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-6 h-6 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-          <p className="text-white text-xs font-medium">{label}</p>
+        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+          <p className="text-white text-[10px] font-medium">{label}</p>
         </div>
       </div>
     );
@@ -82,21 +82,21 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
         onClick={() => fileRef.current?.click()}
         onDrop={(e) => { e.preventDefault(); e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]); }}
         onDragOver={(e) => e.preventDefault()}
-        className="w-full aspect-square rounded-2xl border-2 border-dashed border-border bg-card/50 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 transition-colors"
+        className="w-full aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card/50 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/50 transition-colors p-2"
       >
-        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-          <span className="text-2xl font-bold text-primary">{step}</span>
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <span className="text-lg font-bold text-primary">{step}</span>
         </div>
-        <div className="text-center px-4">
-          <p className="text-foreground font-semibold text-sm">{label}</p>
-          <p className="text-muted-foreground text-xs mt-1">{description}</p>
+        <div className="text-center px-1">
+          <p className="text-foreground font-semibold text-xs">{label}</p>
+          <p className="text-muted-foreground text-[10px] mt-0.5 leading-tight">{description}</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); cameraRef.current?.click(); }}>
-            <Camera className="w-3.5 h-3.5 mr-1" /> Camera
+        <div className="flex flex-col gap-1.5 w-full px-1">
+          <Button variant="outline" size="sm" className="h-7 text-[10px] w-full" onClick={(e) => { e.stopPropagation(); cameraRef.current?.click(); }}>
+            <Camera className="w-3 h-3 mr-1" /> Camera
           </Button>
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
-            <Upload className="w-3.5 h-3.5 mr-1" /> Gallery
+          <Button variant="outline" size="sm" className="h-7 text-[10px] w-full" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
+            <Upload className="w-3 h-3 mr-1" /> Gallery
           </Button>
         </div>
       </div>
@@ -183,24 +183,24 @@ const FaceSwap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-4 pt-4 pb-3 sm:px-5 sm:pt-6 sm:pb-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-9 w-9">
-            <ArrowLeft className="w-5 h-5" />
+      <header className="px-4 pt-4 pb-3">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
+            <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center bg-accent/20">
-              <Repeat className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
+              <Repeat className="w-4 h-4 text-accent" />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight">Face Swap</h1>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Swap faces between two photos</p>
+              <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
+              <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-6 sm:px-5 sm:pb-8 flex flex-col gap-4 sm:gap-5">
+      <main className="flex-1 px-4 pb-6 flex flex-col gap-3">
         {isProcessing ? (
           <ProcessingSkeleton onCancel={() => abortRef.current?.abort()} />
         ) : currentEdit && sourceImage ? (
@@ -219,10 +219,10 @@ const FaceSwap = () => {
         ) : (
           <>
             {/* Step indicators */}
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2 py-2 flex-wrap">
-              {["Your photo", "Face to use", "Swap!"].map((label, i) => (
-                <div key={label} className="flex items-center gap-1 sm:gap-2">
-                  <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium transition-all ${
+            <div className="flex items-center justify-center gap-1 py-1">
+              {["Photo", "Face", "Swap!"].map((label, i) => (
+                <div key={label} className="flex items-center gap-1">
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-all ${
                     i === 0 && currentStep === "source" ? "bg-primary text-primary-foreground" :
                     i === 1 && currentStep === "target" ? "bg-primary text-primary-foreground" :
                     i === 2 && currentStep === "review" ? "bg-primary text-primary-foreground" :
@@ -231,26 +231,26 @@ const FaceSwap = () => {
                   }`}>
                     {(i === 0 && sourceImage) || (i === 1 && targetImage) ? "✓" : i + 1} {label}
                   </div>
-                  {i < 2 && <ArrowRight className="w-3 h-3 text-muted-foreground" />}
+                  {i < 2 && <ArrowRight className="w-2.5 h-2.5 text-muted-foreground" />}
                 </div>
               ))}
             </div>
 
             {/* How it works (shown only on first step) */}
             {currentStep === "source" && (
-              <div className="bg-card rounded-2xl border border-border p-4">
-                <h3 className="text-sm font-semibold text-foreground mb-3">How it works</h3>
-                <div className="space-y-2.5">
+              <div className="bg-card rounded-xl border border-border p-3">
+                <h3 className="text-xs font-semibold text-foreground mb-2">How it works</h3>
+                <div className="space-y-2">
                   {[
-                    { num: "1", text: "Upload the photo you want to modify (body, pose, background)" },
+                    { num: "1", text: "Upload the photo you want to modify" },
                     { num: "2", text: "Upload the face you want to place on it" },
                     { num: "3", text: "Tap swap and let AI do the magic!" },
                   ].map((item) => (
-                    <div key={item.num} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                        <span className="text-xs font-bold text-primary">{item.num}</span>
+                    <div key={item.num} className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                        <span className="text-[10px] font-bold text-primary">{item.num}</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{item.text}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
                     </div>
                   ))}
                 </div>
@@ -258,13 +258,13 @@ const FaceSwap = () => {
             )}
 
             {/* Image upload grid */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <ImageSlot
                 image={sourceImage}
                 onSelect={setSourceImage}
                 onClear={() => setSourceImage(null)}
                 label="Your photo"
-                description="The body & pose to keep"
+                description="Body & pose to keep"
                 step={1}
               />
               <ImageSlot
@@ -272,31 +272,31 @@ const FaceSwap = () => {
                 onSelect={setTargetImage}
                 onClear={() => setTargetImage(null)}
                 label="Face photo"
-                description="The face to swap in"
+                description="Face to swap in"
                 step={2}
               />
             </div>
 
             {/* Arrow showing direction */}
             {sourceImage && targetImage && (
-              <div className="flex items-center justify-center gap-2 text-muted-foreground animate-in fade-in duration-300">
-                <span className="text-xs">Face from photo 2</span>
-                <ArrowRight className="w-4 h-4" />
-                <span className="text-xs">goes onto photo 1</span>
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground animate-in fade-in duration-300">
+                <span className="text-[10px]">Face from photo 2</span>
+                <ArrowRight className="w-3 h-3" />
+                <span className="text-[10px]">goes onto photo 1</span>
               </div>
             )}
 
             {/* Extra instructions */}
             {sourceImage && targetImage && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <label className="text-sm font-semibold text-foreground mb-2 block">
+                <label className="text-xs font-semibold text-foreground mb-1.5 block">
                   Extra instructions (optional)
                 </label>
                 <Textarea
-                  placeholder="e.g. Match the skin tone perfectly, keep the lighting natural..."
+                  placeholder="e.g. Match the skin tone, keep lighting natural..."
                   value={extraInstructions}
                   onChange={(e) => setExtraInstructions(e.target.value)}
-                  className="bg-card border-border resize-none h-16 text-sm"
+                  className="bg-card border-border resize-none h-14 text-xs"
                 />
               </div>
             )}
@@ -305,14 +305,14 @@ const FaceSwap = () => {
             {sourceImage && targetImage && (
               <div className="flex flex-wrap gap-1.5 animate-in fade-in duration-300">
                 {[
-                  { label: "🎭 Natural blend", value: "Blend the face naturally, match skin tone and lighting perfectly" },
-                  { label: "😄 Keep expression", value: "Keep the expression from the face photo" },
+                  { label: "🎭 Natural", value: "Blend the face naturally, match skin tone and lighting perfectly" },
+                  { label: "😄 Expression", value: "Keep the expression from the face photo" },
                   { label: "🎬 Cinematic", value: "Apply cinematic lighting and dramatic effect" },
                 ].map((tip) => (
                   <button
                     key={tip.label}
                     onClick={() => setExtraInstructions(tip.value)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
                       extraInstructions === tip.value
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -328,9 +328,9 @@ const FaceSwap = () => {
             <Button
               onClick={handleSwap}
               disabled={!sourceImage || !targetImage || isProcessing}
-              className="w-full h-14 text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
+              className="w-full h-12 text-sm font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
             >
-              <Sparkles className="w-5 h-5 mr-2" />
+              <Sparkles className="w-4 h-4 mr-2" />
               Swap Faces
             </Button>
           </>
