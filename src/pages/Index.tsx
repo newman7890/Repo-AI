@@ -21,6 +21,7 @@ const Index = () => {
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
   const [description, setDescription] = useState("");
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
