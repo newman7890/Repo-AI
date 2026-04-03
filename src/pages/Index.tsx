@@ -130,7 +130,7 @@ const Index = () => {
               <Wand2 className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base font-bold tracking-tight leading-tight">PhotoMagic</h1>
+              <h1 className="text-base font-bold tracking-tight leading-tight">Renderme AI</h1>
               <p className="text-[10px] text-muted-foreground leading-tight">AI Photo Editor</p>
             </div>
           </div>

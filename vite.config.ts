@@ -24,8 +24,8 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
       },
       manifest: {
-        name: "PhotoMagic – AI Photo Editor",
-        short_name: "PhotoMagic",
+        name: "Renderme AI – AI Photo Editor",
+        short_name: "Renderme AI",
         description: "Transform your photos with AI. Change backgrounds, enhance colors, add effects, and more.",
         theme_color: "#7c3aed",
         background_color: "#0a0a0a",
