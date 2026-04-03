@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Sparkles, Loader2, Wand2, Repeat } from "lucide-react";
+import { Sparkles, Loader2, Wand2, Repeat, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +11,7 @@ import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import PromptImageAttachment from "@/components/PromptImageAttachment";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
