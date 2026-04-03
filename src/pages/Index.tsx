@@ -232,9 +232,32 @@ const Index = () => {
 
                 {/* Custom Description */}
                 <div>
-                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                    Or describe it yourself
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-foreground">
+                      Or describe it yourself
+                    </label>
+                    {description.trim() && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={handleEnhancePrompt}
+                            disabled={isEnhancing}
+                            className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                          >
+                            {isEnhancing ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Zap className="w-3 h-3" />
+                            )}
+                            Enhance
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p>AI will improve your prompt for better results</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
                   <Textarea
                     placeholder={currentMode.placeholder}
                     value={description}
