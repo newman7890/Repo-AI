@@ -37,6 +37,11 @@ Only replace the background environment. Match lighting naturally to the new sce
 Keep the person's face, hair, skin texture, body shape, pose, and background EXACTLY the same. 
 The exposed skin must retain its exact natural appearance with realistic texture, pores, and tone. 
 Only change what they are wearing. The new outfit must fit naturally on their real body with realistic fabric texture and proper shadows.${REALISM_REQUIREMENTS}`;
+    case "object":
+      return `Object removal/replacement task for this photo: ${description}.
+Keep the person's face, identity, and overall composition intact unless specifically asked to change them.
+Seamlessly fill removed areas with natural background that matches the scene's perspective, lighting, and texture.
+If replacing an object, integrate the new element naturally with correct shadows, reflections, and scale.${REALISM_REQUIREMENTS}`;
     case "action":
       return `Modify this photo so that the person is: ${description}. 
 Keep the person's face, identity, and natural human skin EXACTLY the same. 
