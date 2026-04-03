@@ -259,30 +259,30 @@ const FaceSwap = () => {
           <>
             {/* Step indicators */}
             <div className="flex items-center justify-center gap-1 py-1">
-              {["Photo", "Face", "Swap!"].map((label, i) => (
+              {["Photo", "Faces", "Swap!"].map((label, i) => (
                 <div key={label} className="flex items-center gap-1">
                   <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-all ${
                     i === 0 && currentStep === "source" ? "bg-primary text-primary-foreground" :
-                    i === 1 && currentStep === "target" ? "bg-primary text-primary-foreground" :
+                    i === 1 && currentStep === "faces" ? "bg-primary text-primary-foreground" :
                     i === 2 && currentStep === "review" ? "bg-primary text-primary-foreground" :
-                    (i === 0 && sourceImage) || (i === 1 && targetImage) ? "bg-primary/20 text-primary" :
+                    (i === 0 && sourceImage) || (i === 1 && allFacesFilled) ? "bg-primary/20 text-primary" :
                     "bg-muted text-muted-foreground"
                   }`}>
-                    {(i === 0 && sourceImage) || (i === 1 && targetImage) ? "✓" : i + 1} {label}
+                    {(i === 0 && sourceImage) || (i === 1 && allFacesFilled) ? "✓" : i + 1} {label}
                   </div>
                   {i < 2 && <ArrowRight className="w-2.5 h-2.5 text-muted-foreground" />}
                 </div>
               ))}
             </div>
 
-            {/* How it works (shown only on first step) */}
+            {/* How it works */}
             {currentStep === "source" && (
               <div className="bg-card rounded-xl border border-border p-3">
                 <h3 className="text-xs font-semibold text-foreground mb-2">How it works</h3>
                 <div className="space-y-2">
                   {[
                     { num: "1", text: "Upload the photo you want to modify" },
-                    { num: "2", text: "Upload the face you want to place on it" },
+                    { num: "2", text: "Upload one or more faces to swap in" },
                     { num: "3", text: "Tap swap and let AI do the magic!" },
                   ].map((item) => (
                     <div key={item.num} className="flex items-start gap-2">
@@ -296,37 +296,74 @@ const FaceSwap = () => {
               </div>
             )}
 
-            {/* Image upload grid */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <ImageSlot
-                image={sourceImage}
-                onSelect={setSourceImage}
-                onClear={() => setSourceImage(null)}
-                label="Your photo"
-                description="Body & pose to keep"
-                step={1}
-              />
-              <ImageSlot
-                image={targetImage}
-                onSelect={setTargetImage}
-                onClear={() => setTargetImage(null)}
-                label="Face photo"
-                description="Face to swap in"
-                step={2}
-              />
+            {/* Source image */}
+            <div>
+              <label className="text-xs font-semibold text-foreground mb-1.5 block">Source Photo</label>
+              <div className="max-w-[200px]">
+                <ImageSlot
+                  image={sourceImage}
+                  onSelect={setSourceImage}
+                  onClear={() => setSourceImage(null)}
+                  label="Your photo"
+                  description="Body & pose to keep"
+                  step={1}
+                />
+              </div>
             </div>
 
-            {/* Arrow showing direction */}
-            {sourceImage && targetImage && (
+            {/* Face slots */}
+            {sourceImage && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-foreground">
+                    Faces to swap ({faceSlots.length})
+                  </label>
+                  {faceSlots.length < 4 && (
+                    <button
+                      onClick={addFaceSlot}
+                      className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add face
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {faceSlots.map((slot, idx) => (
+                    <div key={slot.id} className="relative">
+                      <ImageSlot
+                        image={slot.image}
+                        onSelect={(img) => updateFaceSlot(slot.id, img)}
+                        onClear={() => updateFaceSlot(slot.id, null)}
+                        label={`Face ${idx + 1}`}
+                        description="Face to swap in"
+                        step={idx + 2}
+                      />
+                      {faceSlots.length > 1 && !slot.image && (
+                        <button
+                          onClick={() => removeFaceSlot(slot.id)}
+                          className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center z-10"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Direction hint */}
+            {sourceImage && filledFaces.length > 0 && (
               <div className="flex items-center justify-center gap-1.5 text-muted-foreground animate-in fade-in duration-300">
-                <span className="text-[10px]">Face from photo 2</span>
+                <span className="text-[10px]">{filledFaces.length} face{filledFaces.length > 1 ? "s" : ""}</span>
                 <ArrowRight className="w-3 h-3" />
-                <span className="text-[10px]">goes onto photo 1</span>
+                <span className="text-[10px]">onto your photo</span>
               </div>
             )}
 
             {/* Extra instructions */}
-            {sourceImage && targetImage && (
+            {sourceImage && allFacesFilled && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <label className="text-xs font-semibold text-foreground mb-1.5 block">
                   Extra instructions (optional)
@@ -341,7 +378,7 @@ const FaceSwap = () => {
             )}
 
             {/* Quick tips */}
-            {sourceImage && targetImage && (
+            {sourceImage && allFacesFilled && (
               <div className="flex flex-wrap gap-1.5 animate-in fade-in duration-300">
                 {[
                   { label: "🎭 Natural", value: "Blend the face naturally, match skin tone and lighting perfectly" },
@@ -366,11 +403,11 @@ const FaceSwap = () => {
             {/* Swap button */}
             <Button
               onClick={handleSwap}
-              disabled={!sourceImage || !targetImage || isProcessing}
+              disabled={!sourceImage || filledFaces.length === 0 || isProcessing}
               className="w-full h-12 text-sm font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Swap Faces
+              Swap {filledFaces.length > 1 ? `${filledFaces.length} Faces` : "Face"}
             </Button>
           </>
         )}
