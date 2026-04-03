@@ -96,7 +96,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, description, mode = "background", quality = "high", referenceImage } = await req.json();
+    const { imageBase64, description, mode = "background", quality = "high", referenceImage, additionalFaces } = await req.json();
 
     if (!imageBase64 || (!description.trim() && mode !== "faceswap")) {
       return new Response(
