@@ -24,6 +24,7 @@ const Index = () => {
   const [description, setDescription] = useState("");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const editHistory = useEditHistory();
