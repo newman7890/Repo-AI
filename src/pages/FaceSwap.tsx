@@ -210,7 +210,7 @@ const FaceSwap = () => {
   const handleReset = () => {
     editHistory.reset();
     setSourceImage(null);
-    setTargetImage(null);
+    setFaceSlots([{ id: "face-1", image: null }]);
     setExtraInstructions("");
   };
 
