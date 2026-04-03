@@ -122,6 +122,33 @@ const Index = () => {
     setEditMode(item.mode as EditMode);
   };
 
+  const handleEnhancePrompt = async () => {
+    if (!description.trim()) return;
+    setIsEnhancing(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enhance-prompt`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ prompt: description, mode: editMode }),
+        }
+      );
+      const data = await response.json();
+      if (data?.enhancedPrompt) {
+        setDescription(data.enhancedPrompt);
+        toast({ title: "Prompt enhanced ✨", description: "Your prompt has been improved for better results." });
+      }
+    } catch (err) {
+      console.error("Enhance error:", err);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
