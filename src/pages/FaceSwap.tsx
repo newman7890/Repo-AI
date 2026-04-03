@@ -93,7 +93,16 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
           <p className="text-muted-foreground text-[10px] mt-0.5 leading-tight">{description}</p>
         </div>
         <div className="flex flex-col gap-1.5 w-full px-1">
-          <Button variant="outline" size="sm" className="h-7 text-[10px] w-full" onClick={(e) => { e.stopPropagation(); cameraRef.current?.click(); }}>
+          <Button variant="outline" size="sm" className="h-7 text-[10px] w-full" onClick={async (e) => {
+            e.stopPropagation();
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              stream.getTracks().forEach(t => t.stop());
+              cameraRef.current?.click();
+            } catch {
+              toast.error("Camera access denied. Please allow camera permission in your browser settings.");
+            }
+          }}>
             <Camera className="w-3 h-3 mr-1" /> Camera
           </Button>
           <Button variant="outline" size="sm" className="h-7 text-[10px] w-full" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
