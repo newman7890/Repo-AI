@@ -10,7 +10,12 @@ import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { saveToHistory } from "@/components/HistoryGallery";
 
-type Step = "source" | "target" | "review";
+type Step = "source" | "faces" | "review";
+
+interface FaceSlot {
+  id: string;
+  image: string | null;
+}
 
 function compressImage(file: File, maxWidth = 1024, quality = 0.8): Promise<string> {
   return new Promise((resolve, reject) => {
