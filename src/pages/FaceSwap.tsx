@@ -123,7 +123,9 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
 
 const FaceSwap = () => {
   const [sourceImage, setSourceImage] = useState<string | null>(null);
-  const [targetImage, setTargetImage] = useState<string | null>(null);
+  const [faceSlots, setFaceSlots] = useState<FaceSlot[]>([
+    { id: "face-1", image: null },
+  ]);
   const [extraInstructions, setExtraInstructions] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -132,7 +134,23 @@ const FaceSwap = () => {
   const editHistory = useEditHistory();
   const currentEdit = editHistory.current;
 
-  const currentStep: Step = !sourceImage ? "source" : !targetImage ? "target" : "review";
+  const filledFaces = faceSlots.filter((s) => s.image !== null);
+  const allFacesFilled = faceSlots.every((s) => s.image !== null);
+  const currentStep: Step = !sourceImage ? "source" : !allFacesFilled ? "faces" : "review";
+
+  const addFaceSlot = () => {
+    if (faceSlots.length >= 4) return;
+    setFaceSlots((prev) => [...prev, { id: `face-${Date.now()}`, image: null }]);
+  };
+
+  const removeFaceSlot = (id: string) => {
+    if (faceSlots.length <= 1) return;
+    setFaceSlots((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const updateFaceSlot = (id: string, image: string | null) => {
+    setFaceSlots((prev) => prev.map((s) => (s.id === id ? { ...s, image } : s)));
+  };
 
   const handleSwap = async () => {
     if (!sourceImage || !targetImage) return;
