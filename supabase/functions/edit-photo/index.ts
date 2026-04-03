@@ -132,6 +132,12 @@ serve(async (req) => {
       contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
     }
 
+    if (additionalFaces && Array.isArray(additionalFaces)) {
+      for (const face of additionalFaces) {
+        contentParts.push({ type: "image_url", image_url: { url: face } });
+      }
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
