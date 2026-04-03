@@ -74,6 +74,21 @@ export const editModes: EditMode_Info[] = [
     ],
   },
   {
+    id: "object",
+    label: "Objects",
+    icon: <Eraser className="w-4 h-4" />,
+    description: "Remove or replace objects in your photo",
+    placeholder: "e.g. Remove the person in the background...",
+    presets: [
+      { label: "🗑️ Remove BG person", value: "remove all people in the background, keep the main subject" },
+      { label: "🚗 Remove car", value: "remove the car from the scene and fill with natural background" },
+      { label: "📝 Remove text", value: "remove all text and watermarks from the image" },
+      { label: "🔄 Replace sky", value: "replace the sky with a dramatic sunset sky" },
+      { label: "🪑 Remove furniture", value: "remove the furniture and show an empty clean room" },
+      { label: "🌳 Add tree", value: "add a large green tree on the left side of the scene" },
+    ],
+  },
+  {
     id: "custom",
     label: "Magic",
     icon: <Wand2 className="w-4 h-4" />,
