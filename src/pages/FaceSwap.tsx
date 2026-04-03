@@ -153,9 +153,13 @@ const FaceSwap = () => {
   };
 
   const handleSwap = async () => {
-    if (!sourceImage || !targetImage) return;
+    if (!sourceImage || filledFaces.length === 0) return;
     setIsProcessing(true);
     abortRef.current = new AbortController();
+
+    const multiDesc = filledFaces.length > 1
+      ? `Swap ${filledFaces.length} different faces onto the ${filledFaces.length} most prominent people in the main photo. Each reference face should be applied to a different person. ${extraInstructions}`
+      : extraInstructions;
 
     try {
       const response = await fetch(
@@ -168,10 +172,11 @@ const FaceSwap = () => {
           },
           body: JSON.stringify({
             imageBase64: sourceImage,
-            description: extraInstructions,
+            description: multiDesc,
             mode: "faceswap",
             quality: "high",
-            referenceImage: targetImage,
+            referenceImage: filledFaces[0].image,
+            ...(filledFaces.length > 1 && { additionalFaces: filledFaces.slice(1).map((f) => f.image) }),
           }),
           signal: abortRef.current.signal,
         }
@@ -182,8 +187,9 @@ const FaceSwap = () => {
       if (data?.error) throw new Error(data.error);
 
       if (data?.resultImage) {
-        editHistory.push({ resultImage: data.resultImage, description: "Face swap", mode: "faceswap" });
-        saveToHistory({ originalImage: sourceImage, resultImage: data.resultImage, description: "Face swap", mode: "faceswap" });
+        const desc = filledFaces.length > 1 ? `Multi-face swap (${filledFaces.length} faces)` : "Face swap";
+        editHistory.push({ resultImage: data.resultImage, description: desc, mode: "faceswap" });
+        saveToHistory({ originalImage: sourceImage, resultImage: data.resultImage, description: desc, mode: "faceswap" });
         toast({ title: "Face swapped! 🎭", description: "Your face swap is ready." });
       } else {
         throw new Error("No image returned");
