@@ -1,5 +1,6 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Upload, Camera } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 interface ImageUploadProps {
@@ -95,7 +96,16 @@ const ImageUpload = ({ onImageSelect, currentImage }: ImageUploadProps) => {
           variant="outline"
           size="sm"
           className="h-8 text-xs"
-          onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
+          onClick={async (e) => {
+            e.stopPropagation();
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              stream.getTracks().forEach(t => t.stop());
+              cameraInputRef.current?.click();
+            } catch {
+              toast.error("Camera access denied. Please allow camera permission in your browser settings.");
+            }
+          }}
         >
           <Camera className="w-3.5 h-3.5 mr-1" /> Camera
         </Button>
