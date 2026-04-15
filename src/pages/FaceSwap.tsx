@@ -132,10 +132,12 @@ const FaceSwap = () => {
   ]);
   const [extraInstructions, setExtraInstructions] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const editHistory = useEditHistory();
+  const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
   const currentEdit = editHistory.current;
 
   const filledFaces = faceSlots.filter((s) => s.image !== null);
@@ -184,7 +186,13 @@ const FaceSwap = () => {
       );
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || `Server error (${response.status})`);
+      if (!response.ok) {
+        if (data?.error === "insufficient_credits") {
+          setShowPaywall(true);
+          return;
+        }
+        throw new Error(data?.error || `Server error (${response.status})`);
+      }
       if (data?.error) throw new Error(data.error);
 
       if (data?.resultImage) {
@@ -224,19 +232,22 @@ const FaceSwap = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-4 pt-4 pb-3">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
-              <Repeat className="w-4 h-4 text-accent" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
+                <Repeat className="w-4 h-4 text-accent" />
+              </div>
+              <div>
+                <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
+                <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
+              </div>
             </div>
           </div>
+          <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
         </div>
       </header>
 
@@ -413,6 +424,7 @@ const FaceSwap = () => {
           </>
         )}
       </main>
+      <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
     </div>
   );
 };
