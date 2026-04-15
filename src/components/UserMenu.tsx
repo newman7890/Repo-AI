@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Settings, BarChart3, LogOut } from "lucide-react";
+import { Settings, BarChart3, LogOut, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,12 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { useUserCredits } from "@/hooks/useUserCredits";
+import PaywallModal from "@/components/PaywallModal";
 
 const UserMenu = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin } = useIsAdmin();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { credits } = useUserCredits();
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -31,6 +35,7 @@ const UserMenu = () => {
   };
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-lg h-8 w-8">
@@ -38,6 +43,15 @@ const UserMenu = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
+        {!credits?.is_premium && (
+          <>
+            <DropdownMenuItem onClick={() => setShowPaywall(true)} className="gap-2 cursor-pointer text-primary font-semibold">
+              <Crown className="w-4 h-4" />
+              Upgrade to Premium
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         {isAdmin && (
           <>
             <DropdownMenuItem onClick={() => navigate("/admin")} className="gap-2 cursor-pointer">
@@ -57,6 +71,8 @@ const UserMenu = () => {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
+    </>
   );
 };
 
