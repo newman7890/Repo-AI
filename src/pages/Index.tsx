@@ -133,27 +133,24 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-4 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
-              <Wand2 className="w-4 h-4 text-white" />
+      <header className="px-3 pt-3 pb-2">
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-3.5 h-3.5 text-white" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base font-bold tracking-tight leading-tight">Renderme AI</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">AI Photo Editor</p>
-            </div>
+            <h1 className="text-sm font-bold tracking-tight leading-tight truncate">Renderme AI</h1>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => navigate("/face-swap")}
-              className="gap-1 rounded-lg text-[11px] h-8 px-2.5"
+              className="rounded-lg h-8 w-8"
+              title="Face Swap"
             >
               <Repeat className="w-3.5 h-3.5" />
-              Swap
             </Button>
             <HistoryGallery onSelect={handleHistorySelect} />
             <UserMenu />
