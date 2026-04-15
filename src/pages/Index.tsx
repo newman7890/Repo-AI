@@ -12,7 +12,7 @@ import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import PromptImageAttachment from "@/components/PromptImageAttachment";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,7 @@ const Index = () => {
   const [description, setDescription] = useState("");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isEnhancing, setIsEnhancing] = useState(false);
+  
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const editHistory = useEditHistory();
@@ -120,29 +120,6 @@ const Index = () => {
     setEditMode(item.mode as EditMode);
   };
 
-  const handleEnhancePrompt = async () => {
-    if (!description.trim()) return;
-    setIsEnhancing(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enhance-prompt`,
-        {
-          method: "POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ prompt: description, mode: editMode }),
-        }
-      );
-      const data = await response.json();
-      if (data?.enhancedPrompt) {
-        setDescription(data.enhancedPrompt);
-        toast({ title: "Prompt enhanced ✨", description: "Your prompt has been improved for better results." });
-      }
-    } catch (err) {
-      console.error("Enhance error:", err);
-    } finally {
-      setIsEnhancing(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -231,27 +208,6 @@ const Index = () => {
                     <label className="text-xs font-semibold text-foreground">
                       Or describe it yourself
                     </label>
-                    {description.trim() && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={handleEnhancePrompt}
-                            disabled={isEnhancing}
-                            className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
-                          >
-                            {isEnhancing ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Zap className="w-3 h-3" />
-                            )}
-                            Enhance
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                          <p>AI will improve your prompt for better results</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
                   </div>
                   <Textarea
                     placeholder={currentMode.placeholder}
