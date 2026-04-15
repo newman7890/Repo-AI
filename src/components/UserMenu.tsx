@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { useUserCredits } from "@/hooks/useUserCredits";
+import PaywallModal from "@/components/PaywallModal";
 
 const UserMenu = () => {
   const navigate = useNavigate();
