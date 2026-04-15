@@ -13,6 +13,7 @@ import { saveToHistory } from "@/components/HistoryGallery";
 import CreditsBadge from "@/components/CreditsBadge";
 import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
+import UserMenu from "@/components/UserMenu";
 
 type Step = "source" | "faces" | "review";
 
@@ -248,7 +249,10 @@ const FaceSwap = () => {
               </div>
             </div>
           </div>
-          <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
+          <div className="flex items-center gap-1">
+            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
+            <UserMenu />
+          </div>
         </div>
       </header>
 

@@ -15,6 +15,7 @@ import PromptImageAttachment from "@/components/PromptImageAttachment";
 import CreditsBadge from "@/components/CreditsBadge";
 import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
+import UserMenu from "@/components/UserMenu";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
@@ -155,6 +156,7 @@ const Index = () => {
               Swap
             </Button>
             <HistoryGallery onSelect={handleHistorySelect} />
+            <UserMenu />
           </div>
         </div>
       </header>
