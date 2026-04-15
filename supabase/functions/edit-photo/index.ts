@@ -9,9 +9,20 @@ const corsHeaders = {
 
 const VALID_MODES = ["background", "clothing", "object", "action", "headshot", "faceswap", "custom"];
 const VALID_QUALITIES = ["fast", "high", "ultra"];
-const MAX_BASE64_SIZE = 5_000_000; // ~3.75MB decoded
+const MAX_BASE64_SIZE = 5_000_000;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_ADDITIONAL_FACES = 3;
+
+// Token costs per quality/mode
+function getTokenCost(mode: string, quality: string): number {
+  if (mode === "faceswap") return 5;
+  switch (quality) {
+    case "fast": return 1;
+    case "high": return 2;
+    case "ultra": return 3;
+    default: return 2;
+  }
+}
 
 const REALISM_REQUIREMENTS = `
 
@@ -190,11 +201,41 @@ serve(async (req) => {
       });
     }
 
+    // --- Check & Deduct Credits ---
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const tokenCost = getTokenCost(mode, quality);
+    const { data: creditResult, error: creditError } = await supabaseAdmin.rpc("check_and_deduct_credits", {
+      p_user_id: user.id,
+      p_token_cost: tokenCost,
+    });
+
+    if (creditError) {
+      console.error("Credit check error:", creditError);
+      return new Response(JSON.stringify({ error: "Failed to check credits. Please try again." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!creditResult?.allowed) {
+      return new Response(JSON.stringify({ 
+        error: "insufficient_credits",
+        message: "You've used all your free trials. Upgrade to Premium to continue editing!",
+        tokens: creditResult?.tokens || 0,
+        is_premium: creditResult?.is_premium || false,
+      }), {
+        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const hasReferenceImage = !!referenceImage;
     const prompt = buildPrompt(mode, description || "", hasReferenceImage);
     const model = getModelForQuality(quality);
 
-    console.log(`Processing for user ${user.id} with model: ${model}, mode: ${mode}, quality: ${quality}`);
+    console.log(`Processing for user ${user.id} with model: ${model}, mode: ${mode}, quality: ${quality}, cost: ${tokenCost}, creditType: ${creditResult.used}`);
 
     const contentParts: any[] = [
       { type: "text", text: prompt },
@@ -225,6 +266,17 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      // Refund credits on AI failure
+      try {
+        if (creditResult.used === "trial") {
+          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", user.id);
+        } else if (creditResult.used === "tokens") {
+          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", user.id);
+        }
+      } catch (refundErr) {
+        console.error("Failed to refund credits:", refundErr);
+      }
+
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment and try again." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -246,6 +298,16 @@ serve(async (req) => {
     const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!generatedImage) {
+      // Refund on no image
+      try {
+        if (creditResult.used === "trial") {
+          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", user.id);
+        } else if (creditResult.used === "tokens") {
+          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", user.id);
+        }
+      } catch (refundErr) {
+        console.error("Failed to refund credits:", refundErr);
+      }
       return new Response(JSON.stringify({ error: "No image was generated. Try a different description." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -253,10 +315,6 @@ serve(async (req) => {
 
     // Log usage
     try {
-      const supabaseAdmin = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-      );
       await supabaseAdmin.from("ai_usage_logs").insert({
         user_id: user.id,
         function_name: "edit-photo",
@@ -268,7 +326,12 @@ serve(async (req) => {
       console.error("Failed to log usage:", logErr);
     }
 
-    return new Response(JSON.stringify({ resultImage: generatedImage }), {
+    return new Response(JSON.stringify({ 
+      resultImage: generatedImage,
+      creditsUsed: creditResult.used,
+      remainingTrials: creditResult.remaining_trials,
+      remainingTokens: creditResult.tokens,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
