@@ -135,11 +135,11 @@ const Index = () => {
       {/* Header */}
       <header className="px-3 pt-3 pb-2">
         <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
-              <Wand2 className="w-3.5 h-3.5 text-white" />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-3 h-3 text-white" />
             </div>
-            <h1 className="text-sm font-bold tracking-tight leading-tight truncate">Renderme AI</h1>
+            <h1 className="text-xs font-bold tracking-tight truncate">Renderme AI</h1>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
