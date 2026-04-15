@@ -256,6 +256,7 @@ const Index = () => {
           </>
         )}
       </main>
+      <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
     </div>
   );
 };
