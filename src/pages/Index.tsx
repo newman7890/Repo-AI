@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Sparkles, Loader2, Wand2, Repeat, Zap } from "lucide-react";
+import { getAuthHeaders } from "@/lib/auth-headers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -50,10 +51,7 @@ const Index = () => {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/edit-photo`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({ imageBase64: image, description, mode: editMode, quality, referenceImage }),
           signal: abortControllerRef.current.signal,
         }
@@ -130,10 +128,7 @@ const Index = () => {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enhance-prompt`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({ prompt: description, mode: editMode }),
         }
       );

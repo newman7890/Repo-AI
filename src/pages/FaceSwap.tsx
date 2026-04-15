@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
 import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -166,10 +167,7 @@ const FaceSwap = () => {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/edit-photo`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({
             imageBase64: sourceImage,
             description: multiDesc,
