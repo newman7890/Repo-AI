@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_credits: {
+        Row: {
+          created_at: string
+          id: string
+          is_premium: boolean
+          tokens: number
+          trial_uses_remaining: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_premium?: boolean
+          tokens?: number
+          trial_uses_remaining?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_premium?: boolean
+          tokens?: number
+          trial_uses_remaining?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -67,6 +97,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_deduct_credits: {
+        Args: { p_token_cost: number; p_user_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

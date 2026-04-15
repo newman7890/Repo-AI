@@ -12,7 +12,9 @@ import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import PromptImageAttachment from "@/components/PromptImageAttachment";
-
+import CreditsBadge from "@/components/CreditsBadge";
+import PaywallModal from "@/components/PaywallModal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +27,11 @@ const Index = () => {
   const [description, setDescription] = useState("");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const [showPaywall, setShowPaywall] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const editHistory = useEditHistory();
+  const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
 
   const currentMode = editModes.find((m) => m.id === editMode)!;
   const currentEdit = editHistory.current;
@@ -60,6 +63,10 @@ const Index = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data?.error === "insufficient_credits") {
+          setShowPaywall(true);
+          return;
+        }
         throw new Error(data?.error || `Server error (${response.status})`);
       }
 
@@ -70,6 +77,7 @@ const Index = () => {
       if (data?.resultImage) {
         editHistory.push({ resultImage: data.resultImage, description, mode: editMode });
         saveToHistory({ originalImage: image!, resultImage: data.resultImage, description, mode: editMode });
+        refreshCredits();
         toast({ title: "Done! ✨", description: "Your edited photo is ready." });
       } else {
         throw new Error("No image returned");
@@ -136,6 +144,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <Button
               variant="outline"
               size="sm"
@@ -247,6 +256,7 @@ const Index = () => {
           </>
         )}
       </main>
+      <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
     </div>
   );
 };
