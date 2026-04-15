@@ -12,6 +12,7 @@ import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import PromptImageAttachment from "@/components/PromptImageAttachment";
+import UserMenu from "@/components/UserMenu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
@@ -169,6 +170,7 @@ const Index = () => {
               Swap
             </Button>
             <HistoryGallery onSelect={handleHistorySelect} />
+            <UserMenu />
           </div>
         </div>
       </header>
