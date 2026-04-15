@@ -20,6 +20,8 @@ const UserMenu = () => {
   const { toast } = useToast();
   const { isAdmin } = useIsAdmin();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { credits } = useUserCredits();
 
   const handleLogout = async () => {
     setLoggingOut(true);
