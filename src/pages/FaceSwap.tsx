@@ -199,6 +199,7 @@ const FaceSwap = () => {
         const desc = filledFaces.length > 1 ? `Multi-face swap (${filledFaces.length} faces)` : "Face swap";
         editHistory.push({ resultImage: data.resultImage, description: desc, mode: "faceswap" });
         saveToHistory({ originalImage: sourceImage, resultImage: data.resultImage, description: desc, mode: "faceswap" });
+        refreshCredits();
         toast({ title: "Face swapped! 🎭", description: "Your face swap is ready." });
       } else {
         throw new Error("No image returned");
