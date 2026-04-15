@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const VALID_MODES = ["background", "clothing", "object", "action", "headshot", "faceswap", "custom"];
+const VALID_QUALITIES = ["fast", "high", "ultra"];
+const MAX_BASE64_SIZE = 5_000_000; // ~3.75MB decoded
+const MAX_DESCRIPTION_LENGTH = 2000;
+const MAX_ADDITIONAL_FACES = 3;
 
 const REALISM_REQUIREMENTS = `
 
@@ -96,32 +103,98 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, description, mode = "background", quality = "high", referenceImage, additionalFaces } = await req.json();
-
-    if (!imageBase64 || (!description.trim() && mode !== "faceswap")) {
-      return new Response(
-        JSON.stringify({ error: "Image and description are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!
+    );
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(
+      authHeader.replace("Bearer ", "")
+    );
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
+    // --- Parse & Validate Input ---
+    const body = await req.json();
+    const { imageBase64, description, mode = "background", quality = "high", referenceImage, additionalFaces } = body;
+
+    if (!VALID_MODES.includes(mode)) {
+      return new Response(JSON.stringify({ error: "Invalid edit mode" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!VALID_QUALITIES.includes(quality)) {
+      return new Response(JSON.stringify({ error: "Invalid quality setting" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!imageBase64 || typeof imageBase64 !== "string") {
+      return new Response(JSON.stringify({ error: "Image is required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (imageBase64.length > MAX_BASE64_SIZE) {
+      return new Response(JSON.stringify({ error: "Image is too large (max ~3.75MB)" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (description && typeof description === "string" && description.length > MAX_DESCRIPTION_LENGTH) {
+      return new Response(JSON.stringify({ error: `Description too long (max ${MAX_DESCRIPTION_LENGTH} chars)` }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!description?.trim() && mode !== "faceswap") {
+      return new Response(JSON.stringify({ error: "Description is required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (mode === "faceswap" && !referenceImage) {
-      return new Response(
-        JSON.stringify({ error: "A reference face image is required for face swap" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "A reference face image is required for face swap" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (referenceImage && typeof referenceImage === "string" && referenceImage.length > MAX_BASE64_SIZE) {
+      return new Response(JSON.stringify({ error: "Reference image is too large" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (additionalFaces && (!Array.isArray(additionalFaces) || additionalFaces.length > MAX_ADDITIONAL_FACES)) {
+      return new Response(JSON.stringify({ error: `Max ${MAX_ADDITIONAL_FACES} additional faces allowed` }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (additionalFaces) {
+      for (const face of additionalFaces) {
+        if (typeof face !== "string" || face.length > MAX_BASE64_SIZE) {
+          return new Response(JSON.stringify({ error: "Additional face image is too large or invalid" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.error("LOVABLE_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: "Service configuration error. Please try again later." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const hasReferenceImage = !!referenceImage;
-    const prompt = buildPrompt(mode, description, hasReferenceImage);
+    const prompt = buildPrompt(mode, description || "", hasReferenceImage);
     const model = getModelForQuality(quality);
 
-    console.log(`Processing with model: ${model}, mode: ${mode}, quality: ${quality}, hasRef: ${hasReferenceImage}`);
+    console.log(`Processing for user ${user.id} with model: ${model}, mode: ${mode}, quality: ${quality}`);
 
     const contentParts: any[] = [
       { type: "text", text: prompt },
@@ -146,55 +219,45 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model,
-        messages: [
-          {
-            role: "user",
-            content: contentParts,
-          },
-        ],
+        messages: [{ role: "user", content: contentParts }],
         modalities: ["image", "text"],
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Too many requests. Please wait a moment and try again." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment and try again." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Usage limit reached. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "Usage limit reached. Please add credits to continue." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to process image" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to process image. Please try again." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
     const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!generatedImage) {
-      return new Response(
-        JSON.stringify({ error: "No image was generated. Try a different description." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "No image was generated. Try a different description." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(
-      JSON.stringify({ resultImage: generatedImage }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ resultImage: generatedImage }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error("edit-photo error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "An internal error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
