@@ -10,6 +10,9 @@ import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { saveToHistory } from "@/components/HistoryGallery";
+import CreditsBadge from "@/components/CreditsBadge";
+import PaywallModal from "@/components/PaywallModal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 type Step = "source" | "faces" | "review";
 
