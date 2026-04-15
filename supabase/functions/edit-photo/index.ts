@@ -251,6 +251,23 @@ serve(async (req) => {
       });
     }
 
+    // Log usage
+    try {
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      await supabaseAdmin.from("ai_usage_logs").insert({
+        user_id: user.id,
+        function_name: "edit-photo",
+        model,
+        mode,
+        quality,
+      });
+    } catch (logErr) {
+      console.error("Failed to log usage:", logErr);
+    }
+
     return new Response(JSON.stringify({ resultImage: generatedImage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
