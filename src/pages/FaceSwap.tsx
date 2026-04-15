@@ -166,10 +166,7 @@ const FaceSwap = () => {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/edit-photo`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers: await getAuthHeaders(),
           body: JSON.stringify({
             imageBase64: sourceImage,
             description: multiDesc,
