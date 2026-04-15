@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
 import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2 } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -221,19 +222,22 @@ const FaceSwap = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-4 pt-4 pb-3">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
-              <Repeat className="w-4 h-4 text-accent" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
+                <Repeat className="w-4 h-4 text-accent" />
+              </div>
+              <div>
+                <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
+                <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
+              </div>
             </div>
           </div>
+          <UserMenu />
         </div>
       </header>
 
