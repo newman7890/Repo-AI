@@ -63,6 +63,10 @@ const Index = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data?.error === "insufficient_credits") {
+          setShowPaywall(true);
+          return;
+        }
         throw new Error(data?.error || `Server error (${response.status})`);
       }
 
@@ -73,6 +77,7 @@ const Index = () => {
       if (data?.resultImage) {
         editHistory.push({ resultImage: data.resultImage, description, mode: editMode });
         saveToHistory({ originalImage: image!, resultImage: data.resultImage, description, mode: editMode });
+        refreshCredits();
         toast({ title: "Done! ✨", description: "Your edited photo is ready." });
       } else {
         throw new Error("No image returned");
@@ -139,6 +144,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <Button
               variant="outline"
               size="sm"
