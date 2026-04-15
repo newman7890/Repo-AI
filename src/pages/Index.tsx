@@ -12,7 +12,9 @@ import ResultDisplay from "@/components/ResultDisplay";
 import ProcessingSkeleton from "@/components/ProcessingSkeleton";
 import HistoryGallery, { saveToHistory, type HistoryItem } from "@/components/HistoryGallery";
 import PromptImageAttachment from "@/components/PromptImageAttachment";
-
+import CreditsBadge from "@/components/CreditsBadge";
+import PaywallModal from "@/components/PaywallModal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate } from "react-router-dom";
