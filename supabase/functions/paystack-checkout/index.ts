@@ -7,6 +7,53 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const PLAN_NAME = "Renderme AI Premium";
+const PLAN_AMOUNT = 10000; // 100 GHS in pesewas
+const PLAN_INTERVAL = "monthly";
+const PLAN_CURRENCY = "GHS";
+
+async function getOrCreatePlan(secretKey: string): Promise<string> {
+  // List existing plans to find ours
+  const listRes = await fetch("https://api.paystack.co/plan", {
+    headers: { Authorization: `Bearer ${secretKey}` },
+  });
+  const listData = await listRes.json();
+
+  if (listData.status && listData.data) {
+    const existing = listData.data.find(
+      (p: any) => p.name === PLAN_NAME && p.interval === PLAN_INTERVAL && p.amount === PLAN_AMOUNT
+    );
+    if (existing) {
+      console.log("Found existing plan:", existing.plan_code);
+      return existing.plan_code;
+    }
+  }
+
+  // Create new plan
+  const createRes = await fetch("https://api.paystack.co/plan", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: PLAN_NAME,
+      amount: PLAN_AMOUNT,
+      interval: PLAN_INTERVAL,
+      currency: PLAN_CURRENCY,
+      description: "100 AI tokens per month, all edit modes & qualities, priority processing",
+    }),
+  });
+  const createData = await createRes.json();
+
+  if (!createData.status) {
+    throw new Error(`Failed to create plan: ${createData.message}`);
+  }
+
+  console.log("Created new plan:", createData.data.plan_code);
+  return createData.data.plan_code;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -41,9 +88,10 @@ serve(async (req) => {
       });
     }
 
-    const { plan } = await req.json();
+    // Get or create the recurring plan
+    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
 
-    // Initialize Paystack transaction
+    // Initialize transaction with the plan
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -52,12 +100,13 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email: user.email,
-        amount: plan === "premium" ? 10000 : 10000, // 100 GHS in pesewas
-        currency: "GHS",
+        amount: PLAN_AMOUNT,
+        currency: PLAN_CURRENCY,
+        plan: planCode,
         callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
         metadata: {
           user_id: user.id,
-          plan: plan || "premium",
+          plan: "premium",
         },
       }),
     });
