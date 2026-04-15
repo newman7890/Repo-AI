@@ -52,8 +52,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email: user.email,
-        amount: plan === "premium" ? 1000 : 1000, // $10.00 in cents
-        currency: "USD",
+        amount: plan === "premium" ? 10000 : 10000, // 100 GHS in pesewas
+        currency: "GHS",
         callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
         metadata: {
           user_id: user.id,
