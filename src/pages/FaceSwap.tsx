@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
 import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
