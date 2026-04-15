@@ -35,6 +35,7 @@ const UserMenu = () => {
   };
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-lg h-8 w-8">
