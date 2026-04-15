@@ -103,6 +103,22 @@ Rules:
       });
     }
 
+    // Log usage
+    try {
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      await supabaseAdmin.from("ai_usage_logs").insert({
+        user_id: user.id,
+        function_name: "enhance-prompt",
+        model: "google/gemini-2.5-flash-lite",
+        mode: mode || "general",
+      });
+    } catch (logErr) {
+      console.error("Failed to log usage:", logErr);
+    }
+
     return new Response(
       JSON.stringify({ enhancedPrompt: enhanced }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
