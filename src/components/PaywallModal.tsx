@@ -1,4 +1,5 @@
-import { Crown, Zap, Shield, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Crown, Zap, Shield, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,6 +8,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { getAuthHeaders } from "@/lib/auth-headers";
+import { useToast } from "@/hooks/use-toast";
 
 interface PaywallModalProps {
   open: boolean;
@@ -14,6 +17,41 @@ interface PaywallModalProps {
 }
 
 const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-checkout`,
+        {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ plan: "premium" }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to start checkout");
+      }
+
+      // Redirect to Paystack checkout page
+      window.location.href = data.authorization_url;
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      toast({
+        title: "Payment error",
+        description: err.message || "Could not start checkout. Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm mx-auto">
@@ -31,7 +69,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           <div className="bg-card rounded-xl border border-border p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-lg font-bold">Premium</span>
-              <span className="text-lg font-bold text-primary">$10<span className="text-xs text-muted-foreground font-normal">/month</span></span>
+              <span className="text-lg font-bold text-primary">₦10,000<span className="text-xs text-muted-foreground font-normal">/month</span></span>
             </div>
             <ul className="space-y-2">
               {[
@@ -56,13 +94,20 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
 
         <Button
           className="w-full h-11 font-bold rounded-xl"
-          onClick={() => {
-            // TODO: Connect to payment provider
-            window.open("https://renderme-ai.lovable.app/premium", "_blank");
-          }}
+          onClick={handleSubscribe}
+          disabled={loading}
         >
-          <Crown className="w-4 h-4 mr-2" />
-          Subscribe — $10/month
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Connecting to Paystack...
+            </>
+          ) : (
+            <>
+              <Crown className="w-4 h-4 mr-2" />
+              Subscribe — ₦10,000/month
+            </>
+          )}
         </Button>
       </DialogContent>
     </Dialog>
