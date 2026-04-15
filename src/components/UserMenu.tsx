@@ -70,6 +70,8 @@ const UserMenu = () => {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
+    </>
   );
 };
 
