@@ -42,6 +42,15 @@ const UserMenu = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
+        {!credits?.is_premium && (
+          <>
+            <DropdownMenuItem onClick={() => setShowPaywall(true)} className="gap-2 cursor-pointer text-primary font-semibold">
+              <Crown className="w-4 h-4" />
+              Upgrade to Premium
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         {isAdmin && (
           <>
             <DropdownMenuItem onClick={() => navigate("/admin")} className="gap-2 cursor-pointer">
