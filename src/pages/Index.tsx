@@ -31,6 +31,7 @@ const Index = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const editHistory = useEditHistory();
+  const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
 
   const currentMode = editModes.find((m) => m.id === editMode)!;
   const currentEdit = editHistory.current;
