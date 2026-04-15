@@ -52,8 +52,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email: user.email,
-        amount: plan === "premium" ? 1000000 : 1000000, // 10,000 NGN in kobo (≈$10). Adjust as needed.
-        currency: "NGN",
+        amount: plan === "premium" ? 1000 : 1000, // $10.00 in cents
+        currency: "USD",
         callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
         metadata: {
           user_id: user.id,
