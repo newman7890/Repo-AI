@@ -157,21 +157,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-3 pt-3 pb-2">
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
-              <Wand2 className="w-3 h-3 text-white" />
+      <header className="px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
+        <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-1.5 md:gap-3">
+          <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">
+            <div className="w-7 h-7 md:w-9 md:h-9 rounded-md md:rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Wand2 className="w-3 h-3 md:w-4 md:h-4 text-white" />
             </div>
-            <h1 className="text-xs font-bold tracking-tight truncate">Renderme AI</h1>
+            <h1 className="text-xs md:text-base font-bold tracking-tight truncate">Renderme AI</h1>
           </div>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 md:gap-2 shrink-0">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <Button
               variant="outline"
               size="icon"
               onClick={() => navigate("/face-swap")}
-              className="rounded-lg h-8 w-8"
+              className="rounded-lg h-8 w-8 md:h-9 md:w-9"
               title="Face Swap"
             >
               <Repeat className="w-3.5 h-3.5" />
@@ -183,7 +183,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 pb-6 flex flex-col gap-4">
+      <main className="flex-1 px-4 pb-6 md:px-6 md:pb-10 flex flex-col gap-4 md:gap-6 max-w-6xl mx-auto w-full">
         {/* Blocked User Banner */}
         {credits?.blocked && (
           <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
