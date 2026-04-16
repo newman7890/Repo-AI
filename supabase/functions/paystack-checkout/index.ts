@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const PLAN_NAME = "Renderme AI Premium";
-const PLAN_AMOUNT = 16000; // GHS 160 (~$10 USD) in pesewas
+const PLAN_AMOUNT = 10000; // GHS 100 in pesewas
 const PLAN_INTERVAL = "monthly";
 const PLAN_CURRENCY = "GHS";
 
