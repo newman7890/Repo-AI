@@ -7,6 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-paystack-signature",
 };
 
+// Map plan amounts (pesewas) to token counts as fallback
+const AMOUNT_TO_TOKENS: Record<number, number> = {
+  5000: 50,
+  10000: 100,
+  20000: 200,
+  50000: 500,
+};
+
 async function verifySignature(body: string, signature: string, secretKey: string): Promise<boolean> {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -26,6 +34,15 @@ async function verifySignature(body: string, signature: string, secretKey: strin
   );
 }
 
+function resolveTokens(metadata: any, amount: number): number {
+  // Prefer metadata.tokens (set during checkout)
+  if (metadata?.tokens && typeof metadata.tokens === "number" && metadata.tokens > 0) {
+    return metadata.tokens;
+  }
+  // Fallback to amount mapping
+  return AMOUNT_TO_TOKENS[amount] || 100;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -33,9 +50,7 @@ serve(async (req) => {
 
   try {
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
-    if (!PAYSTACK_SECRET_KEY) {
-      throw new Error("PAYSTACK_SECRET_KEY is not configured");
-    }
+    if (!PAYSTACK_SECRET_KEY) throw new Error("PAYSTACK_SECRET_KEY is not configured");
 
     const body = await req.text();
     const signature = req.headers.get("x-paystack-signature") || "";
@@ -58,7 +73,6 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Idempotency: check if this event was already processed using the transaction reference
     const reference = event.data?.reference;
     if (reference) {
       const { data: existing } = await supabase
@@ -83,28 +97,23 @@ serve(async (req) => {
         return new Response("OK", { status: 200, headers: corsHeaders });
       }
 
-      // Verify the amount matches expected plan
-      const expectedAmount = 10000;
-      if (event.data?.amount && event.data.amount < expectedAmount) {
-        console.error(`Webhook amount mismatch: expected>=${expectedAmount} got=${event.data.amount}`);
-        return new Response("OK", { status: 200, headers: corsHeaders });
-      }
+      const amount = event.data?.amount || 0;
+      const tokens = resolveTokens(metadata, amount);
 
-      // Record as processed
       if (reference) {
         await supabase.from("processed_payments").insert({
           reference,
           user_id: userId,
           event_type: `webhook:${event.event}`,
-          amount: event.data?.amount,
+          amount,
           currency: event.data?.currency,
-        }).catch(() => {}); // ignore duplicate
+        }).catch(() => {});
       }
 
       const { error } = await supabase
         .from("user_credits")
         .update({
-          tokens: 100,
+          tokens,
           is_premium: true,
           updated_at: new Date().toISOString(),
         })
@@ -115,7 +124,7 @@ serve(async (req) => {
         throw error;
       }
 
-      console.log(`Premium activated for user ${userId}`);
+      console.log(`Premium activated for user ${userId} with ${tokens} tokens`);
     }
 
     if (event.event === "invoice.payment_succeeded") {
@@ -123,12 +132,15 @@ serve(async (req) => {
       const userId = metadata.user_id;
 
       if (userId) {
+        const amount = event.data?.amount || 0;
+        const tokens = resolveTokens(metadata, amount);
+
         if (reference) {
           await supabase.from("processed_payments").insert({
             reference,
             user_id: userId,
             event_type: `webhook:${event.event}`,
-            amount: event.data?.amount,
+            amount,
             currency: event.data?.currency,
           }).catch(() => {});
         }
@@ -136,13 +148,13 @@ serve(async (req) => {
         const { error } = await supabase
           .from("user_credits")
           .update({
-            tokens: 100,
+            tokens,
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", userId);
 
         if (error) console.error("Error refilling tokens:", error);
-        else console.log(`Tokens refilled for user ${userId}`);
+        else console.log(`Tokens refilled for user ${userId}: ${tokens}`);
       }
     }
 
