@@ -121,7 +121,12 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
             </div>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-3">
+          <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+            <p className="text-[11px] text-muted-foreground text-center">
+              {paymentMethod === "card"
+                ? "Card starts an auto-renewing monthly subscription."
+                : "Mobile Money charges once now. Users can renew manually each month."}
+            </p>
             <p className="text-[11px] text-muted-foreground text-center">
               <strong>Token costs:</strong> Fast = 1 · High = 2 · Ultra = 3 · Face Swap = 5
             </p>
@@ -145,7 +150,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               ) : (
                 <CreditCard className="w-4 h-4 mr-2" />
               )}
-              Subscribe — GHS 100/month
+              {paymentMethod === "mobile_money"
+                ? "Pay once — GHS 100"
+                : "Subscribe — GHS 100/month"}
             </>
           )}
         </Button>
