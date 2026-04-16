@@ -8,9 +8,9 @@ const corsHeaders = {
 };
 
 const PLAN_NAME = "Renderme AI Premium";
-const PLAN_AMOUNT = 1000; // $10 USD in cents
+const PLAN_AMOUNT = 16000; // GHS 160 (~$10 USD) in pesewas
 const PLAN_INTERVAL = "monthly";
-const PLAN_CURRENCY = "USD";
+const PLAN_CURRENCY = "GHS";
 
 async function getOrCreatePlan(secretKey: string): Promise<string> {
   const listRes = await fetch("https://api.paystack.co/plan", {
