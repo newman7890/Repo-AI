@@ -97,26 +97,29 @@ serve(async (req) => {
       // No body or invalid JSON, use default
     }
 
-    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
+    const callbackUrl = `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`;
 
-    // Only restrict channels if mobile_money is specifically chosen AND active on the account
-    // Otherwise let Paystack show all available methods
     const txBody: Record<string, any> = {
       email: user.email,
       amount: PLAN_AMOUNT,
       currency: PLAN_CURRENCY,
-      plan: planCode,
-      callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
+      callback_url: callbackUrl,
       metadata: {
         user_id: user.id,
         plan: "premium",
         payment_method: paymentMethod,
+        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
       },
     };
 
-    // Only add channels filter for card (always available); skip for mobile_money to avoid "no active channel" error
     if (paymentMethod === "card") {
+      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
+      txBody.plan = planCode;
       txBody.channels = ["card"];
+    } else {
+      // Mobile Money should use a one-time checkout flow rather than a recurring plan subscription.
+      // We intentionally omit `plan` here because Paystack recurring plans rely on card authorization.
+      txBody.channels = ["mobile_money"];
     }
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
