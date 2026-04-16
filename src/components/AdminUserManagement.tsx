@@ -15,6 +15,7 @@ interface UserCredit {
   created_at: string;
   updated_at: string;
   email?: string;
+  device_info?: string;
 }
 
 type Filter = "all" | "premium" | "blocked";
@@ -35,7 +36,7 @@ const AdminUserManagement = () => {
         .order("created_at", { ascending: false }),
       supabase
         .from("profiles")
-        .select("user_id, email"),
+        .select("user_id, email, device_info"),
     ]);
 
     if (creditsRes.error) {
@@ -46,13 +47,16 @@ const AdminUserManagement = () => {
     }
 
     const emailMap = new Map<string, string>();
-    (profilesRes.data || []).forEach((p: { user_id: string; email: string | null }) => {
+    const deviceMap = new Map<string, string>();
+    (profilesRes.data || []).forEach((p: { user_id: string; email: string | null; device_info: string | null }) => {
       if (p.email) emailMap.set(p.user_id, p.email);
+      if (p.device_info) deviceMap.set(p.user_id, p.device_info);
     });
 
     const merged = (creditsRes.data || []).map(u => ({
       ...u,
       email: emailMap.get(u.user_id) || undefined,
+      device_info: deviceMap.get(u.user_id) || undefined,
     }));
 
     setUsers(merged);
