@@ -26,7 +26,7 @@ interface PaywallModalProps {
 }
 
 type PaymentMethod = "card" | "mobile_money";
-type MoMoStep = "input" | "pending" | "success" | "failed";
+type MoMoStep = "input" | "otp" | "pending" | "success" | "failed";
 
 const PROVIDERS = [
   { value: "mtn", label: "MTN Mobile Money" },
@@ -42,6 +42,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [momoStep, setMomoStep] = useState<MoMoStep>("input");
   const [reference, setReference] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [otp, setOtp] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
 
@@ -59,6 +60,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       setMomoStep("input");
       setReference("");
       setStatusMessage("");
+      setOtp("");
       setLoading(false);
     }
   }, [open, stopPolling]);
@@ -128,13 +130,50 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       if (!res.ok) throw new Error(data?.error || "Failed to initiate payment");
 
       setReference(data.reference);
-      setStatusMessage(data.display_text || "A prompt has been sent to your phone. Enter your PIN to complete payment.");
-      setMomoStep("pending");
 
-      // Start polling
-      pollPaymentStatus(data.reference);
+      if (data.status === "send_otp") {
+        // Paystack requires OTP before sending USSD push
+        setStatusMessage(data.display_text || "Enter the OTP sent to your phone to authorize the payment.");
+        setMomoStep("otp");
+      } else {
+        // Direct USSD push (pay_offline or pending)
+        setStatusMessage(data.display_text || "A prompt has been sent to your phone. Enter your PIN to complete payment.");
+        setMomoStep("pending");
+        pollPaymentStatus(data.reference);
+      }
     } catch (err: any) {
       toast({ title: "Payment error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitOtp = async () => {
+    if (!otp.trim()) {
+      toast({ title: "Enter OTP", description: "Please enter the OTP sent to your phone.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-otp`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ otp: otp.trim(), reference }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "OTP submission failed");
+
+      setStatusMessage(data.display_text || "Payment is being processed...");
+      setMomoStep("pending");
+      pollPaymentStatus(data.reference);
+    } catch (err: any) {
+      toast({ title: "OTP error", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -205,7 +244,44 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           </div>
         )}
 
-        {/* Pending State - waiting for PIN */}
+        {/* OTP Step */}
+        {momoStep === "otp" && (
+          <div className="py-6 space-y-4">
+            <div className="text-center">
+              <Smartphone className="w-12 h-12 text-primary mx-auto mb-2" />
+              <p className="text-sm font-medium">Enter OTP</p>
+              <p className="text-xs text-muted-foreground">{statusMessage}</p>
+            </div>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="Enter OTP code"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="rounded-xl text-center text-lg tracking-widest"
+              maxLength={10}
+              autoFocus
+            />
+            <Button
+              className="w-full h-11 font-bold rounded-xl"
+              onClick={handleSubmitOtp}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Confirm Payment"
+              )}
+            </Button>
+            <Button variant="ghost" className="w-full text-xs" onClick={() => { setMomoStep("input"); setOtp(""); }}>
+              Cancel
+            </Button>
+          </div>
+        )}
+
         {momoStep === "pending" && (
           <div className="py-6 text-center space-y-4">
             <div className="relative mx-auto w-16 h-16">
