@@ -100,6 +100,7 @@ export type Database = {
       }
       user_credits: {
         Row: {
+          blocked: boolean
           created_at: string
           id: string
           is_premium: boolean
@@ -109,6 +110,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          blocked?: boolean
           created_at?: string
           id?: string
           is_premium?: boolean
@@ -118,6 +120,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          blocked?: boolean
           created_at?: string
           id?: string
           is_premium?: boolean
