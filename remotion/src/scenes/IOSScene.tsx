@@ -58,9 +58,7 @@ export const IOSScene: React.FC = () => {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             {STEPS.map((s, i) => (
-              <Sequence key={i} from={i * 12} layout="none">
-                <StepCard step={i + 1} title={s.title} desc={s.desc} active={activeStep === i} done={activeStep > i} />
-              </Sequence>
+              <StepCard key={i} step={i + 1} title={s.title} desc={s.desc} active={activeStep === i} done={activeStep > i} />
             ))}
           </div>
         </div>
