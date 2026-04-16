@@ -58,7 +58,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           <div className="bg-card rounded-xl border border-border p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-lg font-bold">Premium</span>
-              <span className="text-lg font-bold text-primary">GHS 100<span className="text-xs text-muted-foreground font-normal">/month</span></span>
+              <span className="text-lg font-bold text-primary">$10<span className="text-xs text-muted-foreground font-normal">/month</span></span>
             </div>
             <ul className="space-y-2">
               {[
@@ -76,7 +76,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
 
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-[11px] text-muted-foreground text-center">
-              Card starts an auto-renewing monthly subscription.
+              Card starts an auto-renewing monthly subscription ($10/month).
             </p>
           </div>
         </div>
@@ -94,7 +94,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           ) : (
             <>
               <CreditCard className="w-4 h-4 mr-2" />
-              Subscribe — GHS 100/month
+              Subscribe — $10/month
             </>
           )}
         </Button>
