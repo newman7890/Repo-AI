@@ -84,7 +84,7 @@ serve(async (req) => {
       }
 
       // Verify the amount matches expected plan
-      const expectedAmount = 16000;
+      const expectedAmount = 10000;
       if (event.data?.amount && event.data.amount < expectedAmount) {
         console.error(`Webhook amount mismatch: expected>=${expectedAmount} got=${event.data.amount}`);
         return new Response("OK", { status: 200, headers: corsHeaders });
