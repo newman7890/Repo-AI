@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Sparkles, Wand2, Repeat, Zap, Shield, Smartphone, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
@@ -10,6 +12,17 @@ const features = [
 ];
 
 const Welcome = () => {
+  const [isAuthed, setIsAuthed] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setIsAuthed(!!session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setIsAuthed(!!s));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const ctaTarget = isAuthed ? "/app" : "/auth";
+  const ctaLabel = isAuthed ? "Open app" : "Start editing free";
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Background glow */}
@@ -28,14 +41,24 @@ const Welcome = () => {
             <span className="font-bold text-base md:text-lg tracking-tight">Renderme AI</span>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <Link to="/auth">
-              <Button variant="ghost" size="sm" className="text-xs md:text-sm">Sign in</Button>
-            </Link>
-            <Link to="/auth">
-              <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90">
-                Get started
-              </Button>
-            </Link>
+            {isAuthed ? (
+              <Link to="/app">
+                <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90">
+                  Open app
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="text-xs md:text-sm">Sign in</Button>
+                </Link>
+                <Link to="/auth">
+                  <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90">
+                    Get started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </header>
@@ -56,10 +79,10 @@ const Welcome = () => {
             Change backgrounds, swap faces, restyle outfits, and create cinematic portraits — all from a simple text prompt. No editing skills required.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link to="/auth">
+            <Link to={ctaTarget}>
               <Button size="lg" className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl">
                 <Sparkles className="w-4 h-4 mr-2" />
-                Start editing free
+                {ctaLabel}
               </Button>
             </Link>
             <a href="#install">
@@ -114,7 +137,6 @@ const Welcome = () => {
           <div className="rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl mb-10 md:mb-14">
             <video
               src="/install-tutorial.mp4"
-              poster="/install-tutorial-poster.jpg"
               controls
               playsInline
               preload="metadata"
@@ -179,9 +201,9 @@ const Welcome = () => {
               </div>
             ))}
           </div>
-          <Link to="/auth" className="inline-block mt-10">
+          <Link to={ctaTarget} className="inline-block mt-10">
             <Button size="lg" className="h-12 md:h-14 px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl">
-              Get started — 3 free edits
+              {isAuthed ? "Open app" : "Get started — 3 free edits"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
@@ -199,7 +221,7 @@ const Welcome = () => {
           </div>
           <div className="flex items-center gap-4">
             <a href="mailto:newm5811@gmail.com" className="hover:text-foreground transition-colors">Contact support</a>
-            <Link to="/auth" className="hover:text-foreground transition-colors">Sign in</Link>
+            {!isAuthed && <Link to="/auth" className="hover:text-foreground transition-colors">Sign in</Link>}
           </div>
         </div>
       </footer>

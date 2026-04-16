@@ -54,7 +54,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back!");
-        navigate("/");
+        navigate("/app");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -81,7 +81,7 @@ const Auth = () => {
         toast.error("Google sign-in failed");
       }
       if (result.redirected) return;
-      navigate("/");
+      navigate("/app");
     } catch (error: any) {
       toast.error(error.message || "Google sign-in failed");
     } finally {

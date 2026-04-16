@@ -241,7 +241,7 @@ const FaceSwap = () => {
       <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between gap-2 md:gap-3">
           <div className="flex items-center gap-2 md:gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8 md:h-9 md:w-9">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/app")} className="shrink-0 h-8 w-8 md:h-9 md:w-9">
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-2 md:gap-3">
