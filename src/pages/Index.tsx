@@ -215,81 +215,85 @@ const Index = () => {
           />
         ) : (
           <>
-            <ImageUpload
-              onImageSelect={(base64) => setImage(base64 || null)}
-              currentImage={image}
-            />
+            <div className={image ? "grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6 lg:gap-8 items-start" : "max-w-2xl mx-auto w-full"}>
+              <div className="lg:sticky lg:top-6">
+                <ImageUpload
+                  onImageSelect={(base64) => setImage(base64 || null)}
+                  currentImage={image}
+                />
+              </div>
 
-            {image && (
-              <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Mode Selector */}
-                <EditModeSelector activeMode={editMode} onModeChange={handleModeChange} />
+              {image && (
+                <div className="flex flex-col gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {/* Mode Selector */}
+                  <EditModeSelector activeMode={editMode} onModeChange={handleModeChange} />
 
-                {/* Mode Description */}
-                <p className="text-xs text-muted-foreground">{currentMode.description}</p>
+                  {/* Mode Description */}
+                  <p className="text-xs md:text-sm text-muted-foreground">{currentMode.description}</p>
 
-                {/* Quality Selector */}
-                <div>
-                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                    Quality
-                  </label>
-                  <QualitySelector activeQuality={quality} onQualityChange={setQuality} />
-                </div>
-
-                {/* Quick Presets */}
-                <div>
-                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                    Quick picks
-                  </label>
-                  <QuickPresets
-                    presets={currentMode.presets}
-                    onSelect={setDescription}
-                    selected={description}
-                  />
-                </div>
-
-                {/* Custom Description */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-foreground">
-                      Or describe it yourself
+                  {/* Quality Selector */}
+                  <div>
+                    <label className="text-xs md:text-sm font-semibold text-foreground mb-1.5 block">
+                      Quality
                     </label>
+                    <QualitySelector activeQuality={quality} onQualityChange={setQuality} />
                   </div>
-                  <Textarea
-                    placeholder={currentMode.placeholder}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="bg-card border-border resize-none h-16 text-sm"
-                  />
-                  <div className="mt-1.5">
-                    <PromptImageAttachment
-                      referenceImage={referenceImage}
-                      onImageSelect={setReferenceImage}
-                      label="Add reference image"
+
+                  {/* Quick Presets */}
+                  <div>
+                    <label className="text-xs md:text-sm font-semibold text-foreground mb-1.5 block">
+                      Quick picks
+                    </label>
+                    <QuickPresets
+                      presets={currentMode.presets}
+                      onSelect={setDescription}
+                      selected={description}
                     />
                   </div>
-                </div>
 
-                {/* Generate Button */}
-                <Button
-                  onClick={handleGenerate}
-                  disabled={isProcessing || !description.trim()}
-                  className="w-full h-12 text-sm font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {quality === "ultra" ? "Creating ultra-realistic magic..." : "Creating magic..."}
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Transform Photo ({quality === "fast" ? 1 : quality === "high" ? 2 : 3} {quality === "fast" ? "token" : "tokens"})
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
+                  {/* Custom Description */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs md:text-sm font-semibold text-foreground">
+                        Or describe it yourself
+                      </label>
+                    </div>
+                    <Textarea
+                      placeholder={currentMode.placeholder}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="bg-card border-border resize-none h-16 md:h-20 text-sm"
+                    />
+                    <div className="mt-1.5">
+                      <PromptImageAttachment
+                        referenceImage={referenceImage}
+                        onImageSelect={setReferenceImage}
+                        label="Add reference image"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Generate Button */}
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={isProcessing || !description.trim()}
+                    className="w-full h-12 md:h-14 text-sm md:text-base font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {quality === "ultra" ? "Creating ultra-realistic magic..." : "Creating magic..."}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Transform Photo ({quality === "fast" ? 1 : quality === "high" ? 2 : 3} {quality === "fast" ? "token" : "tokens"})
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
           </>
         )}
       </main>
