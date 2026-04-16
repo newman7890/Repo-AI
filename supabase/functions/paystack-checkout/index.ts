@@ -125,19 +125,7 @@ serve(async (req) => {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: user.email,
-        amount: PLAN_AMOUNT,
-        currency: PLAN_CURRENCY,
-        plan: planCode,
-        channels,
-        callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
-        metadata: {
-          user_id: user.id,
-          plan: "premium",
-          payment_method: paymentMethod,
-        },
-      }),
+      body: JSON.stringify(txBody),
     });
 
     const data = await response.json();
