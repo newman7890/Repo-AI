@@ -116,7 +116,7 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-4">
         <h1 className="text-xl font-bold text-foreground">Access Denied</h1>
         <p className="text-muted-foreground text-sm">You don't have admin permissions.</p>
-        <Button variant="outline" onClick={() => navigate("/")}>Go Back</Button>
+        <Button variant="outline" onClick={() => navigate("/app")}>Go Back</Button>
       </div>
     );
   }
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border">
         <div className="max-w-6xl mx-auto w-full flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/app")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
