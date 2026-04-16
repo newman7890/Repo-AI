@@ -238,30 +238,30 @@ const FaceSwap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-4 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
+      <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
+        <div className="max-w-5xl mx-auto w-full flex items-center justify-between gap-2 md:gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8 md:h-9 md:w-9">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
-                <Repeat className="w-4 h-4 text-accent" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center bg-accent/20">
+                <Repeat className="w-4 h-4 md:w-5 md:h-5 text-accent" />
               </div>
               <div>
-                <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
-                <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
+                <h1 className="text-base md:text-lg font-bold tracking-tight leading-tight">Face Swap</h1>
+                <p className="text-[10px] md:text-xs text-muted-foreground leading-tight">Swap faces between two photos</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 md:gap-2">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <UserMenu />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-6 flex flex-col gap-3">
+      <main className="flex-1 px-4 pb-6 md:px-6 md:pb-10 flex flex-col gap-3 md:gap-5 max-w-5xl mx-auto w-full">
         {credits?.blocked && (
           <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
             <AlertCircle className="h-4 w-4" />
