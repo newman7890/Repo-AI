@@ -42,6 +42,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [momoStep, setMomoStep] = useState<MoMoStep>("input");
   const [reference, setReference] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [otp, setOtp] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
 
