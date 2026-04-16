@@ -125,19 +125,21 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
-          <h1 className="text-lg font-bold text-foreground font-display">Usage Dashboard</h1>
+      <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border">
+        <div className="max-w-6xl mx-auto w-full flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+            <h1 className="text-lg md:text-xl font-bold text-foreground font-display">Usage Dashboard</h1>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 p-4 space-y-4 max-w-4xl mx-auto w-full">
+      <main className="flex-1 p-4 md:p-8 space-y-4 md:space-y-6 max-w-6xl mx-auto w-full">
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card className="bg-card border-border">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
