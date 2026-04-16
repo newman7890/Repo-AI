@@ -172,6 +172,9 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
+        {/* Admin Notifications */}
+        <AdminNotifications />
+
         {/* User Management */}
         <AdminUserManagement />
 
