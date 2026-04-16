@@ -171,6 +171,9 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
+        {/* User Management */}
+        <AdminUserManagement />
+
         {/* Per-User Table */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
