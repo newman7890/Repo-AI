@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
-import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2 } from "lucide-react";
+import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -257,6 +258,18 @@ const FaceSwap = () => {
       </header>
 
       <main className="flex-1 px-4 pb-6 flex flex-col gap-3">
+        {credits?.blocked && (
+          <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Account Blocked</AlertTitle>
+            <AlertDescription className="flex flex-col gap-2">
+              <span>Your account has been blocked and you cannot use Face Swap.</span>
+              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20-%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
+                Contact Support →
+              </a>
+            </AlertDescription>
+          </Alert>
+        )}
         {isProcessing ? (
           <ProcessingSkeleton onCancel={() => abortRef.current?.abort()} />
         ) : currentEdit && sourceImage ? (
