@@ -86,6 +86,10 @@ const Index = () => {
           setShowPaywall(true);
           return;
         }
+        if (data?.error === "account_blocked" || data?.blocked) {
+          toast({ title: "Account Blocked", description: "Your account has been blocked. Please contact support.", variant: "destructive" });
+          return;
+        }
         throw new Error(data?.error || `Server error (${response.status})`);
       }
 
