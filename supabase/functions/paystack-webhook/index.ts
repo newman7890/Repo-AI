@@ -40,7 +40,6 @@ serve(async (req) => {
     const body = await req.text();
     const signature = req.headers.get("x-paystack-signature") || "";
 
-    // Reject requests without a valid signature
     if (!signature) {
       console.error("Missing Paystack signature header");
       return new Response("Missing signature", { status: 400, headers: corsHeaders });
@@ -59,6 +58,22 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+    // Idempotency: check if this event was already processed using the transaction reference
+    const reference = event.data?.reference;
+    if (reference) {
+      const { data: existing } = await supabase
+        .from("processed_payments")
+        .select("id")
+        .eq("reference", reference)
+        .eq("event_type", `webhook:${event.event}`)
+        .maybeSingle();
+
+      if (existing) {
+        console.log(`Webhook already processed: ${reference} ${event.event}`);
+        return new Response("OK", { status: 200, headers: corsHeaders });
+      }
+    }
+
     if (event.event === "charge.success" || event.event === "subscription.create") {
       const metadata = event.data?.metadata || {};
       const userId = metadata.user_id;
@@ -66,6 +81,24 @@ serve(async (req) => {
       if (!userId) {
         console.error("No user_id in metadata");
         return new Response("OK", { status: 200, headers: corsHeaders });
+      }
+
+      // Verify the amount matches expected plan
+      const expectedAmount = 16000;
+      if (event.data?.amount && event.data.amount < expectedAmount) {
+        console.error(`Webhook amount mismatch: expected>=${expectedAmount} got=${event.data.amount}`);
+        return new Response("OK", { status: 200, headers: corsHeaders });
+      }
+
+      // Record as processed
+      if (reference) {
+        await supabase.from("processed_payments").insert({
+          reference,
+          user_id: userId,
+          event_type: `webhook:${event.event}`,
+          amount: event.data?.amount,
+          currency: event.data?.currency,
+        }).catch(() => {}); // ignore duplicate
       }
 
       const { error } = await supabase
@@ -90,6 +123,16 @@ serve(async (req) => {
       const userId = metadata.user_id;
 
       if (userId) {
+        if (reference) {
+          await supabase.from("processed_payments").insert({
+            reference,
+            user_id: userId,
+            event_type: `webhook:${event.event}`,
+            amount: event.data?.amount,
+            currency: event.data?.currency,
+          }).catch(() => {});
+        }
+
         const { error } = await supabase
           .from("user_credits")
           .update({
@@ -124,7 +167,7 @@ serve(async (req) => {
     return new Response("OK", { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("Webhook error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

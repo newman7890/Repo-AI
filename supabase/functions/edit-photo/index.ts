@@ -13,7 +13,6 @@ const MAX_BASE64_SIZE = 5_000_000;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_ADDITIONAL_FACES = 3;
 
-// Token costs per quality/mode
 function getTokenCost(mode: string, quality: string): number {
   if (mode === "faceswap") return 5;
   switch (quality) {
@@ -114,23 +113,44 @@ serve(async (req) => {
   }
 
   try {
-    // --- Authentication ---
+    // --- Authentication with getClaims ---
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
     const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-    if (authError || !user) {
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = claimsData.claims.sub as string;
+
+    // --- Rate limiting: max 20 edits per minute ---
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: rateLimitOk } = await supabaseAdmin.rpc("check_rate_limit", {
+      p_user_id: userId,
+      p_endpoint: "edit-photo",
+      p_max_requests: 20,
+      p_window_seconds: 60,
+    });
+
+    if (!rateLimitOk) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -202,14 +222,9 @@ serve(async (req) => {
     }
 
     // --- Check & Deduct Credits ---
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
     const tokenCost = getTokenCost(mode, quality);
     const { data: creditResult, error: creditError } = await supabaseAdmin.rpc("check_and_deduct_credits", {
-      p_user_id: user.id,
+      p_user_id: userId,
       p_token_cost: tokenCost,
     });
 
@@ -235,7 +250,7 @@ serve(async (req) => {
     const prompt = buildPrompt(mode, description || "", hasReferenceImage);
     const model = getModelForQuality(quality);
 
-    console.log(`Processing for user ${user.id} with model: ${model}, mode: ${mode}, quality: ${quality}, cost: ${tokenCost}, creditType: ${creditResult.used}`);
+    console.log(`Processing: user=${userId.slice(0,8)}… model=${model} mode=${mode} quality=${quality} cost=${tokenCost}`);
 
     const contentParts: any[] = [
       { type: "text", text: prompt },
@@ -269,9 +284,9 @@ serve(async (req) => {
       // Refund credits on AI failure
       try {
         if (creditResult.used === "trial") {
-          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", user.id);
+          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", userId);
         } else if (creditResult.used === "tokens") {
-          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", user.id);
+          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", userId);
         }
       } catch (refundErr) {
         console.error("Failed to refund credits:", refundErr);
@@ -288,7 +303,7 @@ serve(async (req) => {
         });
       }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("AI gateway error:", response.status, errorText.slice(0, 200));
       return new Response(JSON.stringify({ error: "Failed to process image. Please try again." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -298,12 +313,11 @@ serve(async (req) => {
     const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!generatedImage) {
-      // Refund on no image
       try {
         if (creditResult.used === "trial") {
-          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", user.id);
+          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", userId);
         } else if (creditResult.used === "tokens") {
-          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", user.id);
+          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", userId);
         }
       } catch (refundErr) {
         console.error("Failed to refund credits:", refundErr);
@@ -313,10 +327,10 @@ serve(async (req) => {
       });
     }
 
-    // Log usage
+    // Log usage (no sensitive data)
     try {
       await supabaseAdmin.from("ai_usage_logs").insert({
-        user_id: user.id,
+        user_id: userId,
         function_name: "edit-photo",
         model,
         mode,
