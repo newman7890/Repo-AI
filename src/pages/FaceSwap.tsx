@@ -424,7 +424,7 @@ const FaceSwap = () => {
               className="w-full h-12 text-sm font-bold rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Swap {filledFaces.length > 1 ? `${filledFaces.length} Faces` : "Face"}
+              Swap {filledFaces.length > 1 ? `${filledFaces.length} Faces` : "Face"} (5 tokens)
             </Button>
           </>
         )}
