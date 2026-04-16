@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sparkles, Loader2, Wand2, Repeat } from "lucide-react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,11 @@ import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [image, setImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<EditMode>("background");
   const [quality, setQuality] = useState<QualityMode>("high");
