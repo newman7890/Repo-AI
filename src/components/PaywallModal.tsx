@@ -130,13 +130,50 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       if (!res.ok) throw new Error(data?.error || "Failed to initiate payment");
 
       setReference(data.reference);
-      setStatusMessage(data.display_text || "A prompt has been sent to your phone. Enter your PIN to complete payment.");
-      setMomoStep("pending");
 
-      // Start polling
-      pollPaymentStatus(data.reference);
+      if (data.status === "send_otp") {
+        // Paystack requires OTP before sending USSD push
+        setStatusMessage(data.display_text || "Enter the OTP sent to your phone to authorize the payment.");
+        setMomoStep("otp");
+      } else {
+        // Direct USSD push (pay_offline or pending)
+        setStatusMessage(data.display_text || "A prompt has been sent to your phone. Enter your PIN to complete payment.");
+        setMomoStep("pending");
+        pollPaymentStatus(data.reference);
+      }
     } catch (err: any) {
       toast({ title: "Payment error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitOtp = async () => {
+    if (!otp.trim()) {
+      toast({ title: "Enter OTP", description: "Please enter the OTP sent to your phone.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-otp`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ otp: otp.trim(), reference }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "OTP submission failed");
+
+      setStatusMessage(data.display_text || "Payment is being processed...");
+      setMomoStep("pending");
+      pollPaymentStatus(data.reference);
+    } catch (err: any) {
+      toast({ title: "OTP error", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
