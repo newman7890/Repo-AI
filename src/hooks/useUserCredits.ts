@@ -5,6 +5,7 @@ export interface UserCredits {
   tokens: number;
   trial_uses_remaining: number;
   is_premium: boolean;
+  blocked: boolean;
 }
 
 export function useUserCredits() {
@@ -17,7 +18,7 @@ export function useUserCredits() {
 
     const { data } = await supabase
       .from("user_credits")
-      .select("tokens, trial_uses_remaining, is_premium")
+      .select("tokens, trial_uses_remaining, is_premium, blocked")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -25,7 +26,7 @@ export function useUserCredits() {
       setCredits(data);
     } else {
       // New user — trigger will create row, default values
-      setCredits({ tokens: 0, trial_uses_remaining: 3, is_premium: false });
+      setCredits({ tokens: 0, trial_uses_remaining: 3, is_premium: false, blocked: false });
     }
     setLoading(false);
   }, []);
