@@ -21,13 +21,24 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user && (event === "SIGNED_IN")) {
-        await saveDeviceInfo(session.user.id);
-        // For new signups via OAuth or email confirmation
-        const createdAt = new Date(session.user.created_at);
-        const now = new Date();
-        const isNewUser = (now.getTime() - createdAt.getTime()) < 60000; // within 1 minute
-        if (isNewUser) {
-          await notifyAdminNewUser(session.user.id, session.user.email || "Unknown");
+        try {
+          await saveDeviceInfo(session.user.id);
+        } catch (e) {
+          console.error("Failed to save device info:", e);
+        }
+        // Notify admin for every first sign-in by checking if notification already exists
+        try {
+          const { data: existing } = await supabase
+            .from("admin_notifications")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .eq("type", "registration")
+            .limit(1);
+          if (!existing || existing.length === 0) {
+            await notifyAdminNewUser(session.user.id, session.user.email || "Unknown");
+          }
+        } catch (e) {
+          console.error("Failed to notify admin:", e);
         }
       }
     });
