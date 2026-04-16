@@ -236,6 +236,15 @@ serve(async (req) => {
     }
 
     if (!creditResult?.allowed) {
+      if (creditResult?.blocked) {
+        return new Response(JSON.stringify({ 
+          error: "account_blocked",
+          message: "Your account has been blocked. Please contact support.",
+          blocked: true,
+        }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ 
         error: "insufficient_credits",
         message: "You've used all your free trials. Upgrade to Premium to continue editing!",
