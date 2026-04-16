@@ -238,30 +238,30 @@ const FaceSwap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-4 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8">
+      <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
+        <div className="max-w-5xl mx-auto w-full flex items-center justify-between gap-2 md:gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-8 w-8 md:h-9 md:w-9">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-accent/20">
-                <Repeat className="w-4 h-4 text-accent" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center bg-accent/20">
+                <Repeat className="w-4 h-4 md:w-5 md:h-5 text-accent" />
               </div>
               <div>
-                <h1 className="text-base font-bold tracking-tight leading-tight">Face Swap</h1>
-                <p className="text-[10px] text-muted-foreground leading-tight">Swap faces between two photos</p>
+                <h1 className="text-base md:text-lg font-bold tracking-tight leading-tight">Face Swap</h1>
+                <p className="text-[10px] md:text-xs text-muted-foreground leading-tight">Swap faces between two photos</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 md:gap-2">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <UserMenu />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-6 flex flex-col gap-3">
+      <main className="flex-1 px-4 pb-6 md:px-6 md:pb-10 flex flex-col gap-3 md:gap-5 max-w-5xl mx-auto w-full">
         {credits?.blocked && (
           <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
             <AlertCircle className="h-4 w-4" />
@@ -332,8 +332,8 @@ const FaceSwap = () => {
 
             {/* Source image */}
             <div>
-              <label className="text-xs font-semibold text-foreground mb-1.5 block">Source Photo</label>
-              <div className="max-w-[200px]">
+              <label className="text-xs md:text-sm font-semibold text-foreground mb-1.5 block">Source Photo</label>
+              <div className="max-w-[200px] md:max-w-[280px]">
                 <ImageSlot
                   image={sourceImage}
                   onSelect={setSourceImage}
@@ -349,20 +349,20 @@ const FaceSwap = () => {
             {sourceImage && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label className="text-xs md:text-sm font-semibold text-foreground">
                     Faces to swap ({faceSlots.length})
                   </label>
                   {faceSlots.length < 4 && (
                     <button
                       onClick={addFaceSlot}
-                      className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+                      className="flex items-center gap-1 text-[10px] md:text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
                       Add face
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3 md:max-w-3xl">
                   {faceSlots.map((slot, idx) => (
                     <div key={slot.id} className="relative">
                       <ImageSlot

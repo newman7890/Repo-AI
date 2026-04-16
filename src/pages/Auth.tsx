@@ -105,19 +105,19 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-md md:max-w-lg space-y-6 md:space-y-8 bg-card/40 md:border md:border-border/40 md:rounded-3xl md:p-10 md:shadow-2xl backdrop-blur-sm">
         {/* Logo */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+        <div className="text-center space-y-2 md:space-y-3">
+          <div className="inline-flex items-center gap-2 md:gap-3">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-['Space_Grotesk']">
+            <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-['Space_Grotesk']">
               Renderme AI
             </span>
           </div>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm md:text-base">
             {isLogin ? "Sign in to continue" : "Create your account"}
           </p>
         </div>
