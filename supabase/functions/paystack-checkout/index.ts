@@ -99,10 +99,25 @@ serve(async (req) => {
 
     const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
 
-    // Build channels array based on payment method
-    const channels = paymentMethod === "mobile_money" 
-      ? ["mobile_money"] 
-      : ["card"];
+    // Only restrict channels if mobile_money is specifically chosen AND active on the account
+    // Otherwise let Paystack show all available methods
+    const txBody: Record<string, any> = {
+      email: user.email,
+      amount: PLAN_AMOUNT,
+      currency: PLAN_CURRENCY,
+      plan: planCode,
+      callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
+      metadata: {
+        user_id: user.id,
+        plan: "premium",
+        payment_method: paymentMethod,
+      },
+    };
+
+    // Only add channels filter for card (always available); skip for mobile_money to avoid "no active channel" error
+    if (paymentMethod === "card") {
+      txBody.channels = ["card"];
+    }
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
@@ -110,19 +125,7 @@ serve(async (req) => {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: user.email,
-        amount: PLAN_AMOUNT,
-        currency: PLAN_CURRENCY,
-        plan: planCode,
-        channels,
-        callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
-        metadata: {
-          user_id: user.id,
-          plan: "premium",
-          payment_method: paymentMethod,
-        },
-      }),
+      body: JSON.stringify(txBody),
     });
 
     const data = await response.json();
