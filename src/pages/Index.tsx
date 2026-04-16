@@ -4,6 +4,8 @@ import { getAuthHeaders } from "@/lib/auth-headers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import EditModeSelector, { editModes, type EditMode } from "@/components/EditModeSelector";
 import QualitySelector, { type QualityMode } from "@/components/QualitySelector";
@@ -182,6 +184,17 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 px-4 pb-6 flex flex-col gap-4">
+        {/* Blocked User Banner */}
+        {credits?.blocked && (
+          <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Account Blocked</AlertTitle>
+            <AlertDescription>
+              Your account has been blocked and you cannot edit photos. Please contact support for assistance.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {isProcessing ? (
           <ProcessingSkeleton onCancel={handleCancel} />
         ) : currentEdit && image ? (
