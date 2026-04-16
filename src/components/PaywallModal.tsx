@@ -244,7 +244,44 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           </div>
         )}
 
-        {/* Pending State - waiting for PIN */}
+        {/* OTP Step */}
+        {momoStep === "otp" && (
+          <div className="py-6 space-y-4">
+            <div className="text-center">
+              <Smartphone className="w-12 h-12 text-primary mx-auto mb-2" />
+              <p className="text-sm font-medium">Enter OTP</p>
+              <p className="text-xs text-muted-foreground">{statusMessage}</p>
+            </div>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="Enter OTP code"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="rounded-xl text-center text-lg tracking-widest"
+              maxLength={10}
+              autoFocus
+            />
+            <Button
+              className="w-full h-11 font-bold rounded-xl"
+              onClick={handleSubmitOtp}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Confirm Payment"
+              )}
+            </Button>
+            <Button variant="ghost" className="w-full text-xs" onClick={() => { setMomoStep("input"); setOtp(""); }}>
+              Cancel
+            </Button>
+          </div>
+        )}
+
         {momoStep === "pending" && (
           <div className="py-6 text-center space-y-4">
             <div className="relative mx-auto w-16 h-16">
