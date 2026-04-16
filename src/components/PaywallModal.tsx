@@ -26,7 +26,7 @@ interface PaywallModalProps {
 }
 
 type PaymentMethod = "card" | "mobile_money";
-type MoMoStep = "input" | "pending" | "success" | "failed";
+type MoMoStep = "input" | "otp" | "pending" | "success" | "failed";
 
 const PROVIDERS = [
   { value: "mtn", label: "MTN Mobile Money" },
