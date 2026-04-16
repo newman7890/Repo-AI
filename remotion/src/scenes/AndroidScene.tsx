@@ -1,7 +1,8 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Sequence } from "remotion";
 import { fonts } from "../MainVideo";
-import { PhoneFrame, TapPulse } from "./IntroScene";
+import { PhoneFrame } from "./IntroScene";
+import { TapPulse } from "./IOSScene";
 
 const STEPS = [
   { title: "Open in Chrome", desc: "Visit renderme-ai.lovable.app" },
