@@ -60,6 +60,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       setMomoStep("input");
       setReference("");
       setStatusMessage("");
+      setOtp("");
       setLoading(false);
     }
   }, [open, stopPolling]);
