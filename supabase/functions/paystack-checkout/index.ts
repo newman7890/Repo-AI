@@ -23,7 +23,6 @@ async function getOrCreatePlan(secretKey: string): Promise<string> {
       (p: any) => p.name === PLAN_NAME && p.interval === PLAN_INTERVAL && p.amount === PLAN_AMOUNT
     );
     if (existing) {
-      console.log("Found existing plan:", existing.plan_code);
       return existing.plan_code;
     }
   }
@@ -48,7 +47,6 @@ async function getOrCreatePlan(secretKey: string): Promise<string> {
     throw new Error(`Failed to create plan: ${createData.message}`);
   }
 
-  console.log("Created new plan:", createData.data.plan_code);
   return createData.data.plan_code;
 }
 
@@ -65,62 +63,63 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid user" }), {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Parse request body for payment method preference
-    let paymentMethod = "card"; // default
-    try {
-      const body = await req.json();
-      if (body.payment_method === "mobile_money") {
-        paymentMethod = "mobile_money";
-      }
-    } catch {
-      // No body or invalid JSON, use default
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+
+    // Rate limit: max 5 checkout initiations per minute
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const { data: rateLimitOk } = await adminClient.rpc("check_rate_limit", {
+      p_user_id: userId,
+      p_endpoint: "paystack-checkout",
+      p_max_requests: 5,
+      p_window_seconds: 60,
+    });
+
+    if (!rateLimitOk) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please wait." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const callbackUrl = `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`;
 
+    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
+
     const txBody: Record<string, any> = {
-      email: user.email,
+      email: userEmail,
       amount: PLAN_AMOUNT,
       currency: PLAN_CURRENCY,
       callback_url: callbackUrl,
+      plan: planCode,
+      channels: ["card"],
       metadata: {
-        user_id: user.id,
+        user_id: userId,
         plan: "premium",
-        payment_method: paymentMethod,
-        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
+        payment_method: "card",
+        billing_type: "subscription",
       },
     };
-
-    if (paymentMethod === "card") {
-      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
-      txBody.plan = planCode;
-      txBody.channels = ["card"];
-    } else {
-      // Mobile Money should use a one-time checkout flow rather than a recurring plan subscription.
-      // We intentionally omit `plan` here because Paystack recurring plans rely on card authorization.
-      txBody.channels = ["mobile_money"];
-    }
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
@@ -146,7 +145,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Paystack checkout error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Payment initialization failed. Please try again." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
