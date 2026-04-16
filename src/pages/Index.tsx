@@ -52,6 +52,10 @@ const Index = () => {
   const currentEdit = editHistory.current;
 
   const handleGenerate = async () => {
+    if (credits?.blocked) {
+      toast({ title: "Account Blocked", description: "Your account has been blocked. Please contact support for assistance.", variant: "destructive" });
+      return;
+    }
     if (!image) {
       toast({ title: "Missing photo", description: "Please upload a photo first.", variant: "destructive" });
       return;
