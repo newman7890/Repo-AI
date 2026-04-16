@@ -7,12 +7,20 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const PLAN_NAME = "Renderme AI Premium";
-const PLAN_AMOUNT = 10000; // GHS 100 in pesewas
+const PLANS: Record<string, { name: string; amount: number; tokens: number }> = {
+  starter:  { name: "Renderme AI Starter",  amount: 5000,  tokens: 50 },
+  standard: { name: "Renderme AI Standard", amount: 10000, tokens: 100 },
+  pro:      { name: "Renderme AI Pro",      amount: 20000, tokens: 200 },
+  premium:  { name: "Renderme AI Premium",  amount: 50000, tokens: 500 },
+};
+
 const PLAN_INTERVAL = "monthly";
 const PLAN_CURRENCY = "GHS";
 
-async function getOrCreatePlan(secretKey: string): Promise<string> {
+async function getOrCreatePlan(secretKey: string, planId: string): Promise<string> {
+  const plan = PLANS[planId];
+  if (!plan) throw new Error(`Unknown plan: ${planId}`);
+
   const listRes = await fetch("https://api.paystack.co/plan", {
     headers: { Authorization: `Bearer ${secretKey}` },
   });
@@ -20,11 +28,9 @@ async function getOrCreatePlan(secretKey: string): Promise<string> {
 
   if (listData.status && listData.data) {
     const existing = listData.data.find(
-      (p: any) => p.name === PLAN_NAME && p.interval === PLAN_INTERVAL && p.amount === PLAN_AMOUNT
+      (p: any) => p.name === plan.name && p.interval === PLAN_INTERVAL && p.amount === plan.amount
     );
-    if (existing) {
-      return existing.plan_code;
-    }
+    if (existing) return existing.plan_code;
   }
 
   const createRes = await fetch("https://api.paystack.co/plan", {
@@ -34,11 +40,11 @@ async function getOrCreatePlan(secretKey: string): Promise<string> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: PLAN_NAME,
-      amount: PLAN_AMOUNT,
+      name: plan.name,
+      amount: plan.amount,
       interval: PLAN_INTERVAL,
       currency: PLAN_CURRENCY,
-      description: "100 AI tokens per month, all edit modes & qualities, priority processing",
+      description: `${plan.tokens} AI tokens per month`,
     }),
   });
   const createData = await createRes.json();
@@ -57,9 +63,7 @@ serve(async (req) => {
 
   try {
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
-    if (!PAYSTACK_SECRET_KEY) {
-      throw new Error("PAYSTACK_SECRET_KEY is not configured");
-    }
+    if (!PAYSTACK_SECRET_KEY) throw new Error("PAYSTACK_SECRET_KEY is not configured");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -86,7 +90,19 @@ serve(async (req) => {
     const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string;
 
-    // Rate limit: max 5 checkout initiations per minute
+    const body = await req.json();
+    const planId = body.plan_id || "standard";
+
+    if (!PLANS[planId]) {
+      return new Response(JSON.stringify({ error: "Invalid plan" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const plan = PLANS[planId];
+
+    // Rate limit
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: rateLimitOk } = await adminClient.rpc("check_rate_limit", {
       p_user_id: userId,
@@ -103,19 +119,19 @@ serve(async (req) => {
     }
 
     const callbackUrl = `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`;
-
-    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
+    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
 
     const txBody: Record<string, any> = {
       email: userEmail,
-      amount: PLAN_AMOUNT,
+      amount: plan.amount,
       currency: PLAN_CURRENCY,
       callback_url: callbackUrl,
       plan: planCode,
       channels: ["card"],
       metadata: {
         user_id: userId,
-        plan: "premium",
+        plan: planId,
+        tokens: plan.tokens,
         payment_method: "card",
         billing_type: "subscription",
       },

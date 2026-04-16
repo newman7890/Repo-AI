@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crown, Zap, Shield, Sparkles, Loader2, CreditCard } from "lucide-react";
+import { Crown, Zap, Loader2, CreditCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,25 +10,40 @@ import {
 } from "@/components/ui/dialog";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface PaywallModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const plans = [
+  { id: "starter", name: "Starter", price: 50, tokens: 50 },
+  { id: "standard", name: "Standard", price: 100, tokens: 100 },
+  { id: "pro", name: "Pro", price: 200, tokens: 200, popular: true },
+  { id: "premium", name: "Premium", price: 500, tokens: 500 },
+];
+
 const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("standard");
   const { toast } = useToast();
 
-  const handleCardSubscribe = async () => {
+  const handleSubscribe = async () => {
     setLoading(true);
+    const plan = plans.find((p) => p.id === selectedPlan)!;
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-checkout`,
         {
           method: "POST",
           headers: await getAuthHeaders(),
-          body: JSON.stringify({ payment_method: "card" }),
+          body: JSON.stringify({
+            payment_method: "card",
+            plan_id: plan.id,
+            amount: plan.price * 100, // pesewas
+            tokens: plan.tokens,
+          }),
         }
       );
       const data = await response.json();
@@ -43,47 +58,61 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm mx-auto">
+      <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader className="text-center">
-          <div className="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-2" style={{ background: "var(--gradient-primary)" }}>
-            <Crown className="w-7 h-7 text-white" />
+          <div className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-2" style={{ background: "var(--gradient-primary)" }}>
+            <Crown className="w-6 h-6 text-white" />
           </div>
-          <DialogTitle className="text-xl font-bold">Upgrade to Premium</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Choose Your Plan</DialogTitle>
           <DialogDescription className="text-sm">
-            You've used all 3 free trials. Upgrade to keep editing!
+            You've used all 3 free trials. Pick a plan to keep editing!
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-3">
-          <div className="bg-card rounded-xl border border-border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-bold">Premium</span>
-              <span className="text-lg font-bold text-primary">GHS 100<span className="text-xs text-muted-foreground font-normal">/month</span></span>
-            </div>
-            <ul className="space-y-2">
-              {[
-                { icon: Zap, text: "100 AI tokens per month" },
-                { icon: Sparkles, text: "All edit modes & qualities" },
-                { icon: Shield, text: "Priority processing" },
-              ].map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Icon className="w-4 h-4 text-primary shrink-0" />
-                  {text}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="grid grid-cols-2 gap-2 py-3">
+          {plans.map((plan) => (
+            <button
+              key={plan.id}
+              onClick={() => setSelectedPlan(plan.id)}
+              className={cn(
+                "relative rounded-xl border-2 p-3 text-left transition-all",
+                selectedPlan === plan.id
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/30"
+              )}
+            >
+              {plan.popular && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  Popular
+                </span>
+              )}
+              <div className="font-bold text-sm">{plan.name}</div>
+              <div className="text-lg font-bold text-primary mt-1">
+                GHS {plan.price}
+                <span className="text-[10px] text-muted-foreground font-normal">/mo</span>
+              </div>
+              <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
+                <Zap className="w-3 h-3 text-primary" />
+                {plan.tokens} tokens
+              </div>
+              {selectedPlan === plan.id && (
+                <div className="absolute top-2 right-2">
+                  <Check className="w-4 h-4 text-primary" />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
 
-          <div className="bg-muted/50 rounded-lg p-3">
-            <p className="text-[11px] text-muted-foreground text-center">
-              Card starts an auto-renewing monthly subscription (GHS 100/month).
-            </p>
-          </div>
+        <div className="bg-muted/50 rounded-lg p-2">
+          <p className="text-[11px] text-muted-foreground text-center">
+            Auto-renewing monthly subscription. Cancel anytime.
+          </p>
         </div>
 
         <Button
           className="w-full h-11 font-bold rounded-xl"
-          onClick={handleCardSubscribe}
+          onClick={handleSubscribe}
           disabled={loading}
         >
           {loading ? (
@@ -94,7 +123,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           ) : (
             <>
               <CreditCard className="w-4 h-4 mr-2" />
-              Subscribe — GHS 100/month
+              Subscribe — GHS {plans.find((p) => p.id === selectedPlan)!.price}/month
             </>
           )}
         </Button>
