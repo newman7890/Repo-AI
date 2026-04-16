@@ -35,6 +35,19 @@ const Index = () => {
   const editHistory = useEditHistory();
   const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
 
+  // Handle payment success callback
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") {
+      searchParams.delete("payment");
+      setSearchParams(searchParams, { replace: true });
+      refreshCredits();
+      toast({
+        title: "🎉 Payment successful!",
+        description: "Your premium tokens have been added. Enjoy editing!",
+      });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const currentMode = editModes.find((m) => m.id === editMode)!;
   const currentEdit = editHistory.current;
 
