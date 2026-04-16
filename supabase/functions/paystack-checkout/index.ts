@@ -13,7 +13,6 @@ const PLAN_INTERVAL = "monthly";
 const PLAN_CURRENCY = "GHS";
 
 async function getOrCreatePlan(secretKey: string): Promise<string> {
-  // List existing plans to find ours
   const listRes = await fetch("https://api.paystack.co/plan", {
     headers: { Authorization: `Bearer ${secretKey}` },
   });
@@ -29,7 +28,6 @@ async function getOrCreatePlan(secretKey: string): Promise<string> {
     }
   }
 
-  // Create new plan
   const createRes = await fetch("https://api.paystack.co/plan", {
     method: "POST",
     headers: {
@@ -88,10 +86,24 @@ serve(async (req) => {
       });
     }
 
-    // Get or create the recurring plan
+    // Parse request body for payment method preference
+    let paymentMethod = "card"; // default
+    try {
+      const body = await req.json();
+      if (body.payment_method === "mobile_money") {
+        paymentMethod = "mobile_money";
+      }
+    } catch {
+      // No body or invalid JSON, use default
+    }
+
     const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY);
 
-    // Initialize transaction with the plan
+    // Build channels array based on payment method
+    const channels = paymentMethod === "mobile_money" 
+      ? ["mobile_money"] 
+      : ["card"];
+
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -103,10 +115,12 @@ serve(async (req) => {
         amount: PLAN_AMOUNT,
         currency: PLAN_CURRENCY,
         plan: planCode,
+        channels,
         callback_url: `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`,
         metadata: {
           user_id: user.id,
           plan: "premium",
+          payment_method: paymentMethod,
         },
       }),
     });
