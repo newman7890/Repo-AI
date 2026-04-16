@@ -65,8 +65,8 @@ const ImageUpload = ({ onImageSelect, currentImage }: ImageUploadProps) => {
 
   if (currentImage) {
     return (
-      <div className="relative w-full aspect-square max-h-[45vh] rounded-xl overflow-hidden border-2 border-border">
-        <img src={currentImage} alt="Uploaded photo" className="w-full h-full object-cover" />
+      <div className="relative w-full max-h-[55vh] rounded-xl overflow-hidden border-2 border-border bg-card flex items-center justify-center">
+        <img src={currentImage} alt="Uploaded photo" className="w-full h-auto max-h-[55vh] object-contain" />
         <button
           onClick={() => onImageSelect("")}
           className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold hover:bg-destructive hover:text-destructive-foreground transition-colors"

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_usage_logs: {
         Row: {
           created_at: string
@@ -77,20 +110,26 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          device_info: string | null
           email: string | null
           id: string
+          user_agent: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          device_info?: string | null
           email?: string | null
           id?: string
+          user_agent?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          device_info?: string | null
           email?: string | null
           id?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BarChart3, Users, Zap, Clock } from "lucide-react";
 import AdminUserManagement from "@/components/AdminUserManagement";
+import AdminNotifications from "@/components/AdminNotifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -170,6 +171,9 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Admin Notifications */}
+        <AdminNotifications />
 
         {/* User Management */}
         <AdminUserManagement />

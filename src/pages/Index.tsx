@@ -189,8 +189,11 @@ const Index = () => {
           <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Account Blocked</AlertTitle>
-            <AlertDescription>
-              Your account has been blocked and you cannot edit photos. Please contact support for assistance.
+            <AlertDescription className="flex flex-col gap-2">
+              <span>Your account has been blocked and you cannot edit photos.</span>
+              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20-%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
+                Contact Support →
+              </a>
             </AlertDescription>
           </Alert>
         )}

@@ -15,6 +15,7 @@ interface UserCredit {
   created_at: string;
   updated_at: string;
   email?: string;
+  device_info?: string;
 }
 
 type Filter = "all" | "premium" | "blocked";
@@ -35,7 +36,7 @@ const AdminUserManagement = () => {
         .order("created_at", { ascending: false }),
       supabase
         .from("profiles")
-        .select("user_id, email"),
+        .select("user_id, email, device_info"),
     ]);
 
     if (creditsRes.error) {
@@ -46,13 +47,16 @@ const AdminUserManagement = () => {
     }
 
     const emailMap = new Map<string, string>();
-    (profilesRes.data || []).forEach((p: { user_id: string; email: string | null }) => {
+    const deviceMap = new Map<string, string>();
+    (profilesRes.data || []).forEach((p: { user_id: string; email: string | null; device_info: string | null }) => {
       if (p.email) emailMap.set(p.user_id, p.email);
+      if (p.device_info) deviceMap.set(p.user_id, p.device_info);
     });
 
     const merged = (creditsRes.data || []).map(u => ({
       ...u,
       email: emailMap.get(u.user_id) || undefined,
+      device_info: deviceMap.get(u.user_id) || undefined,
     }));
 
     setUsers(merged);
@@ -122,19 +126,23 @@ const AdminUserManagement = () => {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-card">
                 <tr className="border-b border-border text-muted-foreground text-xs">
-                  <th className="text-left py-2 pr-3">Email</th>
-                  <th className="text-center py-2 px-2">Tokens</th>
-                  <th className="text-center py-2 px-2">Trials</th>
-                  <th className="text-center py-2 px-2">Status</th>
-                  <th className="text-right py-2 pl-2">Action</th>
-                </tr>
+                   <th className="text-left py-2 pr-3">Email</th>
+                   <th className="text-left py-2 px-2">Device</th>
+                   <th className="text-center py-2 px-2">Tokens</th>
+                   <th className="text-center py-2 px-2">Trials</th>
+                   <th className="text-center py-2 px-2">Status</th>
+                   <th className="text-right py-2 pl-2">Action</th>
+                 </tr>
               </thead>
               <tbody>
                 {filtered.map(u => (
                   <tr key={u.user_id} className="border-b border-border/30">
                     <td className="py-2.5 pr-3 text-xs text-foreground max-w-[200px] truncate" title={u.email || u.user_id}>
-                      {u.email || <span className="font-mono text-muted-foreground">{u.user_id.slice(0, 12)}…</span>}
-                    </td>
+                       {u.email || <span className="font-mono text-muted-foreground">{u.user_id.slice(0, 12)}…</span>}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground max-w-[150px] truncate" title={u.device_info || "Unknown"}>
+                       {u.device_info ? u.device_info.split(" | ")[0] : "—"}
+                     </td>
                     <td className="text-center py-2.5 px-2 text-foreground">{u.tokens}</td>
                     <td className="text-center py-2.5 px-2 text-foreground">{u.trial_uses_remaining}</td>
                     <td className="text-center py-2.5 px-2">

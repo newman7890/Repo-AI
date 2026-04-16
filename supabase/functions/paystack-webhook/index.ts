@@ -124,6 +124,35 @@ serve(async (req) => {
         throw error;
       }
 
+      // Notify admin about payment
+      const planName = metadata.plan_id || "unknown";
+      const amountCedis = (amount / 100).toFixed(2);
+      const currency = event.data?.currency || "GHS";
+
+      // Get user email from profiles
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const userEmail = profile?.email || userId;
+
+      await supabase.from("admin_notifications").insert({
+        user_id: userId,
+        type: "payment",
+        title: "New Payment Received",
+        message: `${userEmail} purchased ${planName} plan (${currency} ${amountCedis}) — ${tokens} tokens`,
+        metadata: {
+          email: userEmail,
+          plan: planName,
+          amount,
+          currency,
+          tokens,
+          reference,
+        },
+      }).catch((e: any) => console.error("Failed to insert admin notification:", e));
+
       console.log(`Premium activated for user ${userId} with ${tokens} tokens`);
     }
 
