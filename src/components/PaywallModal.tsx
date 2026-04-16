@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Crown, Zap, Shield, Sparkles, Loader2, CreditCard, Smartphone } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Crown, Zap, Shield, Sparkles, Loader2, CreditCard, Smartphone, Phone, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +9,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -18,13 +26,121 @@ interface PaywallModalProps {
 }
 
 type PaymentMethod = "card" | "mobile_money";
+type MoMoStep = "input" | "pending" | "success" | "failed";
+
+const PROVIDERS = [
+  { value: "mtn", label: "MTN Mobile Money" },
+  { value: "vod", label: "Vodafone Cash" },
+  { value: "tgo", label: "AirtelTigo Money" },
+];
 
 const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mobile_money");
+  const [phone, setPhone] = useState("");
+  const [provider, setProvider] = useState("mtn");
+  const [momoStep, setMomoStep] = useState<MoMoStep>("input");
+  const [reference, setReference] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
 
-  const handleSubscribe = async () => {
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on close
+  useEffect(() => {
+    if (!open) {
+      stopPolling();
+      setMomoStep("input");
+      setReference("");
+      setStatusMessage("");
+      setLoading(false);
+    }
+  }, [open, stopPolling]);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  const pollPaymentStatus = useCallback(async (ref: string) => {
+    let attempts = 0;
+    const maxAttempts = 60; // 5 min at 5s intervals
+
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        stopPolling();
+        setMomoStep("failed");
+        setStatusMessage("Payment timed out. Please try again.");
+        return;
+      }
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ reference: ref }),
+          }
+        );
+        const data = await res.json();
+
+        if (data.payment_status === "success") {
+          stopPolling();
+          setMomoStep("success");
+          setStatusMessage("Payment confirmed! Your premium tokens are ready.");
+        } else if (data.payment_status === "failed" || data.payment_status === "abandoned") {
+          stopPolling();
+          setMomoStep("failed");
+          setStatusMessage(data.message || "Payment failed. Please try again.");
+        }
+        // else keep polling (pending)
+      } catch {
+        // Network error, keep polling
+      }
+    }, 5000);
+  }, [stopPolling]);
+
+  const handleMoMoPay = async () => {
+    if (!phone.trim()) {
+      toast({ title: "Enter phone number", description: "Please enter your mobile money number.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/momo-charge`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ phone: phone.trim(), provider }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to initiate payment");
+
+      setReference(data.reference);
+      setStatusMessage(data.display_text || "A prompt has been sent to your phone. Enter your PIN to complete payment.");
+      setMomoStep("pending");
+
+      // Start polling
+      pollPaymentStatus(data.reference);
+    } catch (err: any) {
+      toast({ title: "Payment error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardSubscribe = async () => {
     setLoading(true);
     try {
       const response = await fetch(
@@ -32,31 +148,27 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
         {
           method: "POST",
           headers: await getAuthHeaders(),
-          body: JSON.stringify({ payment_method: paymentMethod }),
+          body: JSON.stringify({ payment_method: "card" }),
         }
       );
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || "Failed to start checkout");
-      }
-
+      if (!response.ok) throw new Error(data?.error || "Failed to start checkout");
       window.location.href = data.authorization_url;
     } catch (err: any) {
-      console.error("Checkout error:", err);
-      toast({
-        title: "Payment error",
-        description: err.message || "Could not start checkout. Try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Payment error", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDone = () => {
+    onOpenChange(false);
+    // Trigger page reload to refresh credits
+    window.location.search = "?payment=success";
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={momoStep === "pending" ? undefined : onOpenChange}>
       <DialogContent className="max-w-sm mx-auto">
         <DialogHeader className="text-center">
           <div className="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-2" style={{ background: "var(--gradient-primary)" }}>
@@ -64,98 +176,165 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           </div>
           <DialogTitle className="text-xl font-bold">Upgrade to Premium</DialogTitle>
           <DialogDescription className="text-sm">
-            You've used all 3 free trials. Upgrade to keep editing!
+            {momoStep === "pending"
+              ? "Complete payment on your phone"
+              : momoStep === "success"
+              ? "You're now a Premium member!"
+              : "You've used all 3 free trials. Upgrade to keep editing!"}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-3">
-          <div className="bg-card rounded-xl border border-border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-bold">Premium</span>
-              <span className="text-lg font-bold text-primary">GHS 100<span className="text-xs text-muted-foreground font-normal">/month</span></span>
-            </div>
-            <ul className="space-y-2">
-              {[
-                { icon: Zap, text: "100 AI tokens per month" },
-                { icon: Sparkles, text: "All edit modes & qualities" },
-                { icon: Shield, text: "Priority processing" },
-              ].map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Icon className="w-4 h-4 text-primary shrink-0" />
-                  {text}
-                </li>
-              ))}
-            </ul>
+        {/* Success State */}
+        {momoStep === "success" && (
+          <div className="py-6 text-center space-y-4">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+            <p className="text-sm text-muted-foreground">{statusMessage}</p>
+            <Button className="w-full h-11 font-bold rounded-xl" onClick={handleDone}>
+              Start Editing
+            </Button>
           </div>
+        )}
 
-          {/* Payment Method Selector */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Payment method</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("mobile_money")}
-                className={cn(
-                  "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
-                  paymentMethod === "mobile_money"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                )}
-              >
-                <Smartphone className="w-4 h-4 shrink-0" />
-                Mobile Money
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("card")}
-                className={cn(
-                  "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
-                  paymentMethod === "card"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                )}
-              >
-                <CreditCard className="w-4 h-4 shrink-0" />
-                Card
-              </button>
+        {/* Failed State */}
+        {momoStep === "failed" && (
+          <div className="py-6 text-center space-y-4">
+            <p className="text-sm text-destructive">{statusMessage}</p>
+            <Button className="w-full h-11 font-bold rounded-xl" variant="outline" onClick={() => setMomoStep("input")}>
+              Try Again
+            </Button>
+          </div>
+        )}
+
+        {/* Pending State - waiting for PIN */}
+        {momoStep === "pending" && (
+          <div className="py-6 text-center space-y-4">
+            <div className="relative mx-auto w-16 h-16">
+              <Phone className="w-16 h-16 text-primary mx-auto animate-pulse" />
+            </div>
+            <p className="text-sm font-medium">Check your phone</p>
+            <p className="text-xs text-muted-foreground">{statusMessage}</p>
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Waiting for confirmation...
             </div>
           </div>
+        )}
 
-          <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-            <p className="text-[11px] text-muted-foreground text-center">
-              {paymentMethod === "card"
-                ? "Card starts an auto-renewing monthly subscription."
-                : "Mobile Money charges once now. Users can renew manually each month."}
-            </p>
-            <p className="text-[11px] text-muted-foreground text-center">
-              <strong>Token costs:</strong> Fast = 1 · High = 2 · Ultra = 3 · Face Swap = 5
-            </p>
-          </div>
-        </div>
+        {/* Input State */}
+        {momoStep === "input" && (
+          <>
+            <div className="space-y-3 py-3">
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-lg font-bold">Premium</span>
+                  <span className="text-lg font-bold text-primary">GHS 100<span className="text-xs text-muted-foreground font-normal">/month</span></span>
+                </div>
+                <ul className="space-y-2">
+                  {[
+                    { icon: Zap, text: "100 AI tokens per month" },
+                    { icon: Sparkles, text: "All edit modes & qualities" },
+                    { icon: Shield, text: "Priority processing" },
+                  ].map(({ icon: Icon, text }) => (
+                    <li key={text} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Icon className="w-4 h-4 text-primary shrink-0" />
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-        <Button
-          className="w-full h-11 font-bold rounded-xl"
-          onClick={handleSubscribe}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Connecting to Paystack...
-            </>
-          ) : (
-            <>
-              {paymentMethod === "mobile_money" ? (
-                <Smartphone className="w-4 h-4 mr-2" />
-              ) : (
-                <CreditCard className="w-4 h-4 mr-2" />
+              {/* Payment Method Selector */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Payment method</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("mobile_money")}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
+                      paymentMethod === "mobile_money"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                    )}
+                  >
+                    <Smartphone className="w-4 h-4 shrink-0" />
+                    Mobile Money
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
+                      paymentMethod === "card"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                    )}
+                  >
+                    <CreditCard className="w-4 h-4 shrink-0" />
+                    Card
+                  </button>
+                </div>
+              </div>
+
+              {/* MoMo fields */}
+              {paymentMethod === "mobile_money" && (
+                <div className="space-y-2">
+                  <Select value={provider} onValueChange={setProvider}>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select network" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROVIDERS.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="tel"
+                    placeholder="e.g. 024 XXX XXXX"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="rounded-xl"
+                    maxLength={15}
+                  />
+                </div>
               )}
-              {paymentMethod === "mobile_money"
-                ? "Pay once — GHS 100"
-                : "Subscribe — GHS 100/month"}
-            </>
-          )}
-        </Button>
+
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground text-center">
+                  {paymentMethod === "card"
+                    ? "Card starts an auto-renewing monthly subscription."
+                    : "You'll receive a prompt on your phone to enter your PIN."}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              className="w-full h-11 font-bold rounded-xl"
+              onClick={paymentMethod === "mobile_money" ? handleMoMoPay : handleCardSubscribe}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {paymentMethod === "mobile_money" ? "Sending prompt..." : "Connecting..."}
+                </>
+              ) : paymentMethod === "mobile_money" ? (
+                <>
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Pay GHS 100 via MoMo
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Subscribe — GHS 100/month
+                </>
+              )}
+            </Button>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
