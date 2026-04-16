@@ -7,6 +7,7 @@ interface QualityOption {
   label: string;
   icon: React.ReactNode;
   description: string;
+  cost: number;
 }
 
 const qualityOptions: QualityOption[] = [
@@ -14,19 +15,22 @@ const qualityOptions: QualityOption[] = [
     id: "fast",
     label: "Fast",
     icon: <Zap className="w-4 h-4" />,
-    description: "Quick results",
+    description: "1 token",
+    cost: 1,
   },
   {
     id: "high",
     label: "High",
     icon: <Sparkles className="w-4 h-4" />,
-    description: "Better quality",
+    description: "2 tokens",
+    cost: 2,
   },
   {
     id: "ultra",
     label: "Ultra",
     icon: <Crown className="w-4 h-4" />,
-    description: "Best realism",
+    description: "3 tokens",
+    cost: 3,
   },
 ];
 
