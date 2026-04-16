@@ -161,6 +161,10 @@ const FaceSwap = () => {
   };
 
   const handleSwap = async () => {
+    if (credits?.blocked) {
+      toast({ title: "Account Blocked", description: "Your account has been blocked. Please contact support.", variant: "destructive" });
+      return;
+    }
     if (!sourceImage || filledFaces.length === 0) return;
     setIsProcessing(true);
     abortRef.current = new AbortController();
