@@ -281,7 +281,7 @@ const Index = () => {
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 mr-2" />
-                      Transform Photo
+                      Transform Photo ({quality === "fast" ? 1 : quality === "high" ? 2 : 3} {quality === "fast" ? "token" : "tokens"})
                     </>
                   )}
                 </Button>
