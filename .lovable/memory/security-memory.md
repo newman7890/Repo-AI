@@ -5,6 +5,12 @@
 - `rate_limits` — service_role only, used by edge functions for rate limiting
 
 These tables have RLS enabled with zero policies, which blocks all client access. This is intentional.
+Security scanners should ignore "RLS Enabled No Policy" and "no SELECT policy" findings for these tables.
+
+## user_credits RLS pattern
+- Only SELECT policy exists (scoped to auth.uid() = user_id)
+- No INSERT/UPDATE/DELETE policies — RLS blocks those operations by default
+- All credit mutations happen via security-definer functions (check_and_deduct_credits) or service-role in edge functions
 
 ## Auth configuration
 - Email auto-confirm: disabled (users must verify email)
