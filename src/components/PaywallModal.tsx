@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crown, Zap, Shield, Sparkles, Loader2 } from "lucide-react";
+import { Crown, Zap, Shield, Sparkles, Loader2, CreditCard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,14 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface PaywallModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+type PaymentMethod = "card" | "mobile_money";
+
 const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mobile_money");
   const { toast } = useToast();
 
   const handleSubscribe = async () => {
@@ -28,7 +32,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
         {
           method: "POST",
           headers: await getAuthHeaders(),
-          body: JSON.stringify({ plan: "premium" }),
+          body: JSON.stringify({ payment_method: paymentMethod }),
         }
       );
 
@@ -38,7 +42,6 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
         throw new Error(data?.error || "Failed to start checkout");
       }
 
-      // Redirect to Paystack checkout page
       window.location.href = data.authorization_url;
     } catch (err: any) {
       console.error("Checkout error:", err);
@@ -85,6 +88,39 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
             </ul>
           </div>
 
+          {/* Payment Method Selector */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Payment method</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("mobile_money")}
+                className={cn(
+                  "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
+                  paymentMethod === "mobile_money"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                )}
+              >
+                <Smartphone className="w-4 h-4 shrink-0" />
+                Mobile Money
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("card")}
+                className={cn(
+                  "flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
+                  paymentMethod === "card"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                )}
+              >
+                <CreditCard className="w-4 h-4 shrink-0" />
+                Card
+              </button>
+            </div>
+          </div>
+
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-[11px] text-muted-foreground text-center">
               <strong>Token costs:</strong> Fast = 1 · High = 2 · Ultra = 3 · Face Swap = 5
@@ -104,7 +140,11 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
             </>
           ) : (
             <>
-              <Crown className="w-4 h-4 mr-2" />
+              {paymentMethod === "mobile_money" ? (
+                <Smartphone className="w-4 h-4 mr-2" />
+              ) : (
+                <CreditCard className="w-4 h-4 mr-2" />
+              )}
               Subscribe — GHS 100/month
             </>
           )}
