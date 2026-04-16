@@ -7,15 +7,23 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-paystack-signature",
 };
 
-function verifySignature(body: string, signature: string, secretKey: string): boolean {
-  const encoder = new TextEncoder();
-  const key = encoder.encode(secretKey);
-  const data = encoder.encode(body);
-
-  // Use Web Crypto API for HMAC-SHA512
-  // For simplicity, we'll skip strict verification in test mode
-  // In production, implement full HMAC verification
-  return !!signature;
+async function verifySignature(body: string, signature: string, secretKey: string): Promise<boolean> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secretKey),
+    { name: "HMAC", hash: "SHA-512" },
+    false,
+    ["verify"]
+  );
+  const sigBytes = new Uint8Array(
+    signature.match(/.{1,2}/g)!.map((h) => parseInt(h, 16))
+  );
+  return crypto.subtle.verify(
+    "HMAC",
+    key,
+    sigBytes,
+    new TextEncoder().encode(body)
+  );
 }
 
 serve(async (req) => {
@@ -32,10 +40,16 @@ serve(async (req) => {
     const body = await req.text();
     const signature = req.headers.get("x-paystack-signature") || "";
 
-    // Verify signature
-    if (signature && !verifySignature(body, signature, PAYSTACK_SECRET_KEY)) {
+    // Reject requests without a valid signature
+    if (!signature) {
+      console.error("Missing Paystack signature header");
+      return new Response("Missing signature", { status: 400, headers: corsHeaders });
+    }
+
+    const isValid = await verifySignature(body, signature, PAYSTACK_SECRET_KEY);
+    if (!isValid) {
       console.error("Invalid Paystack signature");
-      return new Response("Invalid signature", { status: 400 });
+      return new Response("Invalid signature", { status: 400, headers: corsHeaders });
     }
 
     const event = JSON.parse(body);
@@ -51,10 +65,9 @@ serve(async (req) => {
 
       if (!userId) {
         console.error("No user_id in metadata");
-        return new Response("OK", { status: 200 });
+        return new Response("OK", { status: 200, headers: corsHeaders });
       }
 
-      // Grant 100 tokens and mark as premium
       const { error } = await supabase
         .from("user_credits")
         .update({
@@ -72,13 +85,11 @@ serve(async (req) => {
       console.log(`Premium activated for user ${userId}`);
     }
 
-    // Handle recurring payment success (monthly renewal)
     if (event.event === "invoice.payment_succeeded") {
       const metadata = event.data?.metadata || {};
       const userId = metadata.user_id;
 
       if (userId) {
-        // Refill tokens on renewal
         const { error } = await supabase
           .from("user_credits")
           .update({
@@ -92,7 +103,6 @@ serve(async (req) => {
       }
     }
 
-    // Handle failed payment / cancelled subscription
     if (event.event === "invoice.payment_failed" || event.event === "subscription.disable") {
       const metadata = event.data?.metadata || {};
       const userId = metadata.user_id;
