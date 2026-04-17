@@ -48,8 +48,14 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }: BeforeAfterSliderProps) 
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-h-[75vh] mx-auto rounded-xl overflow-hidden border border-border cursor-col-resize select-none touch-none bg-muted/20"
-      style={{ aspectRatio: `${aspectRatio}` }}
+      className="relative mx-auto rounded-xl overflow-hidden border border-border cursor-col-resize select-none touch-none bg-muted/20"
+      style={{
+        aspectRatio: `${aspectRatio}`,
+        maxHeight: "75vh",
+        maxWidth: "100%",
+        height: aspectRatio < 1 ? "75vh" : "auto",
+        width: aspectRatio < 1 ? "auto" : "100%",
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
