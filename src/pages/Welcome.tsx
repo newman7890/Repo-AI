@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Sparkles, Wand2, Repeat, Zap, Shield, Smartphone, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
@@ -133,37 +134,8 @@ const Welcome = () => {
             </p>
           </div>
 
-          {/* Install steps */}
-          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-            <div className="bg-card/50 border border-border/60 rounded-2xl p-5 md:p-7">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">📱</div>
-                <h3 className="font-semibold text-base md:text-lg">iPhone (Safari)</h3>
-              </div>
-              <ol className="space-y-2.5 text-sm md:text-base text-muted-foreground">
-                {["Open this site in Safari", "Tap the Share button", "Choose 'Add to Home Screen'", "Tap 'Add' — you're done!"].map((step, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 shrink-0 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="bg-card/50 border border-border/60 rounded-2xl p-5 md:p-7">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent font-bold text-sm">🤖</div>
-                <h3 className="font-semibold text-base md:text-lg">Android (Chrome)</h3>
-              </div>
-              <ol className="space-y-2.5 text-sm md:text-base text-muted-foreground">
-                {["Open this site in Chrome", "Tap the ⋮ menu (top right)", "Choose 'Install app'", "Confirm — Renderme is installed!"].map((step, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 shrink-0 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
+          {/* Animated install carousel */}
+          <InstallStepsCarousel />
         </div>
       </section>
 
