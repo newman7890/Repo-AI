@@ -133,19 +133,6 @@ const Welcome = () => {
             </p>
           </div>
 
-          {/* Video player */}
-          <div className="rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl mb-10 md:mb-14">
-            <video
-              src="/install-tutorial.mp4"
-              controls
-              playsInline
-              preload="metadata"
-              className="w-full h-auto block"
-            >
-              Your browser does not support the video tag.
-            </video>
-          </div>
-
           {/* Install steps */}
           <div className="grid md:grid-cols-2 gap-4 md:gap-6">
             <div className="bg-card/50 border border-border/60 rounded-2xl p-5 md:p-7">
