@@ -220,6 +220,7 @@ const Welcome = () => {
             <span>© {new Date().getFullYear()} Renderme AI. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-4">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
             <a href="mailto:newm5811@gmail.com" className="hover:text-foreground transition-colors">Contact support</a>
             {!isAuthed && <Link to="/auth" className="hover:text-foreground transition-colors">Sign in</Link>}
           </div>
