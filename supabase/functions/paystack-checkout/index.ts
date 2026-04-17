@@ -92,6 +92,7 @@ serve(async (req) => {
 
     const body = await req.json();
     const planId = body.plan_id || "standard";
+    const paymentMethod = body.payment_method === "mobile_money" ? "mobile_money" : "card";
 
     if (!PLANS[planId]) {
       return new Response(JSON.stringify({ error: "Invalid plan" }), {
@@ -119,23 +120,31 @@ serve(async (req) => {
     }
 
     const callbackUrl = `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`;
-    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
 
     const txBody: Record<string, any> = {
       email: userEmail,
       amount: plan.amount,
       currency: PLAN_CURRENCY,
       callback_url: callbackUrl,
-      plan: planCode,
-      channels: ["card"],
       metadata: {
         user_id: userId,
         plan: planId,
+        plan_id: planId,
         tokens: plan.tokens,
-        payment_method: "card",
-        billing_type: "subscription",
+        payment_method: paymentMethod,
+        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
       },
     };
+
+    if (paymentMethod === "card") {
+      // Card => recurring subscription via Paystack plan
+      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
+      txBody.plan = planCode;
+      txBody.channels = ["card"];
+    } else {
+      // Mobile Money => one-time charge (no plan attached)
+      txBody.channels = ["mobile_money"];
+    }
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
