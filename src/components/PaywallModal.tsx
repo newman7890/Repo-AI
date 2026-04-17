@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crown, Zap, Loader2, CreditCard, Check } from "lucide-react";
+import { Crown, Zap, Loader2, CreditCard, Check, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,9 +24,12 @@ const plans = [
   { id: "premium", name: "Premium", price: 500, tokens: 500 },
 ];
 
+type PaymentMethod = "card" | "mobile_money";
+
 const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("standard");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const { toast } = useToast();
 
   const handleSubscribe = async () => {
@@ -39,9 +42,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           method: "POST",
           headers: await getAuthHeaders(),
           body: JSON.stringify({
-            payment_method: "card",
+            payment_method: paymentMethod,
             plan_id: plan.id,
-            amount: plan.price * 100, // pesewas
+            amount: plan.price * 100,
             tokens: plan.tokens,
           }),
         }
@@ -56,6 +59,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     }
   };
 
+  const plan = plans.find((p) => p.id === selectedPlan)!;
+  const isMomo = paymentMethod === "mobile_money";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
@@ -65,37 +71,39 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           </div>
           <DialogTitle className="text-xl font-bold">Choose Your Plan</DialogTitle>
           <DialogDescription className="text-sm">
-            You've used all 3 free trials. Pick a plan to keep editing!
+            Pick a plan and payment method to keep editing!
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-2 py-3">
-          {plans.map((plan) => (
+          {plans.map((p) => (
             <button
-              key={plan.id}
-              onClick={() => setSelectedPlan(plan.id)}
+              key={p.id}
+              onClick={() => setSelectedPlan(p.id)}
               className={cn(
                 "relative rounded-xl border-2 p-3 text-left transition-all",
-                selectedPlan === plan.id
+                selectedPlan === p.id
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground/30"
               )}
             >
-              {plan.popular && (
+              {p.popular && (
                 <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                   Popular
                 </span>
               )}
-              <div className="font-bold text-sm">{plan.name}</div>
+              <div className="font-bold text-sm">{p.name}</div>
               <div className="text-lg font-bold text-primary mt-1">
-                GHS {plan.price}
-                <span className="text-[10px] text-muted-foreground font-normal">/mo</span>
+                GHS {p.price}
+                <span className="text-[10px] text-muted-foreground font-normal">
+                  {isMomo ? " one-time" : "/mo"}
+                </span>
               </div>
               <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
                 <Zap className="w-3 h-3 text-primary" />
-                {plan.tokens} tokens
+                {p.tokens} tokens
               </div>
-              {selectedPlan === plan.id && (
+              {selectedPlan === p.id && (
                 <div className="absolute top-2 right-2">
                   <Check className="w-4 h-4 text-primary" />
                 </div>
@@ -104,14 +112,51 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           ))}
         </div>
 
-        <div className="bg-muted/50 rounded-lg p-2">
+        {/* Payment method selector */}
+        <div>
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">
+            Payment method
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setPaymentMethod("card")}
+              className={cn(
+                "rounded-xl border-2 p-2.5 flex flex-col items-center gap-1 transition-all",
+                paymentMethod === "card"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/30"
+              )}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span className="text-xs font-semibold">Card</span>
+              <span className="text-[10px] text-muted-foreground">Auto-renews monthly</span>
+            </button>
+            <button
+              onClick={() => setPaymentMethod("mobile_money")}
+              className={cn(
+                "rounded-xl border-2 p-2.5 flex flex-col items-center gap-1 transition-all",
+                paymentMethod === "mobile_money"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/30"
+              )}
+            >
+              <Smartphone className="w-4 h-4" />
+              <span className="text-xs font-semibold">Mobile Money</span>
+              <span className="text-[10px] text-muted-foreground">One-time payment</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-muted/50 rounded-lg p-2 mt-2">
           <p className="text-[11px] text-muted-foreground text-center">
-            Auto-renewing monthly subscription. Cancel anytime.
+            {isMomo
+              ? "MTN, Vodafone & AirtelTigo supported. Pay once — tokens added instantly."
+              : "Auto-renewing monthly subscription. Cancel anytime."}
           </p>
         </div>
 
         <Button
-          className="w-full h-11 font-bold rounded-xl"
+          className="w-full h-11 font-bold rounded-xl mt-2"
           onClick={handleSubscribe}
           disabled={loading}
         >
@@ -122,8 +167,10 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
             </>
           ) : (
             <>
-              <CreditCard className="w-4 h-4 mr-2" />
-              Subscribe — GHS {plans.find((p) => p.id === selectedPlan)!.price}/month
+              {isMomo ? <Smartphone className="w-4 h-4 mr-2" /> : <CreditCard className="w-4 h-4 mr-2" />}
+              {isMomo
+                ? `Pay GHS ${plan.price} via MoMo`
+                : `Subscribe — GHS ${plan.price}/month`}
             </>
           )}
         </Button>
