@@ -56,6 +56,16 @@ async function getOrCreatePlan(secretKey: string, planId: string): Promise<strin
   return createData.data.plan_code;
 }
 
+// Normalize Ghana phone numbers to local 0XXXXXXXXX format Paystack expects
+function normalizeGhanaPhone(raw: string): string | null {
+  if (!raw) return null;
+  let p = raw.replace(/\D/g, "");
+  if (p.startsWith("233")) p = "0" + p.slice(3);
+  if (p.length === 9 && !p.startsWith("0")) p = "0" + p;
+  if (!/^0\d{9}$/.test(p)) return null;
+  return p;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -93,6 +103,8 @@ serve(async (req) => {
     const body = await req.json();
     const planId = body.plan_id || "standard";
     const paymentMethod = body.payment_method === "mobile_money" ? "mobile_money" : "card";
+    const phoneRaw = (body.phone || "") as string;
+    const provider = (body.provider || "") as string; // mtn | vod | atl
 
     if (!PLANS[planId]) {
       return new Response(JSON.stringify({ error: "Invalid plan" }), {
@@ -119,32 +131,85 @@ serve(async (req) => {
       });
     }
 
+    // ------ MOBILE MONEY: direct charge that pushes PIN prompt to phone ------
+    if (paymentMethod === "mobile_money") {
+      const phone = normalizeGhanaPhone(phoneRaw);
+      if (!phone) {
+        return new Response(JSON.stringify({ error: "Enter a valid Ghana phone number (e.g. 0241234567)" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!["mtn", "vod", "atl"].includes(provider)) {
+        return new Response(JSON.stringify({ error: "Select your mobile money network" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const chargeRes = await fetch("https://api.paystack.co/charge", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          amount: plan.amount,
+          currency: PLAN_CURRENCY,
+          mobile_money: { phone, provider },
+          metadata: {
+            user_id: userId,
+            plan: planId,
+            plan_id: planId,
+            tokens: plan.tokens,
+            payment_method: "mobile_money",
+            billing_type: "one_time",
+          },
+        }),
+      });
+      const chargeData = await chargeRes.json();
+
+      if (!chargeData.status) {
+        return new Response(JSON.stringify({ error: chargeData.message || "Mobile money charge failed" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({
+        method: "mobile_money",
+        status: chargeData.data?.status, // usually "send_otp" or "pay_offline" or "pending"
+        reference: chargeData.data?.reference,
+        display_text: chargeData.data?.display_text,
+        message: chargeData.message,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ------ CARD: hosted checkout with subscription plan ------
     const callbackUrl = `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`;
+
+    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
 
     const txBody: Record<string, any> = {
       email: userEmail,
       amount: plan.amount,
       currency: PLAN_CURRENCY,
       callback_url: callbackUrl,
+      plan: planCode,
+      channels: ["card"],
       metadata: {
         user_id: userId,
         plan: planId,
         plan_id: planId,
         tokens: plan.tokens,
-        payment_method: paymentMethod,
-        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
+        payment_method: "card",
+        billing_type: "subscription",
       },
     };
-
-    if (paymentMethod === "card") {
-      // Card => recurring subscription via Paystack plan
-      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
-      txBody.plan = planCode;
-      txBody.channels = ["card"];
-    } else {
-      // Mobile Money => one-time charge (no plan attached)
-      txBody.channels = ["mobile_money"];
-    }
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
@@ -162,6 +227,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
+      method: "card",
       authorization_url: data.data.authorization_url,
       reference: data.data.reference,
     }), {
