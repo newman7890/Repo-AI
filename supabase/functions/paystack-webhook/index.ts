@@ -99,6 +99,7 @@ serve(async (req) => {
 
       const amount = event.data?.amount || 0;
       const tokens = resolveTokens(metadata, amount);
+      const isOneTime = metadata.billing_type === "one_time" || metadata.payment_method === "mobile_money";
 
       if (reference) {
         await supabase.from("processed_payments").insert({
@@ -110,18 +111,40 @@ serve(async (req) => {
         }).catch(() => {});
       }
 
-      const { error } = await supabase
-        .from("user_credits")
-        .update({
-          tokens,
-          is_premium: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+      if (isOneTime) {
+        // One-time MoMo: ADD tokens to existing balance, do NOT mark recurring premium
+        const { data: existing } = await supabase
+          .from("user_credits")
+          .select("tokens")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-      if (error) {
-        console.error("Error updating credits:", error);
-        throw error;
+        const newTotal = (existing?.tokens || 0) + tokens;
+        const { error } = await supabase
+          .from("user_credits")
+          .update({ tokens: newTotal, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
+
+        if (error) {
+          console.error("Error adding one-time tokens:", error);
+          throw error;
+        }
+        console.log(`One-time MoMo: added ${tokens} tokens to user ${userId} (total ${newTotal})`);
+      } else {
+        // Subscription (card): set tokens and mark premium
+        const { error } = await supabase
+          .from("user_credits")
+          .update({
+            tokens,
+            is_premium: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        if (error) {
+          console.error("Error updating credits:", error);
+          throw error;
+        }
       }
 
       // Notify admin about payment
