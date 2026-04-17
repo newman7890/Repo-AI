@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -7,8 +7,21 @@ interface BeforeAfterSliderProps {
 
 const BeforeAfterSlider = ({ beforeImage, afterImage }: BeforeAfterSliderProps) => {
   const [position, setPosition] = useState(50);
+  const [aspectRatio, setAspectRatio] = useState<number>(3 / 4);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+
+  // Detect the natural aspect ratio of the generated image so the full image is always visible
+  useEffect(() => {
+    if (!afterImage) return;
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        setAspectRatio(img.naturalWidth / img.naturalHeight);
+      }
+    };
+    img.src = afterImage;
+  }, [afterImage]);
 
   const updatePosition = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -35,20 +48,21 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }: BeforeAfterSliderProps) 
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-border cursor-col-resize select-none touch-none"
+      className="relative w-full max-h-[75vh] mx-auto rounded-xl overflow-hidden border border-border cursor-col-resize select-none touch-none bg-muted/20"
+      style={{ aspectRatio: `${aspectRatio}` }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
       {/* After (full) */}
-      <img src={afterImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
+      <img src={afterImage} alt="After" className="absolute inset-0 w-full h-full object-contain" />
 
       {/* Before (clipped) */}
       <div
         className="absolute inset-0"
         style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
       >
-        <img src={beforeImage} alt="Before" className="w-full h-full object-cover" />
+        <img src={beforeImage} alt="Before" className="w-full h-full object-contain" />
       </div>
 
       {/* Divider line */}
