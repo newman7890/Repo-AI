@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Sparkles, Wand2, Repeat, Zap, Shield, Smartphone, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
