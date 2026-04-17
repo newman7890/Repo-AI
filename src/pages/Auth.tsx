@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -213,6 +213,11 @@ const Auth = () => {
           >
             {isLogin ? "Sign up" : "Sign in"}
           </button>
+        </p>
+
+        <p className="text-center text-xs text-muted-foreground">
+          By continuing you agree to our{" "}
+          <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
         </p>
       </div>
     </div>
