@@ -39,16 +39,38 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const deviceInfo = body?.deviceInfo || {};
 
-    // Rate-limit using service role (1 registration notification per user per hour is plenty)
     const admin = createClient(supabaseUrl, serviceKey);
 
-    const { data: allowed, error: rlErr } = await admin.rpc("check_rate_limit", {
+    // H2 fix: server-side "first sign-in" check using service role.
+    // RLS prevents non-admin clients from reading admin_notifications, so the
+    // existence check must happen here, not in the browser.
+    const { data: existing, error: existingErr } = await admin
+      .from("admin_notifications")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("type", "registration")
+      .limit(1)
+      .maybeSingle();
+
+    if (existingErr) {
+      console.error("notify-new-user existence check failed:", existingErr.message);
+    }
+
+    if (existing) {
+      // Already notified for this user — no-op, no rate-limit row burned
+      return new Response(JSON.stringify({ ok: true, skipped: "already_notified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Light rate limit (defense in depth — prevent abuse if this endpoint gets hit hard)
+    const { data: allowed } = await admin.rpc("check_rate_limit", {
       p_user_id: userId,
       p_endpoint: "notify-new-user",
       p_max_requests: 3,
       p_window_seconds: 3600,
     });
-    if (rlErr || allowed === false) {
+    if (allowed === false) {
       return new Response(JSON.stringify({ error: "Rate limited" }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
