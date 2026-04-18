@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Loader2, Wand2, Repeat } from "lucide-react";
+import { Sparkles, Loader2, Wand2, Repeat, Zap } from "lucide-react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +31,7 @@ const Index = () => {
   const [description, setDescription] = useState("");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
@@ -126,6 +127,55 @@ const Index = () => {
 
   const handleCancel = () => {
     abortControllerRef.current?.abort();
+  };
+
+  const handleEnhancePrompt = async () => {
+    if (credits?.blocked) {
+      toast({ title: "Account Blocked", description: "Your account has been blocked.", variant: "destructive" });
+      return;
+    }
+    if (!description.trim()) {
+      toast({ title: "Nothing to enhance", description: "Type a prompt first, then enhance it.", variant: "destructive" });
+      return;
+    }
+    setIsEnhancing(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enhance-prompt`,
+        {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ description, mode: editMode }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        if (data?.error === "insufficient_credits") {
+          setShowPaywall(true);
+          return;
+        }
+        if (data?.error === "account_blocked" || data?.blocked) {
+          toast({ title: "Account Blocked", description: "Your account has been blocked.", variant: "destructive" });
+          return;
+        }
+        throw new Error(data?.error || `Server error (${response.status})`);
+      }
+      if (data?.enhancedPrompt) {
+        setDescription(data.enhancedPrompt);
+        refreshCredits();
+        toast({ title: "Prompt enhanced ✨", description: "2 tokens used." });
+      } else {
+        throw new Error("No enhanced prompt returned");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Enhancement failed",
+        description: err.message || "Could not enhance the prompt.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   const handleReset = () => {
@@ -253,10 +303,26 @@ const Index = () => {
 
                   {/* Custom Description */}
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-1.5 gap-2">
                       <label className="text-xs md:text-sm font-semibold text-foreground">
                         Or describe it yourself
                       </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEnhancePrompt}
+                        disabled={isEnhancing || isProcessing || !description.trim()}
+                        className="h-7 px-2 text-[10px] md:text-xs gap-1 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                        title="Enhance prompt with AI (2 tokens)"
+                      >
+                        {isEnhancing ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Zap className="w-3 h-3" />
+                        )}
+                        {isEnhancing ? "Enhancing..." : "Enhance (2 tokens)"}
+                      </Button>
                     </div>
                     <Textarea
                       placeholder={currentMode.placeholder}
