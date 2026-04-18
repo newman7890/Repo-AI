@@ -129,6 +129,55 @@ const Index = () => {
     abortControllerRef.current?.abort();
   };
 
+  const handleEnhancePrompt = async () => {
+    if (credits?.blocked) {
+      toast({ title: "Account Blocked", description: "Your account has been blocked.", variant: "destructive" });
+      return;
+    }
+    if (!description.trim()) {
+      toast({ title: "Nothing to enhance", description: "Type a prompt first, then enhance it.", variant: "destructive" });
+      return;
+    }
+    setIsEnhancing(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enhance-prompt`,
+        {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ description, mode: editMode }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        if (data?.error === "insufficient_credits") {
+          setShowPaywall(true);
+          return;
+        }
+        if (data?.error === "account_blocked" || data?.blocked) {
+          toast({ title: "Account Blocked", description: "Your account has been blocked.", variant: "destructive" });
+          return;
+        }
+        throw new Error(data?.error || `Server error (${response.status})`);
+      }
+      if (data?.enhancedPrompt) {
+        setDescription(data.enhancedPrompt);
+        refreshCredits();
+        toast({ title: "Prompt enhanced ✨", description: "2 tokens used." });
+      } else {
+        throw new Error("No enhanced prompt returned");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Enhancement failed",
+        description: err.message || "Could not enhance the prompt.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   const handleReset = () => {
     editHistory.reset();
     setImage(null);
