@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Sparkles, Wand2, Repeat, Zap, Shield, Smartphone, ArrowRight, Check } from "lucide-react";
+import { Sparkles, Wand2, Repeat, Zap, Shield, Smartphone, ArrowRight, Check, PlayCircle, Lightbulb, Camera, Palette, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
@@ -120,7 +120,107 @@ const Welcome = () => {
         </div>
       </section>
 
-      {/* Install / video section */}
+      {/* Tutorial video */}
+      <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8 md:mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm mb-4">
+              <PlayCircle className="w-3.5 h-3.5 text-primary" />
+              <span className="text-primary font-medium">Watch how it works</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">See it in action</h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Upload a photo, type what you want, and let the AI do the rest — in under 30 seconds.
+            </p>
+          </div>
+          <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl">
+            <video
+              src="/videos/tutorial.mp4"
+              className="w-full h-auto block"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              preload="metadata"
+              poster="/placeholder.svg"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* How to prompt the AI */}
+      <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm mb-4">
+              <Lightbulb className="w-3.5 h-3.5 text-accent" />
+              <span className="text-accent font-medium">Prompt guide</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">How to prompt the AI</h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              The better your prompt, the better your photo. Follow these simple rules for cinematic results every time.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 md:gap-6 mb-10 md:mb-14">
+            {[
+              {
+                icon: Camera,
+                title: "Be specific about the scene",
+                desc: "Mention setting, lighting, and time of day.",
+                example: "“Standing on a Santorini rooftop at golden hour.”",
+              },
+              {
+                icon: Palette,
+                title: "Describe the style",
+                desc: "Add a look — cinematic, editorial, vintage, etc.",
+                example: "“Shot on 85mm film, soft natural light, shallow depth of field.”",
+              },
+              {
+                icon: Users,
+                title: "Keep the subject natural",
+                desc: "Say what to keep — face, pose, outfit details.",
+                example: "“Keep my face and hair exactly the same.”",
+              },
+            ].map(({ icon: Icon, title, desc, example }) => (
+              <div key={title} className="bg-card/50 border border-border/60 rounded-2xl p-5 md:p-6">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 md:w-6 md:h-6 text-accent" />
+                </div>
+                <h3 className="font-semibold text-base md:text-lg mb-2">{title}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground leading-relaxed mb-3">{desc}</p>
+                <p className="text-xs md:text-sm italic text-foreground/80 border-l-2 border-primary/40 pl-3">{example}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+            <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-2xl p-5 md:p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Check className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold text-base md:text-lg">Good prompts</h3>
+              </div>
+              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
+                <li>• "Change my outfit to a black tuxedo, keep my face the same, studio lighting."</li>
+                <li>• "Place me in a snowy Tokyo street at night, cinematic 85mm shot."</li>
+                <li>• "Professional LinkedIn headshot, navy blazer, soft office background."</li>
+              </ul>
+            </div>
+            <div className="bg-gradient-to-br from-destructive/10 to-transparent border border-destructive/20 rounded-2xl p-5 md:p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-5 h-5 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-xs font-bold">✕</span>
+                <h3 className="font-semibold text-base md:text-lg">Avoid these</h3>
+              </div>
+              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
+                <li>• Vague prompts: "make it better" or "cool photo"</li>
+                <li>• Too many ideas at once — stick to one transformation</li>
+                <li>• NSFW or adult content (not allowed)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
       <section id="install" className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 md:mb-14">
