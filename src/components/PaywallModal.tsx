@@ -57,6 +57,8 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const pollStatus = (reference: string) => {
     stopPolling();
     let attempts = 0;
+    // M1: extend MoMo polling to ~10 minutes (120 attempts × 5s)
+    const MAX_ATTEMPTS = 120;
     pollRef.current = window.setInterval(async () => {
       attempts++;
       try {
@@ -75,21 +77,23 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           setPendingRef(null);
           toast({ title: "Payment successful!", description: "Your tokens have been added." });
           setTimeout(() => window.location.reload(), 1000);
+          return;
         } else if (data.status === "failed" || data.status === "abandoned") {
           stopPolling();
           setLoading(false);
           setPendingRef(null);
           toast({ title: "Payment failed", description: data.gateway_response || "Please try again.", variant: "destructive" });
+          return;
         }
       } catch {
-        // keep polling
+        // network blip — keep polling
       }
-      if (attempts > 60) {
+      if (attempts >= MAX_ATTEMPTS) {
         stopPolling();
         setLoading(false);
         setPendingRef(null);
         setStatusMsg("");
-        toast({ title: "Timed out", description: "We didn't get confirmation. Check your phone or try again.", variant: "destructive" });
+        toast({ title: "Timed out", description: "We didn't get confirmation. If you approved on your phone, your tokens will appear shortly — refresh in a moment.", variant: "destructive" });
       }
     }, 5000);
   };

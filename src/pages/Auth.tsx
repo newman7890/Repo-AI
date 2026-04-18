@@ -17,26 +17,19 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Track device info and notify admin on successful auth
+  // Track device info and notify admin on first sign-in.
+  // The "first sign-in" check is performed server-side in the notify-new-user
+  // edge function (admins-only RLS prevents reading admin_notifications here).
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user && (event === "SIGNED_IN")) {
+      if (session?.user && event === "SIGNED_IN") {
         try {
           await saveDeviceInfo(session.user.id);
         } catch (e) {
           console.error("Failed to save device info:", e);
         }
-        // Notify admin for every first sign-in by checking if notification already exists
         try {
-          const { data: existing } = await supabase
-            .from("admin_notifications")
-            .select("id")
-            .eq("user_id", session.user.id)
-            .eq("type", "registration")
-            .limit(1);
-          if (!existing || existing.length === 0) {
-            await notifyAdminNewUser(session.user.id, session.user.email || "Unknown");
-          }
+          await notifyAdminNewUser(session.user.id, session.user.email || "Unknown");
         } catch (e) {
           console.error("Failed to notify admin:", e);
         }

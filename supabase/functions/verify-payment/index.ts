@@ -7,6 +7,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Authoritative plan amount → tokens map (matches paystack-checkout PLANS)
+const AMOUNT_TO_TOKENS: Record<number, number> = {
+  5000: 50,    // starter   - GHS 50
+  10000: 100,  // standard  - GHS 100
+  20000: 200,  // pro       - GHS 200
+  50000: 500,  // premium   - GHS 500
+};
+
+function resolveTokens(metadata: any, amount: number): number {
+  if (metadata?.tokens && typeof metadata.tokens === "number" && metadata.tokens > 0) {
+    return metadata.tokens;
+  }
+  return AMOUNT_TO_TOKENS[amount] || 0;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -14,9 +29,7 @@ serve(async (req) => {
 
   try {
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
-    if (!PAYSTACK_SECRET_KEY) {
-      throw new Error("PAYSTACK_SECRET_KEY is not configured");
-    }
+    if (!PAYSTACK_SECRET_KEY) throw new Error("PAYSTACK_SECRET_KEY is not configured");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -45,7 +58,7 @@ serve(async (req) => {
     }
     const userId = claimsData.claims.sub as string;
 
-    // Rate limit: max 10 verify requests per minute
+    // Rate limit
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: rateLimitOk } = await adminClient.rpc("check_rate_limit", {
       p_user_id: userId,
@@ -72,15 +85,16 @@ serve(async (req) => {
       });
     }
 
-    // Check if already processed (idempotency)
+    // Idempotency check — already processed via verify-payment
     const { data: existingPayment } = await adminClient
       .from("processed_payments")
       .select("id")
       .eq("reference", reference)
+      .eq("event_type", "verify-payment")
       .maybeSingle();
 
     if (existingPayment) {
-      return new Response(JSON.stringify({ payment_status: "success" }), {
+      return new Response(JSON.stringify({ payment_status: "success", already_processed: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -107,7 +121,8 @@ serve(async (req) => {
 
     if (txStatus === "success") {
       // Verify the user_id in metadata matches the authenticated user
-      const metaUserId = verifyData.data.metadata?.user_id;
+      const metadata = verifyData.data.metadata || {};
+      const metaUserId = metadata.user_id;
       if (metaUserId !== userId) {
         console.error(`Payment user mismatch: meta=${metaUserId} auth=${userId}`);
         return new Response(JSON.stringify({ payment_status: "failed", message: "User mismatch" }), {
@@ -116,55 +131,85 @@ serve(async (req) => {
         });
       }
 
-      // Verify amount matches expected plan amount
-      const expectedAmount = 16000; // GHS 160 in pesewas
-      if (verifyData.data.amount < expectedAmount) {
-        console.error(`Payment amount mismatch: expected=${expectedAmount} got=${verifyData.data.amount}`);
-        return new Response(JSON.stringify({ payment_status: "failed", message: "Amount mismatch" }), {
-          status: 403,
+      const amount = verifyData.data.amount || 0;
+      const tokens = resolveTokens(metadata, amount);
+
+      if (tokens <= 0) {
+        console.error(`Unknown plan amount: ${amount}, metadata:`, metadata);
+        return new Response(JSON.stringify({ payment_status: "failed", message: "Unknown plan" }), {
+          status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Record processed payment (idempotency key)
+      const isOneTime = metadata.billing_type === "one_time" || metadata.payment_method === "mobile_money";
+
+      // Record processed payment FIRST (idempotency key) — unique on (reference, event_type)
       const { error: insertError } = await adminClient
         .from("processed_payments")
         .insert({
           reference,
           user_id: userId,
           event_type: "verify-payment",
-          amount: verifyData.data.amount,
+          amount,
           currency: verifyData.data.currency,
         });
 
-      // If insert fails due to unique constraint, payment was already processed
       if (insertError) {
         if (insertError.code === "23505") {
-          return new Response(JSON.stringify({ payment_status: "success" }), {
+          // Race with webhook or concurrent verify — already credited
+          return new Response(JSON.stringify({ payment_status: "success", already_processed: true }), {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
         console.error("Error recording payment:", insertError);
+        throw insertError;
       }
 
-      // Grant premium
-      const { error } = await adminClient
-        .from("user_credits")
-        .update({
-          tokens: 100,
-          is_premium: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+      // Credit tokens correctly based on plan & billing type
+      if (isOneTime) {
+        // One-time MoMo: ADD tokens to existing balance, do NOT mark recurring premium
+        const { data: existingCredits } = await adminClient
+          .from("user_credits")
+          .select("tokens")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-      if (error) {
-        console.error("Error granting premium:", error);
-        throw error;
+        const newTotal = (existingCredits?.tokens || 0) + tokens;
+        const { error: updateErr } = await adminClient
+          .from("user_credits")
+          .update({ tokens: newTotal, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
+
+        if (updateErr) {
+          console.error("Error adding one-time tokens:", updateErr);
+          throw updateErr;
+        }
+        console.log(`verify-payment one-time: +${tokens} tokens for ${userId} (total ${newTotal})`);
+      } else {
+        // Subscription (card): SET tokens to plan amount and mark premium
+        const { error: updateErr } = await adminClient
+          .from("user_credits")
+          .update({
+            tokens,
+            is_premium: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        if (updateErr) {
+          console.error("Error granting premium:", updateErr);
+          throw updateErr;
+        }
+        console.log(`verify-payment subscription: ${tokens} tokens + premium for ${userId}`);
       }
 
-      console.log(`Premium granted to ${userId} via payment verification`);
-      return new Response(JSON.stringify({ payment_status: "success" }), {
+      return new Response(JSON.stringify({
+        payment_status: "success",
+        tokens_added: tokens,
+        billing_type: isOneTime ? "one_time" : "subscription",
+      }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
