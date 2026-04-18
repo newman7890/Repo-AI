@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated users can insert notifications" ON public.admin_notifications;
