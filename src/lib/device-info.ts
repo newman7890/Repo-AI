@@ -47,19 +47,22 @@ export async function saveDeviceInfo(userId: string) {
     .eq("user_id", userId);
 }
 
-export async function notifyAdminNewUser(userId: string, email: string) {
+export async function notifyAdminNewUser(_userId: string, _email: string) {
   const info = getDeviceInfo();
-  await supabase.from("admin_notifications").insert({
-    user_id: userId,
-    type: "registration",
-    title: "New User Registered",
-    message: `${email} just signed up`,
-    metadata: {
-      email,
-      device_model: info.deviceModel,
-      screen: info.screenResolution,
-      platform: info.platform,
-      user_agent: info.userAgent,
-    },
-  });
+  // Inserting into admin_notifications requires service-role privileges.
+  // Delegate to a secure edge function that validates the caller's JWT.
+  try {
+    await supabase.functions.invoke("notify-new-user", {
+      body: {
+        deviceInfo: {
+          deviceModel: info.deviceModel,
+          screenResolution: info.screenResolution,
+          platform: info.platform,
+          userAgent: info.userAgent,
+        },
+      },
+    });
+  } catch (err) {
+    console.error("notifyAdminNewUser failed:", err);
+  }
 }
