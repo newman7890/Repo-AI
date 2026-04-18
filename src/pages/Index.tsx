@@ -303,10 +303,26 @@ const Index = () => {
 
                   {/* Custom Description */}
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-1.5 gap-2">
                       <label className="text-xs md:text-sm font-semibold text-foreground">
                         Or describe it yourself
                       </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEnhancePrompt}
+                        disabled={isEnhancing || isProcessing || !description.trim()}
+                        className="h-7 px-2 text-[10px] md:text-xs gap-1 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                        title="Enhance prompt with AI (2 tokens)"
+                      >
+                        {isEnhancing ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Zap className="w-3 h-3" />
+                        )}
+                        {isEnhancing ? "Enhancing..." : "Enhance (2 tokens)"}
+                      </Button>
                     </div>
                     <Textarea
                       placeholder={currentMode.placeholder}
