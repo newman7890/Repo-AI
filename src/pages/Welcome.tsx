@@ -77,7 +77,7 @@ const Welcome = () => {
             with <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>just words.</span>
           </h1>
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Change backgrounds, swap faces, restyle outfits, and create cinematic portraits — all from a simple text prompt. No editing skills required.
+            Change backgrounds, swap faces, restyle outfits, and create cinematic portraits, all from a simple text prompt. No editing skills required.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link to={ctaTarget}>
@@ -130,7 +130,7 @@ const Welcome = () => {
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">See it in action</h2>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Upload a photo, type what you want, and let the AI do the rest — in under 30 seconds.
+              Upload a photo, type what you want, and let the AI do the rest in under 30 seconds.
             </p>
           </div>
           <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl">
@@ -174,13 +174,13 @@ const Welcome = () => {
               {
                 icon: Palette,
                 title: "Describe the style",
-                desc: "Add a look — cinematic, editorial, vintage, etc.",
+                desc: "Add a look like cinematic, editorial, vintage, etc.",
                 example: "“Shot on 85mm film, soft natural light, shallow depth of field.”",
               },
               {
                 icon: Users,
                 title: "Keep the subject natural",
-                desc: "Say what to keep — face, pose, outfit details.",
+                desc: "Say what to keep, like face, pose, outfit details.",
                 example: "“Keep my face and hair exactly the same.”",
               },
             ].map(({ icon: Icon, title, desc, example }) => (
@@ -214,7 +214,7 @@ const Welcome = () => {
               </div>
               <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
                 <li>• Vague prompts: "make it better" or "cool photo"</li>
-                <li>• Too many ideas at once — stick to one transformation</li>
+                <li>• Too many ideas at once, stick to one transformation</li>
                 <li>• NSFW or adult content (not allowed)</li>
               </ul>
             </div>
@@ -230,7 +230,7 @@ const Welcome = () => {
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Get it on your home screen</h2>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Renderme AI works like a native app — no app store needed. Watch the 30-second guide below.
+              Renderme AI works like a native app, no app store needed. Watch the 30 second guide below.
             </p>
           </div>
 
@@ -262,7 +262,7 @@ const Welcome = () => {
           </div>
           <Link to={ctaTarget} className="inline-block mt-10">
             <Button size="lg" className="h-12 md:h-14 px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl">
-              {isAuthed ? "Open app" : "Get started — 3 free edits"}
+              {isAuthed ? "Open app" : "Get started, 3 free edits"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
