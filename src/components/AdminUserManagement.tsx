@@ -16,9 +16,10 @@ interface UserCredit {
   updated_at: string;
   email?: string;
   device_info?: string;
+  has_paid?: boolean;
 }
 
-type Filter = "all" | "premium" | "blocked";
+type Filter = "all" | "paid" | "blocked";
 
 const AdminUserManagement = () => {
   const { toast } = useToast();
@@ -29,7 +30,7 @@ const AdminUserManagement = () => {
 
   const fetchUsers = async () => {
     // Fetch credits and profiles in parallel
-    const [creditsRes, profilesRes] = await Promise.all([
+    const [creditsRes, profilesRes, paymentsRes] = await Promise.all([
       supabase
         .from("user_credits")
         .select("user_id, tokens, trial_uses_remaining, is_premium, blocked, created_at, updated_at")
@@ -37,6 +38,9 @@ const AdminUserManagement = () => {
       supabase
         .from("profiles")
         .select("user_id, email, device_info"),
+      supabase
+        .from("processed_payments")
+        .select("user_id"),
     ]);
 
     if (creditsRes.error) {
@@ -53,10 +57,13 @@ const AdminUserManagement = () => {
       if (p.device_info) deviceMap.set(p.user_id, p.device_info);
     });
 
+    const paidUserIds = new Set((paymentsRes.data || []).map((payment) => payment.user_id));
+
     const merged = (creditsRes.data || []).map(u => ({
       ...u,
       email: emailMap.get(u.user_id) || undefined,
       device_info: deviceMap.get(u.user_id) || undefined,
+      has_paid: paidUserIds.has(u.user_id),
     }));
 
     setUsers(merged);
@@ -84,12 +91,12 @@ const AdminUserManagement = () => {
   };
 
   const filtered = users.filter(u => {
-    if (filter === "premium") return u.is_premium;
+    if (filter === "paid") return !!u.has_paid;
     if (filter === "blocked") return u.blocked;
     return true;
   });
 
-  const premiumCount = users.filter(u => u.is_premium).length;
+  const paidCount = users.filter(u => u.has_paid).length;
   const blockedCount = users.filter(u => u.blocked).length;
 
   if (loading) {
@@ -104,7 +111,7 @@ const AdminUserManagement = () => {
             <Users className="w-4 h-4" /> User Management
           </CardTitle>
           <div className="flex gap-1.5">
-            {(["all", "premium", "blocked"] as Filter[]).map(f => (
+            {(["all", "paid", "blocked"] as Filter[]).map(f => (
               <Button
                 key={f}
                 size="sm"
@@ -112,7 +119,7 @@ const AdminUserManagement = () => {
                 onClick={() => setFilter(f)}
                 className="text-xs h-7 px-2.5 capitalize"
               >
-                {f === "all" ? `All (${users.length})` : f === "premium" ? `Premium (${premiumCount})` : `Blocked (${blockedCount})`}
+                {f === "all" ? `All (${users.length})` : f === "paid" ? `Paid (${paidCount})` : `Blocked (${blockedCount})`}
               </Button>
             ))}
           </div>
@@ -148,8 +155,9 @@ const AdminUserManagement = () => {
                     <td className="text-center py-2.5 px-2">
                       <div className="flex items-center justify-center gap-1 flex-wrap">
                         {u.is_premium && <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary border-primary/30"><Crown className="w-3 h-3 mr-0.5" />Premium</Badge>}
+                        {!u.is_premium && u.has_paid && <Badge variant="outline" className="text-[10px] px-1.5 py-0"><Crown className="w-3 h-3 mr-0.5" />Paid</Badge>}
                         {u.blocked && <Badge variant="destructive" className="text-[10px] px-1.5 py-0"><ShieldBan className="w-3 h-3 mr-0.5" />Blocked</Badge>}
-                        {!u.is_premium && !u.blocked && <span className="text-muted-foreground text-xs">Free</span>}
+                        {!u.is_premium && !u.has_paid && !u.blocked && <span className="text-muted-foreground text-xs">Free</span>}
                       </div>
                     </td>
                     <td className="text-right py-2.5 pl-2">
