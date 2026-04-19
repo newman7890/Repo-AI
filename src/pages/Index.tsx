@@ -148,14 +148,14 @@ const Index = () => {
       } else {
         throw new Error("No image returned");
       }
-    } catch (err: any) {
-      if (err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
         toast({ title: "Cancelled", description: "Edit was cancelled." });
       } else {
         console.error("Generation error:", err);
         toast({
           title: "Something went wrong",
-          description: err.message || "Failed to edit photo. Please try again.",
+          description: err instanceof Error ? err.message : "Failed to edit photo. Please try again.",
           variant: "destructive",
         });
       }
@@ -207,10 +207,10 @@ const Index = () => {
       } else {
         throw new Error("No enhanced prompt returned");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Enhancement failed",
-        description: err.message || "Could not enhance the prompt.",
+        description: err instanceof Error ? err.message : "Could not enhance the prompt.",
         variant: "destructive",
       });
     } finally {

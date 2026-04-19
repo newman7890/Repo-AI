@@ -7,6 +7,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface PaystackPlan {
+  name: string;
+  interval: string;
+  amount: number;
+  plan_code: string;
+}
+
 const PLANS: Record<string, { name: string; amount: number; tokens: number }> = {
   starter:  { name: "Renderme AI Starter",  amount: 5000,  tokens: 50 },
   standard: { name: "Renderme AI Standard", amount: 10000, tokens: 100 },
@@ -28,7 +35,7 @@ async function getOrCreatePlan(secretKey: string, planId: string): Promise<strin
 
   if (listData.status && listData.data) {
     const existing = listData.data.find(
-      (p: any) => p.name === plan.name && p.interval === PLAN_INTERVAL && p.amount === plan.amount
+      (p: PaystackPlan) => p.name === plan.name && p.interval === PLAN_INTERVAL && p.amount === plan.amount
     );
     if (existing) return existing.plan_code;
   }
@@ -195,7 +202,7 @@ serve(async (req) => {
 
     const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
 
-    const txBody: Record<string, any> = {
+    const txBody: Record<string, unknown> = {
       email: userEmail,
       amount: plan.amount,
       currency: PLAN_CURRENCY,

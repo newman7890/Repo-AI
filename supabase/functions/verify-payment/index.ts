@@ -8,6 +8,15 @@ const corsHeaders = {
 };
 
 // Authoritative plan amount → tokens map (matches paystack-checkout PLANS)
+type PaystackMetadata = {
+  user_id?: string;
+  tokens?: number;
+  plan?: string;
+  plan_id?: string;
+  billing_type?: string;
+  payment_method?: string;
+};
+
 const AMOUNT_TO_TOKENS: Record<number, number> = {
   5000: 50,    // starter   - GHS 50
   10000: 100,  // standard  - GHS 100
@@ -15,7 +24,7 @@ const AMOUNT_TO_TOKENS: Record<number, number> = {
   50000: 500,  // premium   - GHS 500
 };
 
-function resolveTokens(metadata: any, amount: number): number {
+function resolveTokens(metadata: PaystackMetadata, amount: number): number {
   if (metadata?.tokens && typeof metadata.tokens === "number" && metadata.tokens > 0) {
     return metadata.tokens;
   }
@@ -149,7 +158,7 @@ serve(async (req) => {
 
     if (txStatus === "success") {
       // Verify the user_id in metadata matches the authenticated user
-      const metadata = verifyData.data.metadata || {};
+      const metadata = (verifyData.data.metadata || {}) as PaystackMetadata;
       const metaUserId = metadata.user_id;
       if (metaUserId !== userId) {
         console.error(`Payment user mismatch: meta=${metaUserId} auth=${userId}`);
