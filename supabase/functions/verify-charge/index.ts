@@ -6,6 +6,15 @@ const corsHeaders = {
 };
 
 // Authoritative plan amount → tokens map (matches paystack-checkout PLANS)
+type PaystackMetadata = {
+  user_id?: string;
+  tokens?: number;
+  plan?: string;
+  plan_id?: string;
+  billing_type?: string;
+  payment_method?: string;
+};
+
 const AMOUNT_TO_TOKENS: Record<number, number> = {
   5000: 50,
   10000: 100,
@@ -13,11 +22,32 @@ const AMOUNT_TO_TOKENS: Record<number, number> = {
   50000: 500,
 };
 
-function resolveTokens(metadata: any, amount: number): number {
+function resolveTokens(metadata: PaystackMetadata, amount: number): number {
   if (metadata?.tokens && typeof metadata.tokens === "number" && metadata.tokens > 0) {
     return metadata.tokens;
   }
   return AMOUNT_TO_TOKENS[amount] || 0;
+}
+
+async function notifyAdminPayment(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  email: string | null,
+  planName: string,
+  amount: number,
+  currency: string | null,
+  tokens: number,
+  reference: string,
+) {
+  const amountMajor = (amount / 100).toFixed(2);
+
+  await supabase.from("admin_notifications").insert({
+    user_id: userId,
+    type: "payment",
+    title: "New Payment Received",
+    message: `${email || userId} purchased ${planName} plan (${currency || "GHS"} ${amountMajor}), ${tokens} tokens`,
+    metadata: { email, plan: planName, amount, currency, tokens, reference },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -96,7 +126,7 @@ Deno.serve(async (req) => {
     }
 
     // SUCCESS → credit idempotently (don't depend on webhook)
-    const metadata = data.data.metadata || {};
+    const metadata = (data.data.metadata || {}) as PaystackMetadata;
     const metaUserId = metadata.user_id;
 
     // Owner check — caller must be the buyer
@@ -119,6 +149,8 @@ Deno.serve(async (req) => {
     }
 
     const isOneTime = metadata.billing_type === "one_time" || metadata.payment_method === "mobile_money";
+    const planName = metadata.plan_id || metadata.plan || "unknown";
+    const currency = data.data.currency || "GHS";
 
     // Idempotency: insert (reference, "verify-charge"). Unique index prevents double credit.
     const { error: insertError } = await adminClient
@@ -128,7 +160,7 @@ Deno.serve(async (req) => {
         user_id: userId,
         event_type: "verify-charge",
         amount,
-        currency: data.data.currency,
+        currency,
       });
 
     if (insertError) {
@@ -142,6 +174,12 @@ Deno.serve(async (req) => {
       console.error("verify-charge insert error:", insertError);
       throw insertError;
     }
+
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("email")
+      .eq("user_id", userId)
+      .maybeSingle();
 
     // Credit tokens
     if (isOneTime) {
@@ -168,6 +206,12 @@ Deno.serve(async (req) => {
         .eq("user_id", userId);
       if (upErr) throw upErr;
       console.log(`verify-charge subscription: ${tokens} + premium for ${userId}`);
+    }
+
+    try {
+      await notifyAdminPayment(adminClient, userId, profile?.email || null, planName, amount, currency, tokens, reference);
+    } catch (notifyError) {
+      console.error("Failed to create admin notification from verify-charge:", notifyError);
     }
 
     return new Response(JSON.stringify({

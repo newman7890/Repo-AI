@@ -22,6 +22,28 @@ import UserMenu from "@/components/UserMenu";
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+async function verifyCheckoutReturn(refreshCredits: () => Promise<void>, toast: ReturnType<typeof useToast>["toast"], reference: string) {
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`,
+    {
+      method: "POST",
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({ reference }),
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok || data?.payment_status !== "success") {
+    throw new Error(data?.message || data?.error || "Payment verification failed");
+  }
+
+  await refreshCredits();
+  toast({
+    title: "🎉 Payment successful!",
+    description: "Your premium tokens have been added. Enjoy editing!",
+  });
+}
+
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,14 +62,32 @@ const Index = () => {
 
   // Handle payment success callback
   useEffect(() => {
-    if (searchParams.get("payment") === "success") {
-      searchParams.delete("payment");
-      setSearchParams(searchParams, { replace: true });
+    const payment = searchParams.get("payment");
+    const reference = searchParams.get("reference") || searchParams.get("trxref");
+
+    if (payment === "success" && reference) {
+      verifyCheckoutReturn(refreshCredits, toast, reference)
+        .catch((error: Error) => {
+          toast({
+            title: "Payment verification pending",
+            description: error.message,
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          searchParams.delete("payment");
+          searchParams.delete("reference");
+          searchParams.delete("trxref");
+          setSearchParams(searchParams, { replace: true });
+        });
+    } else if (payment === "success") {
       refreshCredits();
       toast({
         title: "🎉 Payment successful!",
         description: "Your premium tokens have been added. Enjoy editing!",
       });
+      searchParams.delete("payment");
+      setSearchParams(searchParams, { replace: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -108,14 +148,14 @@ const Index = () => {
       } else {
         throw new Error("No image returned");
       }
-    } catch (err: any) {
-      if (err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
         toast({ title: "Cancelled", description: "Edit was cancelled." });
       } else {
         console.error("Generation error:", err);
         toast({
           title: "Something went wrong",
-          description: err.message || "Failed to edit photo. Please try again.",
+          description: err instanceof Error ? err.message : "Failed to edit photo. Please try again.",
           variant: "destructive",
         });
       }
@@ -167,10 +207,10 @@ const Index = () => {
       } else {
         throw new Error("No enhanced prompt returned");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Enhancement failed",
-        description: err.message || "Could not enhance the prompt.",
+        description: err instanceof Error ? err.message : "Could not enhance the prompt.",
         variant: "destructive",
       });
     } finally {
