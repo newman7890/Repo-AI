@@ -190,7 +190,8 @@ serve(async (req) => {
     }
 
     // ------ CARD: hosted checkout with subscription plan ------
-    const callbackUrl = `${req.headers.get("origin") || "https://renderme-ai.lovable.app"}/?payment=success`;
+    const callbackBase = req.headers.get("origin") || "https://renderme-ai.lovable.app";
+    const callbackUrl = `${callbackBase}/app?payment=success`;
 
     const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
 

@@ -22,6 +22,34 @@ function resolveTokens(metadata: any, amount: number): number {
   return AMOUNT_TO_TOKENS[amount] || 0;
 }
 
+async function notifyAdminPayment(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  email: string | null,
+  planName: string,
+  amount: number,
+  currency: string | null,
+  tokens: number,
+  reference: string,
+) {
+  const amountMajor = (amount / 100).toFixed(2);
+
+  await supabase.from("admin_notifications").insert({
+    user_id: userId,
+    type: "payment",
+    title: "New Payment Received",
+    message: `${email || userId} purchased ${planName} plan (${currency || "GHS"} ${amountMajor}), ${tokens} tokens`,
+    metadata: {
+      email,
+      plan: planName,
+      amount,
+      currency,
+      tokens,
+      reference,
+    },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -133,6 +161,8 @@ serve(async (req) => {
 
       const amount = verifyData.data.amount || 0;
       const tokens = resolveTokens(metadata, amount);
+      const planName = metadata.plan_id || metadata.plan || "unknown";
+      const currency = verifyData.data.currency || "GHS";
 
       if (tokens <= 0) {
         console.error(`Unknown plan amount: ${amount}, metadata:`, metadata);
@@ -152,7 +182,7 @@ serve(async (req) => {
           user_id: userId,
           event_type: "verify-payment",
           amount,
-          currency: verifyData.data.currency,
+          currency,
         });
 
       if (insertError) {
@@ -166,6 +196,12 @@ serve(async (req) => {
         console.error("Error recording payment:", insertError);
         throw insertError;
       }
+
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("email")
+        .eq("user_id", userId)
+        .maybeSingle();
 
       // Credit tokens correctly based on plan & billing type
       if (isOneTime) {
@@ -203,6 +239,12 @@ serve(async (req) => {
           throw updateErr;
         }
         console.log(`verify-payment subscription: ${tokens} tokens + premium for ${userId}`);
+      }
+
+      try {
+        await notifyAdminPayment(adminClient, userId, profile?.email || null, planName, amount, currency, tokens, reference);
+      } catch (notifyError) {
+        console.error("Failed to create admin notification from verify-payment:", notifyError);
       }
 
       return new Response(JSON.stringify({
