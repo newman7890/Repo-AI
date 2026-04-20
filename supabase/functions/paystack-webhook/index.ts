@@ -43,6 +43,27 @@ function resolveTokens(metadata: any, amount: number): number {
   return AMOUNT_TO_TOKENS[amount] || 100;
 }
 
+async function ensureUserCreditsRow(supabase: ReturnType<typeof createClient>, userId: string) {
+  const { data: existing } = await supabase
+    .from("user_credits")
+    .select("id")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existing?.id) return;
+
+  const { error } = await supabase.from("user_credits").insert({
+    user_id: userId,
+    tokens: 0,
+    trial_uses_remaining: 3,
+    is_premium: false,
+    blocked: false,
+  });
+
+  if (error) throw error;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -96,6 +117,8 @@ serve(async (req) => {
         console.error("No user_id in metadata");
         return new Response("OK", { status: 200, headers: corsHeaders });
       }
+
+      await ensureUserCreditsRow(supabase, userId);
 
       const amount = event.data?.amount || 0;
       const tokens = resolveTokens(metadata, amount);

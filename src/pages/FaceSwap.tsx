@@ -242,6 +242,7 @@ const FaceSwap = () => {
         title="AI Face Swap – Swap Up to 4 Faces"
         description="Swap up to 4 faces onto any photo with cinematic, hyper-realistic AI. Powered by Renderme AI."
         canonical="/face-swap"
+        noindex
       />
       <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between gap-2 md:gap-3">
