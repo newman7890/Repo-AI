@@ -31,7 +31,33 @@ const AdminNotifications = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchNotifications(); }, []);
+  useEffect(() => {
+    fetchNotifications();
+
+    const channel = supabase
+      .channel("admin_notifications_realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "admin_notifications" },
+        (payload) => {
+          setNotifications((prev) => [payload.new as AdminNotification, ...prev].slice(0, 50));
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "admin_notifications" },
+        (payload) => {
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === (payload.new as AdminNotification).id ? (payload.new as AdminNotification) : n))
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const markRead = async (id: string) => {
     await supabase.from("admin_notifications").update({ read: true }).eq("id", id);
