@@ -1,9 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Check, UserPlus, CreditCard } from "lucide-react";
+import { Bell, BellOff, Check, UserPlus, CreditCard } from "lucide-react";
+import { toast } from "sonner";
+import { playCashRegister, unlockAudio } from "@/lib/notification-sound";
+import {
+  getPermission,
+  isPushEnabled,
+  requestNotificationPermission,
+  showAdminNotification,
+  disablePush,
+  isNotificationSupported,
+} from "@/lib/admin-push";
 
 interface AdminNotification {
   id: string;
@@ -19,6 +29,8 @@ interface AdminNotification {
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pushOn, setPushOn] = useState(false);
+  const initializedRef = useRef(false);
 
   const fetchNotifications = async () => {
     const { data, error } = await supabase
@@ -34,13 +46,28 @@ const AdminNotifications = () => {
   useEffect(() => {
     fetchNotifications();
 
+    setPushOn(isPushEnabled());
+
     const channel = supabase
       .channel("admin_notifications_realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "admin_notifications" },
         (payload) => {
-          setNotifications((prev) => [payload.new as AdminNotification, ...prev].slice(0, 50));
+          const n = payload.new as AdminNotification;
+          setNotifications((prev) => [n, ...prev].slice(0, 50));
+
+          if (!initializedRef.current) return;
+
+          const isPayment = n.type === "payment" || /payment|paid|premium/i.test(n.title);
+          if (isPayment) {
+            toast.success(`💰 ${n.title}`, { description: n.message, duration: 8000 });
+            playCashRegister();
+          } else {
+            toast(n.title, { description: n.message });
+          }
+
+          showAdminNotification(n.title, n.message, `admin-${n.id}`);
         }
       )
       .on(
@@ -54,10 +81,43 @@ const AdminNotifications = () => {
       )
       .subscribe();
 
+    const t = setTimeout(() => {
+      initializedRef.current = true;
+    }, 1500);
+
     return () => {
+      clearTimeout(t);
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const togglePush = async () => {
+    if (pushOn) {
+      disablePush();
+      setPushOn(false);
+      toast("Phone alerts disabled");
+      return;
+    }
+    const result = await requestNotificationPermission();
+    if (result === "granted") {
+      setPushOn(true);
+      toast.success("Phone alerts enabled", {
+        description: "Install Renderme AI to your home screen to get alerts even when the browser is closed.",
+      });
+      showAdminNotification("Renderme AI", "You're set, payment alerts will appear here.", "admin-test");
+    } else if (result === "denied") {
+      toast.error("Permission denied", { description: "Enable notifications for this site in your browser settings." });
+    } else if (result === "unsupported") {
+      toast.error("Notifications not supported on this browser.");
+    }
+  };
+
+  const testAlert = () => {
+    unlockAudio();
+    playCashRegister();
+    toast.success("💰 Test payment received", { description: "GHS 50 from test@example.com", duration: 6000 });
+    showAdminNotification("Test payment", "GHS 50 from test@example.com", "admin-test-2");
+  };
 
   const markRead = async (id: string) => {
     await supabase.from("admin_notifications").update({ read: true }).eq("id", id);
@@ -90,11 +150,28 @@ const AdminNotifications = () => {
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{unreadCount}</Badge>
             )}
           </CardTitle>
-          {unreadCount > 0 && (
-            <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={markAllRead}>
-              <Check className="w-3 h-3 mr-1" /> Mark all read
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {isNotificationSupported() && (
+              <Button
+                size="sm"
+                variant={pushOn ? "default" : "outline"}
+                className="text-xs h-7 px-2.5"
+                onClick={togglePush}
+                title={pushOn ? "Phone alerts enabled" : "Enable phone alerts"}
+              >
+                {pushOn ? <Bell className="w-3 h-3 mr-1" /> : <BellOff className="w-3 h-3 mr-1" />}
+                {pushOn ? "Alerts on" : "Enable alerts"}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" className="text-xs h-7 px-2.5" onClick={testAlert}>
+              Test
             </Button>
-          )}
+            {unreadCount > 0 && (
+              <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={markAllRead}>
+                <Check className="w-3 h-3 mr-1" /> Mark all read
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
