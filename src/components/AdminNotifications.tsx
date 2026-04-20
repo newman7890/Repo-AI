@@ -46,13 +46,28 @@ const AdminNotifications = () => {
   useEffect(() => {
     fetchNotifications();
 
+    setPushOn(isPushEnabled());
+
     const channel = supabase
       .channel("admin_notifications_realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "admin_notifications" },
         (payload) => {
-          setNotifications((prev) => [payload.new as AdminNotification, ...prev].slice(0, 50));
+          const n = payload.new as AdminNotification;
+          setNotifications((prev) => [n, ...prev].slice(0, 50));
+
+          if (!initializedRef.current) return;
+
+          const isPayment = n.type === "payment" || /payment|paid|premium/i.test(n.title);
+          if (isPayment) {
+            toast.success(`💰 ${n.title}`, { description: n.message, duration: 8000 });
+            playCashRegister();
+          } else {
+            toast(n.title, { description: n.message });
+          }
+
+          showAdminNotification(n.title, n.message, `admin-${n.id}`);
         }
       )
       .on(
@@ -66,10 +81,43 @@ const AdminNotifications = () => {
       )
       .subscribe();
 
+    const t = setTimeout(() => {
+      initializedRef.current = true;
+    }, 1500);
+
     return () => {
+      clearTimeout(t);
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const togglePush = async () => {
+    if (pushOn) {
+      disablePush();
+      setPushOn(false);
+      toast("Phone alerts disabled");
+      return;
+    }
+    const result = await requestNotificationPermission();
+    if (result === "granted") {
+      setPushOn(true);
+      toast.success("Phone alerts enabled", {
+        description: "Install Renderme AI to your home screen to get alerts even when the browser is closed.",
+      });
+      showAdminNotification("Renderme AI", "You're set, payment alerts will appear here.", "admin-test");
+    } else if (result === "denied") {
+      toast.error("Permission denied", { description: "Enable notifications for this site in your browser settings." });
+    } else if (result === "unsupported") {
+      toast.error("Notifications not supported on this browser.");
+    }
+  };
+
+  const testAlert = () => {
+    unlockAudio();
+    playCashRegister();
+    toast.success("💰 Test payment received", { description: "GHS 50 from test@example.com", duration: 6000 });
+    showAdminNotification("Test payment", "GHS 50 from test@example.com", "admin-test-2");
+  };
 
   const markRead = async (id: string) => {
     await supabase.from("admin_notifications").update({ read: true }).eq("id", id);
