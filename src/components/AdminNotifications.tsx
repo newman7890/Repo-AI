@@ -19,6 +19,8 @@ interface AdminNotification {
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pushOn, setPushOn] = useState(false);
+  const initializedRef = useRef(false);
 
   const fetchNotifications = async () => {
     const { data, error } = await supabase
