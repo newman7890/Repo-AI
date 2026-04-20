@@ -150,11 +150,28 @@ const AdminNotifications = () => {
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{unreadCount}</Badge>
             )}
           </CardTitle>
-          {unreadCount > 0 && (
-            <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={markAllRead}>
-              <Check className="w-3 h-3 mr-1" /> Mark all read
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {isNotificationSupported() && (
+              <Button
+                size="sm"
+                variant={pushOn ? "default" : "outline"}
+                className="text-xs h-7 px-2.5"
+                onClick={togglePush}
+                title={pushOn ? "Phone alerts enabled" : "Enable phone alerts"}
+              >
+                {pushOn ? <Bell className="w-3 h-3 mr-1" /> : <BellOff className="w-3 h-3 mr-1" />}
+                {pushOn ? "Alerts on" : "Enable alerts"}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" className="text-xs h-7 px-2.5" onClick={testAlert}>
+              Test
             </Button>
-          )}
+            {unreadCount > 0 && (
+              <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={markAllRead}>
+                <Check className="w-3 h-3 mr-1" /> Mark all read
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
