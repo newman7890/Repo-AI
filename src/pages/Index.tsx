@@ -18,6 +18,7 @@ import CreditsBadge from "@/components/CreditsBadge";
 import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
+import { SEO } from "@/components/SEO";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate, useSearchParams } from "react-router-dom";

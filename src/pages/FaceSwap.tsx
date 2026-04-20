@@ -15,6 +15,7 @@ import CreditsBadge from "@/components/CreditsBadge";
 import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
+import { SEO } from "@/components/SEO";
 
 type Step = "source" | "faces" | "review";
 

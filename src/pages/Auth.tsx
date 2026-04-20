@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { saveDeviceInfo, notifyAdminNewUser } from "@/lib/device-info";
+import { SEO } from "@/components/SEO";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
