@@ -1,9 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Check, UserPlus, CreditCard } from "lucide-react";
+import { Bell, BellOff, Check, UserPlus, CreditCard } from "lucide-react";
+import { toast } from "sonner";
+import { playCashRegister, unlockAudio } from "@/lib/notification-sound";
+import {
+  getPermission,
+  isPushEnabled,
+  requestNotificationPermission,
+  showAdminNotification,
+  disablePush,
+  isNotificationSupported,
+} from "@/lib/admin-push";
 
 interface AdminNotification {
   id: string;
