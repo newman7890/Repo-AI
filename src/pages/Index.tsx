@@ -252,6 +252,7 @@ const Index = () => {
         description="Edit photos with a single prompt. Change backgrounds, outfits, lighting and more with hyper-realistic AI."
         canonical="/app"
       />
+      <header className="px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-1.5 md:gap-3">
           <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">
             <div className="w-7 h-7 md:w-9 md:h-9 rounded-md md:rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
