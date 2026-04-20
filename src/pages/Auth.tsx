@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +17,24 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const handledSignInsRef = useRef<Set<string>>(new Set());
+
+  const runPostSignInSetup = async (userId: string, email?: string) => {
+    if (handledSignInsRef.current.has(userId)) return;
+    handledSignInsRef.current.add(userId);
+
+    try {
+      await saveDeviceInfo(userId, email);
+    } catch (e) {
+      console.error("Failed to save device info:", e);
+    }
+
+    try {
+      await notifyAdminNewUser(userId, email || "Unknown");
+    } catch (e) {
+      console.error("Failed to notify admin:", e);
+    }
+  };
 
   // Track device info and notify admin on first sign-in.
   // The "first sign-in" check is performed server-side in the notify-new-user
@@ -24,16 +42,7 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user && event === "SIGNED_IN") {
-        try {
-          await saveDeviceInfo(session.user.id);
-        } catch (e) {
-          console.error("Failed to save device info:", e);
-        }
-        try {
-          await notifyAdminNewUser(session.user.id, session.user.email || "Unknown");
-        } catch (e) {
-          console.error("Failed to notify admin:", e);
-        }
+        await runPostSignInSetup(session.user.id, session.user.email);
       }
     });
     return () => subscription.unsubscribe();
@@ -45,8 +54,11 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (data.user) {
+          await runPostSignInSetup(data.user.id, data.user.email);
+        }
         toast.success("Welcome back!");
         navigate("/app");
       } else {
@@ -87,6 +99,7 @@ const Auth = () => {
         title="Sign in or Sign up"
         description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images. Free trial included."
         canonical="/auth"
+        noindex
       />
       <div className="w-full max-w-md md:max-w-lg space-y-6 md:space-y-8 bg-card/40 md:border md:border-border/40 md:rounded-3xl md:p-10 md:shadow-2xl backdrop-blur-sm">
         {/* Logo */}

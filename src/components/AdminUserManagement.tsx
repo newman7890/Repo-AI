@@ -77,7 +77,14 @@ const AdminUserManagement = () => {
       .channel("admin_users_realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "user_credits" }, () => fetchUsers())
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "processed_payments" }, () => fetchUsers())
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, () => fetchUsers())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, (payload) => {
+        void fetchUsers();
+        const profile = payload.new as { email?: string | null };
+        toast({
+          title: "New user joined",
+          description: profile?.email || "A new account was created.",
+        });
+      })
       .subscribe();
 
     return () => {
