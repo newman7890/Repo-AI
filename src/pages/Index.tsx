@@ -18,6 +18,7 @@ import CreditsBadge from "@/components/CreditsBadge";
 import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
+import { SEO } from "@/components/SEO";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -246,7 +247,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+      <SEO
+        title="AI Photo Editor – Edit Your Photos"
+        description="Edit photos with a single prompt. Change backgrounds, outfits, lighting and more with hyper-realistic AI."
+        canonical="/app"
+      />
       <header className="px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-1.5 md:gap-3">
           <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">

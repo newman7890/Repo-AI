@@ -15,6 +15,7 @@ import CreditsBadge from "@/components/CreditsBadge";
 import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
+import { SEO } from "@/components/SEO";
 
 type Step = "source" | "faces" | "review";
 
@@ -237,7 +238,11 @@ const FaceSwap = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+      <SEO
+        title="AI Face Swap – Swap Up to 4 Faces"
+        description="Swap up to 4 faces onto any photo with cinematic, hyper-realistic AI. Powered by Renderme AI."
+        canonical="/face-swap"
+      />
       <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between gap-2 md:gap-3">
           <div className="flex items-center gap-2 md:gap-3">

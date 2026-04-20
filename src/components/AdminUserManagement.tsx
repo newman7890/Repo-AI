@@ -70,7 +70,20 @@ const AdminUserManagement = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+
+    const channel = supabase
+      .channel("admin_users_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_credits" }, () => fetchUsers())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "processed_payments" }, () => fetchUsers())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, () => fetchUsers())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const toggleBlock = async (userId: string, currentlyBlocked: boolean) => {
     setToggling(userId);

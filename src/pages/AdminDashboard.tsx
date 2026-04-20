@@ -36,6 +36,21 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     checkAdminAndFetch();
+
+    const channel = supabase
+      .channel("admin_logs_realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "ai_usage_logs" },
+        (payload) => {
+          setLogs((prev) => [payload.new as UsageLog, ...prev].slice(0, 500));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const checkAdminAndFetch = async () => {
