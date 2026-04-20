@@ -4,6 +4,7 @@ import { Sparkles, Wand2, Repeat, Zap, Shield, Smartphone, ArrowRight, Check, Pl
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
+import { SEO } from "@/components/SEO";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
@@ -26,6 +27,11 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <SEO
+        title="Renderme AI – AI Photo Editor & Face Swap"
+        description="Transform your photos with AI. Change backgrounds, swap faces, restore old pictures, and create hyper-realistic edits from your phone. 3 free edits to start."
+        canonical="/"
+      />
       {/* Background glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full opacity-20 blur-3xl" style={{ background: "var(--gradient-primary)" }} />
