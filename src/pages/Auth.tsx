@@ -83,6 +83,11 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
+      <SEO
+        title="Sign in or Sign up"
+        description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images. Free trial included."
+        canonical="/auth"
+      />
       <div className="w-full max-w-md md:max-w-lg space-y-6 md:space-y-8 bg-card/40 md:border md:border-border/40 md:rounded-3xl md:p-10 md:shadow-2xl backdrop-blur-sm">
         {/* Logo */}
         <div className="text-center space-y-2 md:space-y-3">
