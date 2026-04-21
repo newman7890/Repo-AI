@@ -39,7 +39,25 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const deviceInfo = body?.deviceInfo || {};
 
+    // Capture client IP from forwarding headers
+    const ipHeader =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("cf-connecting-ip") ||
+      req.headers.get("x-real-ip") ||
+      "";
+    const clientIp = ipHeader.split(",")[0]?.trim() || null;
+
     const admin = createClient(supabaseUrl, serviceKey);
+
+    // Always update profile with latest IP / browser / last_seen, even if registration was already notified
+    await admin
+      .from("profiles")
+      .update({
+        ip_address: clientIp,
+        browser: deviceInfo.browser || null,
+        last_seen_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
 
     // H2 fix: server-side "first sign-in" check using service role.
     // RLS prevents non-admin clients from reading admin_notifications, so the
@@ -88,6 +106,8 @@ Deno.serve(async (req) => {
         screen: deviceInfo.screenResolution || null,
         platform: deviceInfo.platform || null,
         user_agent: deviceInfo.userAgent || null,
+        browser: deviceInfo.browser || null,
+        ip_address: clientIp,
       },
     });
 
