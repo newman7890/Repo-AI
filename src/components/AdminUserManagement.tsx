@@ -16,10 +16,25 @@ interface UserCredit {
   updated_at: string;
   email?: string;
   device_info?: string;
+  ip_address?: string;
+  browser?: string;
+  last_seen_at?: string;
   has_paid?: boolean;
 }
 
 type Filter = "all" | "paid" | "blocked";
+
+const formatDateTime = (iso?: string) => {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
+};
 
 const AdminUserManagement = () => {
   const { toast } = useToast();
@@ -37,7 +52,7 @@ const AdminUserManagement = () => {
         .order("created_at", { ascending: false }),
       supabase
         .from("profiles")
-        .select("user_id, email, device_info"),
+        .select("user_id, email, device_info, ip_address, browser, last_seen_at"),
       supabase
         .from("processed_payments")
         .select("user_id"),
@@ -50,21 +65,31 @@ const AdminUserManagement = () => {
       return;
     }
 
-    const emailMap = new Map<string, string>();
-    const deviceMap = new Map<string, string>();
-    (profilesRes.data || []).forEach((p: { user_id: string; email: string | null; device_info: string | null }) => {
-      if (p.email) emailMap.set(p.user_id, p.email);
-      if (p.device_info) deviceMap.set(p.user_id, p.device_info);
-    });
+    type ProfileRow = {
+      user_id: string;
+      email: string | null;
+      device_info: string | null;
+      ip_address: string | null;
+      browser: string | null;
+      last_seen_at: string | null;
+    };
+    const profileMap = new Map<string, ProfileRow>();
+    (profilesRes.data || []).forEach((p: ProfileRow) => profileMap.set(p.user_id, p));
 
     const paidUserIds = new Set((paymentsRes.data || []).map((payment) => payment.user_id));
 
-    const merged = (creditsRes.data || []).map(u => ({
-      ...u,
-      email: emailMap.get(u.user_id) || undefined,
-      device_info: deviceMap.get(u.user_id) || undefined,
-      has_paid: paidUserIds.has(u.user_id),
-    }));
+    const merged = (creditsRes.data || []).map(u => {
+      const p = profileMap.get(u.user_id);
+      return {
+        ...u,
+        email: p?.email || undefined,
+        device_info: p?.device_info || undefined,
+        ip_address: p?.ip_address || undefined,
+        browser: p?.browser || undefined,
+        last_seen_at: p?.last_seen_at || undefined,
+        has_paid: paidUserIds.has(u.user_id),
+      };
+    });
 
     setUsers(merged);
     setLoading(false);
@@ -85,6 +110,7 @@ const AdminUserManagement = () => {
           description: profile?.email || "A new account was created.",
         });
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, () => fetchUsers())
       .subscribe();
 
     return () => {
@@ -155,6 +181,10 @@ const AdminUserManagement = () => {
                 <tr className="border-b border-border text-muted-foreground text-xs">
                    <th className="text-left py-2 pr-3">Email</th>
                    <th className="text-left py-2 px-2">Device</th>
+                   <th className="text-left py-2 px-2">Browser</th>
+                   <th className="text-left py-2 px-2">IP Address</th>
+                   <th className="text-left py-2 px-2">Joined</th>
+                   <th className="text-left py-2 px-2">Last Seen</th>
                    <th className="text-center py-2 px-2">Tokens</th>
                    <th className="text-center py-2 px-2">Trials</th>
                    <th className="text-center py-2 px-2">Status</th>
@@ -169,6 +199,18 @@ const AdminUserManagement = () => {
                      </td>
                      <td className="py-2.5 px-2 text-[10px] text-muted-foreground max-w-[150px] truncate" title={u.device_info || "Unknown"}>
                        {u.device_info ? u.device_info.split(" | ")[0] : "—"}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground">
+                       {u.browser || "—"}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] font-mono text-muted-foreground" title={u.ip_address || ""}>
+                       {u.ip_address || "—"}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground whitespace-nowrap">
+                       {formatDateTime(u.created_at)}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground whitespace-nowrap">
+                       {formatDateTime(u.last_seen_at)}
                      </td>
                     <td className="text-center py-2.5 px-2 text-foreground">{u.tokens}</td>
                     <td className="text-center py-2.5 px-2 text-foreground">{u.trial_uses_remaining}</td>

@@ -77,6 +77,36 @@ export type Database = {
         }
         Relationships: []
       }
+      edit_history: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          mode: string
+          original_image: string
+          result_image: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          mode: string
+          original_image: string
+          result_image: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          mode?: string
+          original_image?: string
+          result_image?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       processed_payments: {
         Row: {
           amount: number | null
@@ -109,26 +139,35 @@ export type Database = {
       }
       profiles: {
         Row: {
+          browser: string | null
           created_at: string
           device_info: string | null
           email: string | null
           id: string
+          ip_address: string | null
+          last_seen_at: string | null
           user_agent: string | null
           user_id: string
         }
         Insert: {
+          browser?: string | null
           created_at?: string
           device_info?: string | null
           email?: string | null
           id?: string
+          ip_address?: string | null
+          last_seen_at?: string | null
           user_agent?: string | null
           user_id: string
         }
         Update: {
+          browser?: string | null
           created_at?: string
           device_info?: string | null
           email?: string | null
           id?: string
+          ip_address?: string | null
+          last_seen_at?: string | null
           user_agent?: string | null
           user_id?: string
         }

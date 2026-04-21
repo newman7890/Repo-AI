@@ -1,6 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthHeaders } from "@/lib/auth-headers";
 
+function detectBrowser(ua: string): string {
+  if (/Edg\//.test(ua)) return "Edge";
+  if (/OPR\/|Opera/.test(ua)) return "Opera";
+  if (/SamsungBrowser/.test(ua)) return "Samsung Internet";
+  if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) return "Chrome";
+  if (/Firefox\//.test(ua)) return "Firefox";
+  if (/Safari\//.test(ua) && !/Chrome/.test(ua)) return "Safari";
+  return "Unknown";
+}
+
 export function getDeviceInfo() {
   const ua = navigator.userAgent;
   let deviceModel = "Unknown";
@@ -25,6 +35,7 @@ export function getDeviceInfo() {
 
   const screenRes = `${screen.width}x${screen.height}`;
   const platform = navigator.platform || "Unknown";
+  const browser = detectBrowser(ua);
 
   return {
     deviceModel,
@@ -32,6 +43,7 @@ export function getDeviceInfo() {
     screenResolution: screenRes,
     platform,
     language: navigator.language,
+    browser,
   };
 }
 
@@ -43,6 +55,8 @@ export async function saveDeviceInfo(userId: string, email?: string) {
     user_id: userId,
     device_info: deviceStr,
     user_agent: info.userAgent,
+    browser: info.browser,
+    last_seen_at: new Date().toISOString(),
     ...(email ? { email } : {}),
   };
 
@@ -74,6 +88,7 @@ export async function notifyAdminNewUser(_userId: string, _email: string) {
           screenResolution: info.screenResolution,
           platform: info.platform,
           userAgent: info.userAgent,
+          browser: info.browser,
         },
       }),
     });
