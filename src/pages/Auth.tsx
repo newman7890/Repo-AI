@@ -65,7 +65,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: "https://renderme.site/app" },
         });
         if (error) throw error;
         toast.success("Check your email to verify your account!");
@@ -84,7 +84,7 @@ const Auth = () => {
       return;
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: "https://renderme.site/reset-password",
     });
     if (error) {
       toast.error(error.message);
