@@ -110,6 +110,7 @@ const AdminUserManagement = () => {
           description: profile?.email || "A new account was created.",
         });
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, () => fetchUsers())
       .subscribe();
 
     return () => {
@@ -180,6 +181,10 @@ const AdminUserManagement = () => {
                 <tr className="border-b border-border text-muted-foreground text-xs">
                    <th className="text-left py-2 pr-3">Email</th>
                    <th className="text-left py-2 px-2">Device</th>
+                   <th className="text-left py-2 px-2">Browser</th>
+                   <th className="text-left py-2 px-2">IP Address</th>
+                   <th className="text-left py-2 px-2">Joined</th>
+                   <th className="text-left py-2 px-2">Last Seen</th>
                    <th className="text-center py-2 px-2">Tokens</th>
                    <th className="text-center py-2 px-2">Trials</th>
                    <th className="text-center py-2 px-2">Status</th>
@@ -194,6 +199,18 @@ const AdminUserManagement = () => {
                      </td>
                      <td className="py-2.5 px-2 text-[10px] text-muted-foreground max-w-[150px] truncate" title={u.device_info || "Unknown"}>
                        {u.device_info ? u.device_info.split(" | ")[0] : "—"}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground">
+                       {u.browser || "—"}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] font-mono text-muted-foreground" title={u.ip_address || ""}>
+                       {u.ip_address || "—"}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground whitespace-nowrap">
+                       {formatDateTime(u.created_at)}
+                     </td>
+                     <td className="py-2.5 px-2 text-[10px] text-muted-foreground whitespace-nowrap">
+                       {formatDateTime(u.last_seen_at)}
                      </td>
                     <td className="text-center py-2.5 px-2 text-foreground">{u.tokens}</td>
                     <td className="text-center py-2.5 px-2 text-foreground">{u.trial_uses_remaining}</td>
