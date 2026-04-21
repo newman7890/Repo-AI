@@ -47,7 +47,7 @@ const ProcessingSkeleton = ({ onCancel }: ProcessingSkeletonProps) => {
 
   return (
     <div className="flex flex-col gap-6 w-full animate-fade-in">
-      <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-gradient-to-b from-[hsl(250_25%_6%)] via-[hsl(265_30%_8%)] to-[hsl(250_25%_5%)] border border-border/40">
+      <div className="relative w-full mx-auto max-w-md aspect-[3/4] rounded-2xl overflow-hidden bg-gradient-to-b from-[hsl(250_25%_6%)] via-[hsl(265_30%_8%)] to-[hsl(250_25%_5%)] border border-border/40 shadow-2xl">
         {/* Floating particles */}
         <div className="absolute inset-0 pointer-events-none">
           {particles.map((p) => (
