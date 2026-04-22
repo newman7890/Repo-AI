@@ -28,7 +28,7 @@ export const FloatingDots = ({ count = 200 }: FloatingDotsProps) => {
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
+      className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
     >
       {dots.map((d) => (
         <span
