@@ -12,14 +12,14 @@ export const FloatingDots = ({ count = 200 }: FloatingDotsProps) => {
   const dots = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => {
-        const size = Math.random() * 4 + 2; // 2-6px
+        const size = Math.random() * 6 + 3; // 3-9px
         const duration = Math.random() * 12 + 8; // 8-20s
-        const delay = Math.random() * -20; // negative for staggered start
+        const delay = Math.random() * -20;
         const top = Math.random() * 100;
         const left = Math.random() * 100;
-        const dx = (Math.random() - 0.5) * 200; // -100 to 100px
-        const dy = (Math.random() - 0.5) * 200;
-        const opacity = Math.random() * 0.5 + 0.3;
+        const dx = (Math.random() - 0.5) * 300;
+        const dy = (Math.random() - 0.5) * 300;
+        const opacity = Math.random() * 0.5 + 0.5; // 0.5-1
         return { i, size, duration, delay, top, left, dx, dy, opacity };
       }),
     [count]
