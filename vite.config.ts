@@ -18,29 +18,10 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      selfDestroying: true,
       includeAssets: ["favicon.ico", "og-image.png"],
       devOptions: {
         enabled: false,
-      },
-      workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
-        // Always fetch index.html from network so users get latest build immediately
-        navigateFallback: "index.html",
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        runtimeCaching: [
-          {
-            urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "html-cache",
-              networkTimeoutSeconds: 3,
-              expiration: { maxEntries: 10 },
-            },
-          },
-        ],
       },
       manifest: {
         name: "Renderme AI – AI Photo Editor",
