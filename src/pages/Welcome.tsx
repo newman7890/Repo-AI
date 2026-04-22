@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
+import { FloatingDots } from "@/components/FloatingDots";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
@@ -32,6 +33,9 @@ const Welcome = () => {
         description="Transform your photos with AI. Change backgrounds, swap faces, restore old pictures, and create hyper-realistic edits from your phone. 3 free edits to start."
         canonical="/"
       />
+      {/* Floating purple dots */}
+      <FloatingDots count={200} />
+
       {/* Background glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full opacity-20 blur-3xl" style={{ background: "var(--gradient-primary)" }} />
