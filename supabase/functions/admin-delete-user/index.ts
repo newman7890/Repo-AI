@@ -82,11 +82,17 @@ Deno.serve(async (req) => {
 
     const { error: deleteErr } = await adminClient.auth.admin.deleteUser(targetUserId);
     if (deleteErr) {
-      console.error("deleteUser error:", deleteErr);
-      return new Response(JSON.stringify({ error: deleteErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const msg = (deleteErr.message || "").toLowerCase();
+      // If the auth user is already gone, treat as success — app tables are already cleaned above.
+      const alreadyGone = msg.includes("not found") || msg.includes("user_not_found");
+      if (!alreadyGone) {
+        console.error("deleteUser error:", deleteErr);
+        return new Response(JSON.stringify({ error: deleteErr.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.warn("Auth user already deleted, cleaned app tables only:", targetUserId);
     }
 
     return new Response(JSON.stringify({ success: true }), {
