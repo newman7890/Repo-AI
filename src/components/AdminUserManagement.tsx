@@ -3,8 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ShieldBan, ShieldCheck, Crown, Users } from "lucide-react";
+import { ShieldBan, ShieldCheck, Crown, Users, Trash2 } from "lucide-react";
 
 interface UserCredit {
   user_id: string;
@@ -42,6 +52,8 @@ const AdminUserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
   const [toggling, setToggling] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<UserCredit | null>(null);
 
   const fetchUsers = async () => {
     // Fetch credits and profiles in parallel
@@ -136,6 +148,29 @@ const AdminUserManagement = () => {
     setToggling(null);
   };
 
+  const deleteUser = async (user: UserCredit) => {
+    setDeleting(user.user_id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: user.user_id },
+      });
+      if (error) throw error;
+      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+
+      toast({
+        title: "User deleted",
+        description: `${user.email || user.user_id.slice(0, 8) + "…"} has been removed.`,
+      });
+      setUsers(prev => prev.filter(u => u.user_id !== user.user_id));
+      setConfirmDelete(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete user";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const filtered = users.filter(u => {
     if (filter === "paid") return !!u.has_paid;
     if (filter === "blocked") return u.blocked;
@@ -223,15 +258,27 @@ const AdminUserManagement = () => {
                       </div>
                     </td>
                     <td className="text-right py-2.5 pl-2">
-                      <Button
-                        size="sm"
-                        variant={u.blocked ? "outline" : "destructive"}
-                        className="text-xs h-7 px-2.5"
-                        disabled={toggling === u.user_id}
-                        onClick={() => toggleBlock(u.user_id, u.blocked)}
-                      >
-                        {u.blocked ? <><ShieldCheck className="w-3 h-3 mr-1" />Unblock</> : <><ShieldBan className="w-3 h-3 mr-1" />Block</>}
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant={u.blocked ? "outline" : "destructive"}
+                          className="text-xs h-7 px-2.5"
+                          disabled={toggling === u.user_id}
+                          onClick={() => toggleBlock(u.user_id, u.blocked)}
+                        >
+                          {u.blocked ? <><ShieldCheck className="w-3 h-3 mr-1" />Unblock</> : <><ShieldBan className="w-3 h-3 mr-1" />Block</>}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 px-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          disabled={deleting === u.user_id}
+                          onClick={() => setConfirmDelete(u)}
+                          title="Delete user permanently"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
