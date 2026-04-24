@@ -14,7 +14,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ShieldBan, ShieldCheck, Crown, Users, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ShieldBan, ShieldCheck, Crown, Users, Trash2, Search, X } from "lucide-react";
 
 interface UserCredit {
   user_id: string;
@@ -51,6 +52,7 @@ const AdminUserManagement = () => {
   const [users, setUsers] = useState<UserCredit[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
   const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<UserCredit | null>(null);
@@ -171,9 +173,17 @@ const AdminUserManagement = () => {
     }
   };
 
+  const query = search.trim().toLowerCase();
   const filtered = users.filter(u => {
-    if (filter === "paid") return !!u.has_paid;
-    if (filter === "blocked") return u.blocked;
+    if (filter === "paid" && !u.has_paid) return false;
+    if (filter === "blocked" && !u.blocked) return false;
+    if (query) {
+      const haystack = [u.email, u.user_id, u.ip_address, u.device_info, u.browser]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
     return true;
   });
 
@@ -205,10 +215,31 @@ const AdminUserManagement = () => {
             ))}
           </div>
         </div>
+        <div className="relative mt-3">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by email, user ID, IP, device…"
+            className="h-8 pl-8 pr-8 text-xs"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-6">No users found.</p>
+          <p className="text-muted-foreground text-sm text-center py-6">
+            {query ? `No users match "${search}".` : "No users found."}
+          </p>
         ) : (
           <div className="overflow-x-auto max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
