@@ -6,9 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
-import showcaseBefore from "@/assets/showcase-before.jpeg";
-import showcaseAfter from "@/assets/showcase-after.jpeg";
+import ShowcaseSection from "@/components/ShowcaseSection";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
