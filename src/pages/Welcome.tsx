@@ -6,9 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
-import showcaseBefore from "@/assets/showcase-before.jpeg";
-import showcaseAfter from "@/assets/showcase-after.jpeg";
+import ShowcaseSection from "@/components/ShowcaseSection";
 
 const features = [
   { icon: Wand2, title: "AI Photo Editing", desc: "Change backgrounds, outfits, scenery, and more with a single prompt." },
@@ -162,27 +160,8 @@ const Welcome = () => {
         </div>
       </section>
 
-      {/* Real results: Before / After */}
-      <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm mb-4">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-primary font-medium">Real results</span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">From plain photo to scene-stealer</h2>
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Drag the slider to see how a simple prompt transforms an everyday selfie into something cinematic.
-            </p>
-          </div>
-          <div className="max-w-2xl mx-auto">
-            <BeforeAfterSlider beforeImage={showcaseBefore} afterImage={showcaseAfter} />
-            <p className="text-xs md:text-sm text-muted-foreground text-center mt-4 italic">
-              Prompt: "Add a slice of pepperoni pizza in my hand, keep my face and outfit exactly the same, natural sunlight."
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Real results: Before / After (admin-managed) */}
+      <ShowcaseSection />
 
       {/* How to prompt the AI */}
       <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">

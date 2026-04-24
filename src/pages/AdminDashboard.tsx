@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BarChart3, Users, Zap, Clock } from "lucide-react";
 import AdminUserManagement from "@/components/AdminUserManagement";
 import AdminNotifications from "@/components/AdminNotifications";
+import AdminShowcaseManager from "@/components/AdminShowcaseManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -194,6 +195,9 @@ const AdminDashboard = () => {
 
         {/* User Management */}
         <AdminUserManagement />
+
+        {/* Landing-page Showcase Manager */}
+        <AdminShowcaseManager />
 
         {/* Per-User Table */}
         <Card className="bg-card border-border">
