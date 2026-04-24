@@ -196,6 +196,9 @@ const AdminDashboard = () => {
         {/* User Management */}
         <AdminUserManagement />
 
+        {/* Landing-page Showcase Manager */}
+        <AdminShowcaseManager />
+
         {/* Per-User Table */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
