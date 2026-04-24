@@ -197,6 +197,83 @@ export type Database = {
         }
         Relationships: []
       }
+      showcase_examples: {
+        Row: {
+          after_alt: string
+          after_image: string
+          before_alt: string
+          before_image: string
+          created_at: string
+          generation_seconds: number
+          id: string
+          prompt: string
+          published: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          after_alt?: string
+          after_image: string
+          before_alt?: string
+          before_image: string
+          created_at?: string
+          generation_seconds?: number
+          id?: string
+          prompt: string
+          published?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          after_alt?: string
+          after_image?: string
+          before_alt?: string
+          before_image?: string
+          created_at?: string
+          generation_seconds?: number
+          id?: string
+          prompt?: string
+          published?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      slider_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          example_id: string | null
+          id: string
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          example_id?: string | null
+          id?: string
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          example_id?: string | null
+          id?: string
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slider_events_example_id_fkey"
+            columns: ["example_id"]
+            isOneToOne: false
+            referencedRelation: "showcase_examples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_credits: {
         Row: {
           blocked: boolean
