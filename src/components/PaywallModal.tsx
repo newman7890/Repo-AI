@@ -42,8 +42,6 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [provider, setProvider] = useState<Network>("mtn");
   const [pendingRef, setPendingRef] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string>("");
-  const [otp, setOtp] = useState("");
-  const [awaitingOtp, setAwaitingOtp] = useState(false);
   const pollRef = useRef<number | null>(null);
   const { toast } = useToast();
 
