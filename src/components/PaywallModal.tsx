@@ -146,7 +146,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const plan = plans.find((p) => p.id === selectedPlan)!;
   const isMomo = paymentMethod === "mobile_money";
   const phoneValid = /^0\d{9}$/.test(phone.replace(/\D/g, ""));
-  const otpValid = /^\d{4,8}$/.test(otp.trim());
+  
   const canSubmit = isMomo ? phoneValid && !loading : !loading;
 
   return (
