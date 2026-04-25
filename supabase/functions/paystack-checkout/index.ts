@@ -24,6 +24,16 @@ const PLANS: Record<string, { name: string; amount: number; tokens: number }> = 
 const PLAN_INTERVAL = "monthly";
 const PLAN_CURRENCY = "GHS";
 
+type PaystackChargeResponse = {
+  status?: boolean;
+  message?: string;
+  data?: {
+    status?: string;
+    reference?: string;
+    display_text?: string;
+  };
+};
+
 async function getOrCreatePlan(secretKey: string, planId: string): Promise<string> {
   const plan = PLANS[planId];
   if (!plan) throw new Error(`Unknown plan: ${planId}`);
@@ -73,6 +83,19 @@ function normalizeGhanaPhone(raw: string): string | null {
   return p;
 }
 
+async function submitOtp(secretKey: string, reference: string, otp: string): Promise<PaystackChargeResponse> {
+  const response = await fetch("https://api.paystack.co/charge/submit_otp", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ otp, reference }),
+  });
+
+  return await response.json();
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -108,6 +131,49 @@ serve(async (req) => {
     const userEmail = claimsData.claims.email as string;
 
     const body = await req.json();
+    const action = body.action as string | undefined;
+
+    if (action === "submit_otp") {
+      const reference = (body.reference || "") as string;
+      const otp = String(body.otp || "").replace(/\D/g, "");
+
+      if (!reference || !/^[a-zA-Z0-9_.-]+$/.test(reference)) {
+        return new Response(JSON.stringify({ error: "Invalid payment reference" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!/^\d{4,8}$/.test(otp)) {
+        return new Response(JSON.stringify({ error: "Enter the OTP sent to your phone" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const otpData = await submitOtp(PAYSTACK_SECRET_KEY, reference, otp);
+
+      if (!otpData.status) {
+        return new Response(JSON.stringify({
+          error: otpData.message || "OTP confirmation failed",
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({
+        method: "mobile_money",
+        status: otpData.data?.status,
+        reference: otpData.data?.reference || reference,
+        display_text: otpData.data?.display_text,
+        message: otpData.message,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const planId = body.plan_id || "standard";
     const paymentMethod = body.payment_method === "mobile_money" ? "mobile_money" : "card";
     const phoneRaw = (body.phone || "") as string;
