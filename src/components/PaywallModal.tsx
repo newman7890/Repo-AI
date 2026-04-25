@@ -42,8 +42,6 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [provider, setProvider] = useState<Network>("mtn");
   const [pendingRef, setPendingRef] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string>("");
-  const [otp, setOtp] = useState("");
-  const [awaitingOtp, setAwaitingOtp] = useState(false);
   const pollRef = useRef<number | null>(null);
   const { toast } = useToast();
 
@@ -60,8 +58,6 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     stopPolling();
     setPendingRef(null);
     setStatusMsg("");
-    setOtp("");
-    setAwaitingOtp(false);
     setLoading(false);
   };
 
@@ -136,12 +132,8 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           data.display_text ||
             "📱 Check your phone! Approve the payment by entering your MoMo PIN."
         );
-        setAwaitingOtp(data.status === "send_otp");
         setLoading(false);
-
-        if (data.status !== "send_otp") {
-          pollStatus(data.reference);
-        }
+        pollStatus(data.reference);
       } else {
         window.location.href = data.authorization_url;
       }
@@ -151,54 +143,10 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     }
   };
 
-  const handleSubmitOtp = async () => {
-    if (!pendingRef) return;
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-checkout`,
-        {
-          method: "POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({
-            action: "submit_otp",
-            reference: pendingRef,
-            otp,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || "Failed to submit OTP");
-
-      setStatusMsg(
-        data.display_text || data.message || "Payment request sent. Confirming now..."
-      );
-      setAwaitingOtp(data.status === "send_otp");
-
-      if (data.status === "success") {
-        setLoading(false);
-        pollStatus(pendingRef);
-        return;
-      }
-
-      if (data.status !== "send_otp") {
-        pollStatus(pendingRef);
-      } else {
-        setLoading(false);
-      }
-    } catch (err: any) {
-      setLoading(false);
-      toast({ title: "OTP error", description: err.message, variant: "destructive" });
-    }
-  };
-
   const plan = plans.find((p) => p.id === selectedPlan)!;
   const isMomo = paymentMethod === "mobile_money";
   const phoneValid = /^0\d{9}$/.test(phone.replace(/\D/g, ""));
-  const otpValid = /^\d{4,8}$/.test(otp.trim());
+  
   const canSubmit = isMomo ? phoneValid && !loading : !loading;
 
   return (
@@ -231,41 +179,10 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               <p className="font-semibold">Waiting for your approval…</p>
               <p className="text-sm text-muted-foreground mt-2 px-2">{statusMsg}</p>
             </div>
-
-            {awaitingOtp ? (
-              <div className="space-y-3 px-2">
-                <Input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  maxLength={8}
-                  className="h-11 text-center text-base font-semibold tracking-[0.2em]"
-                />
-                <Button
-                  className="w-full h-11 font-bold rounded-xl"
-                  onClick={handleSubmitOtp}
-                  disabled={!otpValid || loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Confirming OTP...
-                    </>
-                  ) : (
-                    "Submit OTP"
-                  )}
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-[11px] text-muted-foreground">
-                  Don't close this window. Tokens will be added automatically once you approve.
-                </p>
-              </>
-            )}
+            <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-[11px] text-muted-foreground">
+              Don't close this window. Tokens will be added automatically once you approve.
+            </p>
           </div>
         ) : (
           <>
