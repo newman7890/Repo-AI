@@ -58,8 +58,6 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     stopPolling();
     setPendingRef(null);
     setStatusMsg("");
-    setOtp("");
-    setAwaitingOtp(false);
     setLoading(false);
   };
 
