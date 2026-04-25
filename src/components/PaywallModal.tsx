@@ -132,62 +132,14 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
           data.display_text ||
             "📱 Check your phone! Approve the payment by entering your MoMo PIN."
         );
-        setAwaitingOtp(data.status === "send_otp");
         setLoading(false);
-
-        if (data.status !== "send_otp") {
-          pollStatus(data.reference);
-        }
+        pollStatus(data.reference);
       } else {
         window.location.href = data.authorization_url;
       }
     } catch (err: any) {
       setLoading(false);
       toast({ title: "Payment error", description: err.message, variant: "destructive" });
-    }
-  };
-
-  const handleSubmitOtp = async () => {
-    if (!pendingRef) return;
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-checkout`,
-        {
-          method: "POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({
-            action: "submit_otp",
-            reference: pendingRef,
-            otp,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || "Failed to submit OTP");
-
-      setStatusMsg(
-        data.display_text || data.message || "Payment request sent. Confirming now..."
-      );
-      setAwaitingOtp(data.status === "send_otp");
-
-      if (data.status === "success") {
-        setLoading(false);
-        pollStatus(pendingRef);
-        return;
-      }
-
-      if (data.status !== "send_otp") {
-        pollStatus(pendingRef);
-      } else {
-        setLoading(false);
-      }
-    } catch (err: any) {
-      setLoading(false);
-      toast({ title: "OTP error", description: err.message, variant: "destructive" });
     }
   };
 
