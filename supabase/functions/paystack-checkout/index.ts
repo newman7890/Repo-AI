@@ -177,8 +177,20 @@ serve(async (req) => {
       });
       const chargeData = await chargeRes.json();
 
+      // Log the full Paystack response so we can debug failures from the dashboard
+      console.log("Paystack mobile money response:", JSON.stringify({
+        http_status: chargeRes.status,
+        ok: chargeData.status,
+        message: chargeData.message,
+        data_status: chargeData.data?.status,
+        data_reference: chargeData.data?.reference,
+      }));
+
       if (!chargeData.status) {
-        return new Response(JSON.stringify({ error: chargeData.message || "Mobile money charge failed" }), {
+        return new Response(JSON.stringify({
+          error: chargeData.message || "Mobile money charge failed",
+          paystack_status: chargeRes.status,
+        }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
