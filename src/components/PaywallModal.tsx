@@ -126,8 +126,20 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "Failed to start checkout");
 
-      // Both card and mobile money now use Paystack's hosted checkout.
-      // For MoMo, Paystack pushes the PIN prompt directly to the phone — no SMS OTP.
+      if (paymentMethod === "mobile_money") {
+        // Direct charge: Paystack pushes PIN prompt straight to the phone.
+        // Stay in the modal and poll until the user approves.
+        if (!data.reference) throw new Error("No payment reference returned");
+        setPendingRef(data.reference);
+        setStatusMsg(
+          data.display_text ||
+            "📱 Check your phone — approve the payment by entering your MoMo PIN."
+        );
+        pollStatus(data.reference);
+        return;
+      }
+
+      // Card: Paystack hosted subscription checkout
       if (data.authorization_url) {
         window.location.href = data.authorization_url;
       } else {
