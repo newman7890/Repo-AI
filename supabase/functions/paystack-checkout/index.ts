@@ -204,7 +204,7 @@ serve(async (req) => {
       });
     }
 
-    // ------ MOBILE MONEY: direct charge that pushes PIN prompt to phone ------
+    // ------ MOBILE MONEY: hosted checkout that pushes PIN prompt directly to phone (no OTP) ------
     if (paymentMethod === "mobile_money") {
       const phone = normalizeGhanaPhone(phoneRaw);
       if (!phone) {
@@ -220,7 +220,12 @@ serve(async (req) => {
         });
       }
 
-      const chargeRes = await fetch("https://api.paystack.co/charge", {
+      const callbackBase = req.headers.get("origin") || "https://renderme-ai.lovable.app";
+      const callbackUrl = `${callbackBase}/app?payment=success`;
+
+      // Use transaction/initialize with mobile_money channel — Paystack's hosted
+      // checkout flow pushes the PIN prompt straight to the phone without an SMS OTP.
+      const initRes = await fetch("https://api.paystack.co/transaction/initialize", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -230,6 +235,8 @@ serve(async (req) => {
           email: userEmail,
           amount: plan.amount,
           currency: PLAN_CURRENCY,
+          callback_url: callbackUrl,
+          channels: ["mobile_money"],
           mobile_money: { phone, provider },
           metadata: {
             user_id: userId,
@@ -238,24 +245,23 @@ serve(async (req) => {
             tokens: plan.tokens,
             payment_method: "mobile_money",
             billing_type: "one_time",
+            phone,
+            provider,
           },
         }),
       });
-      const chargeData = await chargeRes.json();
+      const initData = await initRes.json();
 
-      // Log the full Paystack response so we can debug failures from the dashboard
-      console.log("Paystack mobile money response:", JSON.stringify({
-        http_status: chargeRes.status,
-        ok: chargeData.status,
-        message: chargeData.message,
-        data_status: chargeData.data?.status,
-        data_reference: chargeData.data?.reference,
+      console.log("Paystack momo initialize response:", JSON.stringify({
+        http_status: initRes.status,
+        ok: initData.status,
+        message: initData.message,
+        reference: initData.data?.reference,
       }));
 
-      if (!chargeData.status) {
+      if (!initData.status) {
         return new Response(JSON.stringify({
-          error: chargeData.message || "Mobile money charge failed",
-          paystack_status: chargeRes.status,
+          error: initData.message || "Mobile money checkout failed",
         }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -264,10 +270,8 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         method: "mobile_money",
-        status: chargeData.data?.status, // usually "send_otp" or "pay_offline" or "pending"
-        reference: chargeData.data?.reference,
-        display_text: chargeData.data?.display_text,
-        message: chargeData.message,
+        authorization_url: initData.data.authorization_url,
+        reference: initData.data.reference,
       }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
