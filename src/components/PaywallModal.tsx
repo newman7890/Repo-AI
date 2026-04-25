@@ -179,41 +179,10 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               <p className="font-semibold">Waiting for your approval…</p>
               <p className="text-sm text-muted-foreground mt-2 px-2">{statusMsg}</p>
             </div>
-
-            {awaitingOtp ? (
-              <div className="space-y-3 px-2">
-                <Input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  maxLength={8}
-                  className="h-11 text-center text-base font-semibold tracking-[0.2em]"
-                />
-                <Button
-                  className="w-full h-11 font-bold rounded-xl"
-                  onClick={handleSubmitOtp}
-                  disabled={!otpValid || loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Confirming OTP...
-                    </>
-                  ) : (
-                    "Submit OTP"
-                  )}
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-[11px] text-muted-foreground">
-                  Don't close this window. Tokens will be added automatically once you approve.
-                </p>
-              </>
-            )}
+            <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-[11px] text-muted-foreground">
+              Don't close this window. Tokens will be added automatically once you approve.
+            </p>
           </div>
         ) : (
           <>
