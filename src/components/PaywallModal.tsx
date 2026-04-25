@@ -231,7 +231,6 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               <p className="font-semibold">Waiting for your approval…</p>
               <p className="text-sm text-muted-foreground mt-2 px-2">{statusMsg}</p>
             </div>
-            <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
 
             {awaitingOtp ? (
               <div className="space-y-3 px-2">
