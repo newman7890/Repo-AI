@@ -144,10 +144,22 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       }
 
       if (paymentMethod === "mobile_money") {
-        // Direct charge: Paystack pushes PIN prompt straight to the phone.
-        // Stay in the modal and poll until the user approves.
         if (!data.reference) throw new Error("No payment reference returned");
         setPendingRef(data.reference);
+
+        // Two possible Paystack flows — both stay in our app:
+        //  1) pay_offline → PIN prompt pushed to handset, just poll
+        //  2) send_otp    → user types OTP from SMS into our modal
+        if (data.status === "send_otp" || data.status === "otp") {
+          setOtpRequired(true);
+          setStatusMsg(
+            data.display_text ||
+              "Enter the OTP sent to your phone to authorize this payment."
+          );
+          setLoading(false);
+          return;
+        }
+
         setStatusMsg(
           data.display_text ||
             "📱 Check your phone — approve the payment by entering your Mobile Money PIN."
