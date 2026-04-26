@@ -63,16 +63,6 @@ async function getOrCreatePlan(secretKey: string, planId: string): Promise<strin
   return createData.data.plan_code;
 }
 
-// Normalize Ghana phone numbers to local 0XXXXXXXXX format Paystack expects
-function normalizeGhanaPhone(raw: string): string | null {
-  if (!raw) return null;
-  let p = raw.replace(/\D/g, "");
-  if (p.startsWith("233")) p = "0" + p.slice(3);
-  if (p.length === 9 && !p.startsWith("0")) p = "0" + p;
-  if (!/^0\d{9}$/.test(p)) return null;
-  return p;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -108,11 +98,8 @@ serve(async (req) => {
     const userEmail = claimsData.claims.email as string;
 
     const body = await req.json();
-
     const planId = body.plan_id || "standard";
     const paymentMethod = body.payment_method === "mobile_money" ? "mobile_money" : "card";
-    const phoneRaw = (body.phone || "") as string;
-    const provider = (body.provider || "") as string; // mtn | vod | atl
 
     if (!PLANS[planId]) {
       return new Response(JSON.stringify({ error: "Invalid plan" }), {
@@ -139,136 +126,35 @@ serve(async (req) => {
       });
     }
 
-    // ------ MOBILE MONEY: direct /charge — PIN prompt pushed straight to phone, no redirect ------
-    if (paymentMethod === "mobile_money") {
-      const phone = normalizeGhanaPhone(phoneRaw);
-      if (!phone) {
-        return new Response(JSON.stringify({ error: "Enter a valid Ghana phone number (e.g. 0241234567)" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (!["mtn", "vod", "atl"].includes(provider)) {
-        return new Response(JSON.stringify({ error: "Select your mobile money network" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      // Direct charge API — keeps the user inside our app. Paystack pushes the
-      // PIN approval prompt directly to the customer's handset (USSD/MoMo app).
-      const chargeRes = await fetch("https://api.paystack.co/charge", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: userEmail,
-          amount: plan.amount,
-          currency: PLAN_CURRENCY,
-          mobile_money: { phone, provider },
-          metadata: {
-            user_id: userId,
-            plan: planId,
-            plan_id: planId,
-            tokens: plan.tokens,
-            payment_method: "mobile_money",
-            billing_type: "one_time",
-            phone,
-            provider,
-          },
-        }),
-      });
-      const chargeData = await chargeRes.json();
-
-      console.log("Paystack momo charge response:", JSON.stringify({
-        http_status: chargeRes.status,
-        ok: chargeData.status,
-        message: chargeData.message,
-        charge_status: chargeData.data?.status,
-        reference: chargeData.data?.reference,
-        display_text: chargeData.data?.display_text,
-      }));
-
-      if (!chargeRes.ok || !chargeData.status) {
-        const paystackMessage = chargeData.message || "Mobile money charge failed";
-        console.error("Paystack momo charge failed:", JSON.stringify({
-          http_status: chargeRes.status,
-          message: paystackMessage,
-          data: chargeData.data,
-        }));
-
-        return new Response(JSON.stringify({
-          error: "We couldn't send the Mobile Money PIN prompt. Confirm the phone number and selected network, then try again.",
-          provider_message: paystackMessage,
-        }), {
-          status: chargeRes.status >= 500 ? 200 : 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      // If Paystack immediately rejects (e.g. "Payer account not active",
-      // "Insufficient funds"), surface a friendly message instead of polling forever.
-      const chargeStatus = chargeData.data?.status;
-      if (chargeStatus === "failed") {
-        const raw = (chargeData.data?.gateway_response || chargeData.data?.display_text || chargeData.message || "").toString();
-        const lower = raw.toLowerCase();
-        let friendly = raw || "The Mobile Money provider declined this payment.";
-        if (lower.includes("payer account not active") || lower.includes("not active")) {
-          friendly = "This Mobile Money number isn't active on the selected network. Confirm the wallet is registered and active, or try another number.";
-        } else if (lower.includes("insufficient")) {
-          friendly = "Insufficient funds in this Mobile Money wallet. Top up and try again.";
-        } else if (lower.includes("invalid") && lower.includes("number")) {
-          friendly = "Invalid Mobile Money number. Double-check the digits and selected network.";
-        } else if (lower.includes("declined")) {
-          friendly = "The Mobile Money provider declined this payment. Try another number or network.";
-        }
-        return new Response(JSON.stringify({
-          error: friendly,
-          provider_message: raw,
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      // Return whatever Paystack says — the client handles pay_offline (PIN push)
-      // and send_otp (user types OTP from SMS into our modal). Both stay in-app.
-      return new Response(JSON.stringify({
-        method: "mobile_money",
-        status: chargeData.data?.status,
-        reference: chargeData.data?.reference,
-        display_text: chargeData.data?.display_text,
-        message: chargeData.message,
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // ------ CARD: hosted checkout with subscription plan ------
-    const callbackBase = req.headers.get("origin") || "https://renderme-ai.lovable.app";
+    // ------ Hosted Paystack checkout for BOTH card and mobile money ------
+    // Paystack handles network selection, phone entry, PIN push, OTP, etc. on their side.
+    const callbackBase = req.headers.get("origin") || "https://renderme.lovable.app";
     const callbackUrl = `${callbackBase}/app?payment=success`;
-
-    const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
 
     const txBody: Record<string, unknown> = {
       email: userEmail,
       amount: plan.amount,
       currency: PLAN_CURRENCY,
       callback_url: callbackUrl,
-      plan: planCode,
-      channels: ["card"],
       metadata: {
         user_id: userId,
         plan: planId,
         plan_id: planId,
         tokens: plan.tokens,
-        payment_method: "card",
-        billing_type: "subscription",
+        payment_method: paymentMethod,
+        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
       },
     };
+
+    if (paymentMethod === "card") {
+      // Card → recurring subscription via plan
+      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
+      txBody.plan = planCode;
+      txBody.channels = ["card"];
+    } else {
+      // Mobile money → one-time payment, Paystack hosted UI handles network + PIN/OTP
+      txBody.channels = ["mobile_money"];
+    }
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
@@ -286,7 +172,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      method: "card",
+      method: paymentMethod,
       authorization_url: data.data.authorization_url,
       reference: data.data.reference,
     }), {
