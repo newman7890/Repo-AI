@@ -25,13 +25,13 @@ const Welcome = () => {
   }, []);
 
   const ctaTarget = isAuthed ? "/app" : "/auth";
-  const ctaLabel = isAuthed ? "Open app" : "Start editing free";
+  const ctaLabel = isAuthed ? "Open app" : "Start editing";
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SEO
         title="Renderme AI – AI Photo Editor & Face Swap"
-        description="Transform your photos with AI. Change backgrounds, swap faces, restore old pictures, and create hyper-realistic edits from your phone. 3 free edits to start."
+        description="Transform your photos with AI. Change backgrounds, swap faces, restore old pictures, and create hyper-realistic edits from your phone."
         canonical="/"
       />
       {/* Floating purple dots */}
@@ -105,7 +105,7 @@ const Welcome = () => {
             </a>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground pt-2">
-            ✨ 3 free edits · No credit card · Cancel anytime
+            Free tokens and trials are paused for now — they will be added back soon.
           </p>
         </div>
       </section>
@@ -276,7 +276,7 @@ const Welcome = () => {
           </div>
           <Link to={ctaTarget} className="inline-block mt-10">
             <Button size="lg" className="h-12 md:h-14 px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl">
-              {isAuthed ? "Open app" : "Get started, 3 free edits"}
+              {isAuthed ? "Open app" : "Get started"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
