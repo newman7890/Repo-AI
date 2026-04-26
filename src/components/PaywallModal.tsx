@@ -182,7 +182,35 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     }
   };
 
-  const plan = plans.find((p) => p.id === selectedPlan)!;
+  const handleSubmitOtp = async () => {
+    if (!pendingRef || !otp.trim()) return;
+    setSubmittingOtp(true);
+    setPaymentError("");
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-submit-otp`,
+        {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ otp: otp.trim(), reference: pendingRef }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || "Invalid OTP. Please try again.");
+      }
+      setOtpRequired(false);
+      setOtp("");
+      setStatusMsg(
+        data.display_text || "Approved. Confirming payment…"
+      );
+      pollStatus(pendingRef);
+    } catch (err: any) {
+      setPaymentError(err.message || "Invalid OTP. Please try again.");
+    } finally {
+      setSubmittingOtp(false);
+    }
+  };
   const isMomo = paymentMethod === "mobile_money";
   const phoneValid = isValidGhanaPhone(phone);
   
