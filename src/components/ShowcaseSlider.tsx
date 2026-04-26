@@ -92,13 +92,10 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         ref={containerRef}
         onMouseEnter={() => setShowInfo(true)}
         onMouseLeave={() => setShowInfo(false)}
-        className="relative mx-auto rounded-2xl overflow-hidden border border-border cursor-col-resize select-none touch-none bg-muted/20 group"
+        className="relative mx-auto rounded-2xl overflow-hidden border border-border cursor-col-resize select-none touch-none bg-muted/20 group w-full"
         style={{
           aspectRatio: `${aspectRatio}`,
-          maxHeight: "70vh",
-          maxWidth: "100%",
-          height: aspectRatio < 1 ? "min(70vh, 600px)" : "auto",
-          width: aspectRatio < 1 ? "auto" : "100%",
+          maxHeight: "min(70vh, 600px)",
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

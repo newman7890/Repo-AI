@@ -104,9 +104,12 @@ const Welcome = () => {
               </Button>
             </a>
           </div>
-          <p className="text-xs md:text-sm text-muted-foreground pt-2">
-            Free tokens and trials are paused for now — they will be added back soon.
-          </p>
+          <div className="mx-auto max-w-xl mt-2 inline-flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-left">
+            <Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+            <p className="text-xs md:text-sm text-foreground/90 leading-relaxed">
+              <span className="font-semibold text-accent">Heads up:</span> Free tokens and trial edits are temporarily removed while we upgrade the system. They're expected back within the next 2–3 weeks. Paid tokens still work normally.
+            </p>
+          </div>
         </div>
       </section>
 
