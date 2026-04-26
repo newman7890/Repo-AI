@@ -256,9 +256,28 @@ serve(async (req) => {
         display_text: chargeData.data?.display_text,
       }));
 
-      if (!chargeData.status) {
+      if (!chargeRes.ok || !chargeData.status) {
+        const paystackMessage = chargeData.message || "Mobile money charge failed";
+        console.error("Paystack momo charge failed:", JSON.stringify({
+          http_status: chargeRes.status,
+          message: paystackMessage,
+          data: chargeData.data,
+        }));
+
         return new Response(JSON.stringify({
-          error: chargeData.message || "Mobile money charge failed",
+          error: "We couldn't send the Mobile Money PIN prompt. Confirm the phone number and selected network, then try again.",
+          provider_message: paystackMessage,
+        }), {
+          status: chargeRes.status >= 500 ? 200 : 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const chargeStatus = chargeData.data?.status;
+      if (chargeStatus === "send_otp" || chargeStatus === "otp") {
+        return new Response(JSON.stringify({
+          error: "This payment is asking for an OTP instead of a PIN prompt. Please try another Mobile Money number or network.",
+          provider_message: chargeData.data?.display_text || chargeData.message,
         }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
