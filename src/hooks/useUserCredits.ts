@@ -26,7 +26,7 @@ export function useUserCredits() {
       setCredits(data);
     } else {
       // New user — trigger will create row, default values
-      setCredits({ tokens: 3, trial_uses_remaining: 0, is_premium: false, blocked: false });
+      setCredits({ tokens: 0, trial_uses_remaining: 0, is_premium: false, blocked: false });
     }
     setLoading(false);
   }, []);
