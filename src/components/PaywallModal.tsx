@@ -245,13 +245,59 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               <Smartphone className="w-7 h-7 text-primary animate-pulse" />
             </div>
             <div>
-              <p className="font-semibold">Waiting for your approval…</p>
+              <p className="font-semibold">
+                {otpRequired ? "Enter authorization code" : "Waiting for your approval…"}
+              </p>
               <p className="text-sm text-muted-foreground mt-2 px-2">{statusMsg}</p>
             </div>
-            <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
-            <p className="text-[11px] text-muted-foreground">
-              Don't close this window. Tokens will be added automatically once you approve.
-            </p>
+
+            {otpRequired ? (
+              <div className="space-y-3 px-2">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => {
+                    setOtp(e.target.value.replace(/\D/g, ""));
+                    setPaymentError("");
+                  }}
+                  maxLength={8}
+                  className="h-11 text-center text-lg tracking-widest font-semibold"
+                  autoFocus
+                />
+                {paymentError && (
+                  <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-[11px] text-destructive text-left">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{paymentError}</span>
+                  </div>
+                )}
+                <Button
+                  className="w-full h-11 font-bold rounded-xl"
+                  onClick={handleSubmitOtp}
+                  disabled={!otp.trim() || submittingOtp}
+                >
+                  {submittingOtp ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verifying…
+                    </>
+                  ) : (
+                    "Authorize payment"
+                  )}
+                </Button>
+                <p className="text-[11px] text-muted-foreground">
+                  Paystack sent an authorization code to your phone. Enter it here to complete the payment.
+                </p>
+              </div>
+            ) : (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-[11px] text-muted-foreground">
+                  Don't close this window. Tokens will be added automatically once you approve.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <>
