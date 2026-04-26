@@ -308,13 +308,22 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
                   inputMode="numeric"
                   placeholder="0241234567"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setPaymentError("");
+                  }}
                   maxLength={13}
                   className="h-10"
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  We'll push a PIN prompt to this number to confirm payment.
+                  We'll push a Mobile Money PIN prompt to this number. We do not ask for OTP codes.
                 </p>
+                {paymentError && (
+                  <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-[11px] text-destructive">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{paymentError}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -334,7 +343,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Connecting...
+                  Sending prompt...
                 </>
               ) : (
                 <>
