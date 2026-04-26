@@ -247,7 +247,7 @@ serve(async (req) => {
       }
       return new Response(JSON.stringify({ 
         error: "insufficient_credits",
-        message: "You've used all your free trials. Upgrade to Premium to continue editing!",
+        message: "You need tokens to continue editing. Free tokens and trials are paused for now and will be added back soon.",
         tokens: creditResult?.tokens || 0,
         is_premium: creditResult?.is_premium || false,
       }), {
