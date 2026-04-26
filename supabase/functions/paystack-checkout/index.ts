@@ -208,6 +208,31 @@ serve(async (req) => {
         });
       }
 
+      // If Paystack immediately rejects (e.g. "Payer account not active",
+      // "Insufficient funds"), surface a friendly message instead of polling forever.
+      const chargeStatus = chargeData.data?.status;
+      if (chargeStatus === "failed") {
+        const raw = (chargeData.data?.gateway_response || chargeData.data?.display_text || chargeData.message || "").toString();
+        const lower = raw.toLowerCase();
+        let friendly = raw || "The Mobile Money provider declined this payment.";
+        if (lower.includes("payer account not active") || lower.includes("not active")) {
+          friendly = "This Mobile Money number isn't active on the selected network. Confirm the wallet is registered and active, or try another number.";
+        } else if (lower.includes("insufficient")) {
+          friendly = "Insufficient funds in this Mobile Money wallet. Top up and try again.";
+        } else if (lower.includes("invalid") && lower.includes("number")) {
+          friendly = "Invalid Mobile Money number. Double-check the digits and selected network.";
+        } else if (lower.includes("declined")) {
+          friendly = "The Mobile Money provider declined this payment. Try another number or network.";
+        }
+        return new Response(JSON.stringify({
+          error: friendly,
+          provider_message: raw,
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       // Return whatever Paystack says — the client handles pay_offline (PIN push)
       // and send_otp (user types OTP from SMS into our modal). Both stay in-app.
       return new Response(JSON.stringify({
