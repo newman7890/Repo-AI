@@ -49,6 +49,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [pendingRef, setPendingRef] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string>("");
   const [paymentError, setPaymentError] = useState<string>("");
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [submittingOtp, setSubmittingOtp] = useState(false);
   const pollRef = useRef<number | null>(null);
   const { toast } = useToast();
 
@@ -67,6 +70,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     setStatusMsg("");
     setPaymentError("");
     setLoading(false);
+    setOtpRequired(false);
+    setOtp("");
+    setSubmittingOtp(false);
   };
 
   const pollStatus = (reference: string) => {
@@ -138,10 +144,22 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       }
 
       if (paymentMethod === "mobile_money") {
-        // Direct charge: Paystack pushes PIN prompt straight to the phone.
-        // Stay in the modal and poll until the user approves.
         if (!data.reference) throw new Error("No payment reference returned");
         setPendingRef(data.reference);
+
+        // Two possible Paystack flows — both stay in our app:
+        //  1) pay_offline → PIN prompt pushed to handset, just poll
+        //  2) send_otp    → user types OTP from SMS into our modal
+        if (data.status === "send_otp" || data.status === "otp") {
+          setOtpRequired(true);
+          setStatusMsg(
+            data.display_text ||
+              "Enter the OTP sent to your phone to authorize this payment."
+          );
+          setLoading(false);
+          return;
+        }
+
         setStatusMsg(
           data.display_text ||
             "📱 Check your phone — approve the payment by entering your Mobile Money PIN."
@@ -161,6 +179,36 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       const message = err.message || "We couldn't send the MoMo prompt. Check the number and network, then try again.";
       setPaymentError(message);
       toast({ title: "Payment error", description: message, variant: "destructive" });
+    }
+  };
+
+  const handleSubmitOtp = async () => {
+    if (!pendingRef || !otp.trim()) return;
+    setSubmittingOtp(true);
+    setPaymentError("");
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-submit-otp`,
+        {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ otp: otp.trim(), reference: pendingRef }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || "Invalid OTP. Please try again.");
+      }
+      setOtpRequired(false);
+      setOtp("");
+      setStatusMsg(
+        data.display_text || "Approved. Confirming payment…"
+      );
+      pollStatus(pendingRef);
+    } catch (err: any) {
+      setPaymentError(err.message || "Invalid OTP. Please try again.");
+    } finally {
+      setSubmittingOtp(false);
     }
   };
 
@@ -197,13 +245,59 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               <Smartphone className="w-7 h-7 text-primary animate-pulse" />
             </div>
             <div>
-              <p className="font-semibold">Waiting for your approval…</p>
+              <p className="font-semibold">
+                {otpRequired ? "Enter authorization code" : "Waiting for your approval…"}
+              </p>
               <p className="text-sm text-muted-foreground mt-2 px-2">{statusMsg}</p>
             </div>
-            <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
-            <p className="text-[11px] text-muted-foreground">
-              Don't close this window. Tokens will be added automatically once you approve.
-            </p>
+
+            {otpRequired ? (
+              <div className="space-y-3 px-2">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => {
+                    setOtp(e.target.value.replace(/\D/g, ""));
+                    setPaymentError("");
+                  }}
+                  maxLength={8}
+                  className="h-11 text-center text-lg tracking-widest font-semibold"
+                  autoFocus
+                />
+                {paymentError && (
+                  <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-[11px] text-destructive text-left">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{paymentError}</span>
+                  </div>
+                )}
+                <Button
+                  className="w-full h-11 font-bold rounded-xl"
+                  onClick={handleSubmitOtp}
+                  disabled={!otp.trim() || submittingOtp}
+                >
+                  {submittingOtp ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verifying…
+                    </>
+                  ) : (
+                    "Authorize payment"
+                  )}
+                </Button>
+                <p className="text-[11px] text-muted-foreground">
+                  Paystack sent an authorization code to your phone. Enter it here to complete the payment.
+                </p>
+              </div>
+            ) : (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
+                <p className="text-[11px] text-muted-foreground">
+                  Don't close this window. Tokens will be added automatically once you approve.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <>

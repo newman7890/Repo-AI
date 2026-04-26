@@ -208,17 +208,8 @@ serve(async (req) => {
         });
       }
 
-      const chargeStatus = chargeData.data?.status;
-      if (chargeStatus === "send_otp" || chargeStatus === "otp") {
-        return new Response(JSON.stringify({
-          error: "This payment is asking for an OTP instead of a PIN prompt. Please try another Mobile Money number or network.",
-          provider_message: chargeData.data?.display_text || chargeData.message,
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
+      // Return whatever Paystack says — the client handles pay_offline (PIN push)
+      // and send_otp (user types OTP from SMS into our modal). Both stay in-app.
       return new Response(JSON.stringify({
         method: "mobile_money",
         status: chargeData.data?.status,
