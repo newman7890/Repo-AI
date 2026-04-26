@@ -70,6 +70,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     setStatusMsg("");
     setPaymentError("");
     setLoading(false);
+    setOtpRequired(false);
+    setOtp("");
+    setSubmittingOtp(false);
   };
 
   const pollStatus = (reference: string) => {
