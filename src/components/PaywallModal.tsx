@@ -211,6 +211,8 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       setSubmittingOtp(false);
     }
   };
+
+  const plan = plans.find((p) => p.id === selectedPlan)!;
   const isMomo = paymentMethod === "mobile_money";
   const phoneValid = isValidGhanaPhone(phone);
   
