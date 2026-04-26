@@ -97,7 +97,7 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
       <SEO
         title="Sign in or Sign up"
-        description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images. Free trial included."
+        description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images."
         canonical="/auth"
         noindex
       />

@@ -56,7 +56,7 @@ async function ensureUserCreditsRow(supabase: ReturnType<typeof createClient>, u
   const { error } = await supabase.from("user_credits").insert({
     user_id: userId,
     tokens: 0,
-    trial_uses_remaining: 3,
+    trial_uses_remaining: 0,
     is_premium: false,
     blocked: false,
   });

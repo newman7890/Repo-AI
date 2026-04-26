@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Crown, Zap, Loader2, CreditCard, Check, Smartphone } from "lucide-react";
+import { Crown, Zap, Loader2, CreditCard, Check, Smartphone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,6 +31,12 @@ const networks = [
   { id: "atl", label: "AirtelTigo" },
 ] as const;
 
+const isValidGhanaPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  const local = digits.startsWith("233") ? `0${digits.slice(3)}` : digits.length === 9 ? `0${digits}` : digits;
+  return /^0\d{9}$/.test(local);
+};
+
 type PaymentMethod = "card" | "mobile_money";
 type Network = typeof networks[number]["id"];
 
@@ -42,6 +48,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [provider, setProvider] = useState<Network>("mtn");
   const [pendingRef, setPendingRef] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string>("");
+  const [paymentError, setPaymentError] = useState<string>("");
   const pollRef = useRef<number | null>(null);
   const { toast } = useToast();
 
@@ -58,6 +65,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
     stopPolling();
     setPendingRef(null);
     setStatusMsg("");
+    setPaymentError("");
     setLoading(false);
   };
 
@@ -108,6 +116,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const handleSubscribe = async () => {
     setLoading(true);
     setStatusMsg("");
+    setPaymentError("");
     const plan = plans.find((p) => p.id === selectedPlan)!;
     try {
       const response = await fetch(
@@ -124,7 +133,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
         }
       );
       const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || "Failed to start checkout");
+      if (!response.ok || data?.error) {
+        throw new Error(data?.error || "We couldn't send the MoMo prompt. Check the number and network, then try again.");
+      }
 
       if (paymentMethod === "mobile_money") {
         // Direct charge: Paystack pushes PIN prompt straight to the phone.
@@ -133,7 +144,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
         setPendingRef(data.reference);
         setStatusMsg(
           data.display_text ||
-            "📱 Check your phone — approve the payment by entering your MoMo PIN."
+            "📱 Check your phone — approve the payment by entering your Mobile Money PIN."
         );
         pollStatus(data.reference);
         return;
@@ -147,13 +158,15 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
       }
     } catch (err: any) {
       setLoading(false);
-      toast({ title: "Payment error", description: err.message, variant: "destructive" });
+      const message = err.message || "We couldn't send the MoMo prompt. Check the number and network, then try again.";
+      setPaymentError(message);
+      toast({ title: "Payment error", description: message, variant: "destructive" });
     }
   };
 
   const plan = plans.find((p) => p.id === selectedPlan)!;
   const isMomo = paymentMethod === "mobile_money";
-  const phoneValid = /^0\d{9}$/.test(phone.replace(/\D/g, ""));
+  const phoneValid = isValidGhanaPhone(phone);
   
   const canSubmit = isMomo ? phoneValid && !loading : !loading;
 
@@ -295,13 +308,22 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
                   inputMode="numeric"
                   placeholder="0241234567"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setPaymentError("");
+                  }}
                   maxLength={13}
                   className="h-10"
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  We'll push a PIN prompt to this number to confirm payment.
+                  We'll push a Mobile Money PIN prompt to this number. We do not ask for OTP codes.
                 </p>
+                {paymentError && (
+                  <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-[11px] text-destructive">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{paymentError}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -321,7 +343,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Connecting...
+                  Sending prompt...
                 </>
               ) : (
                 <>
