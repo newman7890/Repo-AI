@@ -49,6 +49,9 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
   const [pendingRef, setPendingRef] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string>("");
   const [paymentError, setPaymentError] = useState<string>("");
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [submittingOtp, setSubmittingOtp] = useState(false);
   const pollRef = useRef<number | null>(null);
   const { toast } = useToast();
 
