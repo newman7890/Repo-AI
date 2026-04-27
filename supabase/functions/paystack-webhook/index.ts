@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { alertCheckoutPolicyFailure } from "../checkout-alerts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,13 +126,23 @@ serve(async (req) => {
       const isOneTime = metadata.billing_type === "one_time" || metadata.payment_method === "mobile_money";
 
       if (reference) {
-        await supabase.from("processed_payments").insert({
+        const { error: recordError } = await supabase.from("processed_payments").insert({
           reference,
           user_id: userId,
           event_type: `webhook:${event.event}`,
           amount,
           currency: event.data?.currency,
-        }).catch(() => {});
+        });
+        if (recordError && recordError.code !== "23505") {
+          await alertCheckoutPolicyFailure(supabase, {
+            source: "paystack-webhook",
+            stage: "record_processed_payment",
+            error: recordError,
+            userId,
+            reference,
+            context: { event: event.event },
+          });
+        }
       }
 
       if (isOneTime) {
@@ -150,6 +161,14 @@ serve(async (req) => {
 
         if (error) {
           console.error("Error adding one-time tokens:", error);
+          await alertCheckoutPolicyFailure(supabase, {
+            source: "paystack-webhook",
+            stage: "credit_one_time_tokens",
+            error,
+            userId,
+            reference,
+            context: { event: event.event },
+          });
           throw error;
         }
         console.log(`One-time MoMo: added ${tokens} tokens to user ${userId} (total ${newTotal})`);
@@ -166,6 +185,14 @@ serve(async (req) => {
 
         if (error) {
           console.error("Error updating credits:", error);
+          await alertCheckoutPolicyFailure(supabase, {
+            source: "paystack-webhook",
+            stage: "grant_subscription_tokens",
+            error,
+            userId,
+            reference,
+            context: { event: event.event },
+          });
           throw error;
         }
       }
@@ -211,13 +238,23 @@ serve(async (req) => {
         const tokens = resolveTokens(metadata, amount);
 
         if (reference) {
-          await supabase.from("processed_payments").insert({
+          const { error: recordError } = await supabase.from("processed_payments").insert({
             reference,
             user_id: userId,
             event_type: `webhook:${event.event}`,
             amount,
             currency: event.data?.currency,
-          }).catch(() => {});
+          });
+          if (recordError && recordError.code !== "23505") {
+            await alertCheckoutPolicyFailure(supabase, {
+              source: "paystack-webhook",
+              stage: "record_invoice_payment",
+              error: recordError,
+              userId,
+              reference,
+              context: { event: event.event },
+            });
+          }
         }
 
         const { error } = await supabase

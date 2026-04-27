@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildPaystackTransactionBody, PLANS, PLAN_CURRENCY, type PaymentMethod } from "../payment-core.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,22 +8,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface PaystackPlan {
+export interface PaystackPlan {
   name: string;
   interval: string;
   amount: number;
   plan_code: string;
 }
 
-const PLANS: Record<string, { name: string; amount: number; tokens: number }> = {
-  starter:  { name: "Renderme AI Starter",  amount: 5000,  tokens: 50 },
-  standard: { name: "Renderme AI Standard", amount: 10000, tokens: 100 },
-  pro:      { name: "Renderme AI Pro",      amount: 20000, tokens: 200 },
-  premium:  { name: "Renderme AI Premium",  amount: 50000, tokens: 500 },
-};
-
 const PLAN_INTERVAL = "monthly";
-const PLAN_CURRENCY = "GHS";
 
 async function getOrCreatePlan(secretKey: string, planId: string): Promise<string> {
   const plan = PLANS[planId];
@@ -108,8 +101,6 @@ serve(async (req) => {
       });
     }
 
-    const plan = PLANS[planId];
-
     // Rate limit
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: rateLimitOk } = await adminClient.rpc("check_rate_limit", {
@@ -131,30 +122,17 @@ serve(async (req) => {
     const callbackBase = req.headers.get("origin") || "https://renderme.lovable.app";
     const callbackUrl = `${callbackBase}/app?payment=success`;
 
-    const txBody: Record<string, unknown> = {
-      email: userEmail,
-      amount: plan.amount,
-      currency: PLAN_CURRENCY,
-      callback_url: callbackUrl,
-      metadata: {
-        user_id: userId,
-        plan: planId,
-        plan_id: planId,
-        tokens: plan.tokens,
-        payment_method: paymentMethod,
-        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
-      },
-    };
-
-    if (paymentMethod === "card") {
-      // Card → recurring subscription via plan
-      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
-      txBody.plan = planCode;
-      txBody.channels = ["card"];
-    } else {
-      // Mobile money → one-time payment, Paystack hosted UI handles network + PIN/OTP
-      txBody.channels = ["mobile_money"];
-    }
+    const planCode = paymentMethod === "card"
+      ? await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId)
+      : undefined;
+    const txBody = buildPaystackTransactionBody({
+      userEmail,
+      userId,
+      planId,
+      paymentMethod,
+      callbackBase,
+      planCode,
+    });
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",

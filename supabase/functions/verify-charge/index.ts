@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { alertCheckoutPolicyFailure } from "../checkout-alerts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -193,6 +194,13 @@ Deno.serve(async (req) => {
         });
       }
       console.error("verify-charge insert error:", insertError);
+      await alertCheckoutPolicyFailure(adminClient, {
+        source: "verify-charge",
+        stage: "record_processed_payment",
+        error: insertError,
+        userId,
+        reference,
+      });
       throw insertError;
     }
 
@@ -216,7 +224,16 @@ Deno.serve(async (req) => {
         .from("user_credits")
         .update({ tokens: newTotal, updated_at: new Date().toISOString() })
         .eq("user_id", userId);
-      if (upErr) throw upErr;
+      if (upErr) {
+        await alertCheckoutPolicyFailure(adminClient, {
+          source: "verify-charge",
+          stage: "credit_one_time_tokens",
+          error: upErr,
+          userId,
+          reference,
+        });
+        throw upErr;
+      }
       console.log(`verify-charge one-time: +${tokens} → ${newTotal} for ${userId}`);
     } else {
       const { error: upErr } = await adminClient
@@ -227,7 +244,16 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", userId);
-      if (upErr) throw upErr;
+      if (upErr) {
+        await alertCheckoutPolicyFailure(adminClient, {
+          source: "verify-charge",
+          stage: "grant_subscription_tokens",
+          error: upErr,
+          userId,
+          reference,
+        });
+        throw upErr;
+      }
       console.log(`verify-charge subscription: ${tokens} + premium for ${userId}`);
     }
 
