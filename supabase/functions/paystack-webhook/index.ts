@@ -126,13 +126,23 @@ serve(async (req) => {
       const isOneTime = metadata.billing_type === "one_time" || metadata.payment_method === "mobile_money";
 
       if (reference) {
-        await supabase.from("processed_payments").insert({
+        const { error: recordError } = await supabase.from("processed_payments").insert({
           reference,
           user_id: userId,
           event_type: `webhook:${event.event}`,
           amount,
           currency: event.data?.currency,
-        }).catch(() => {});
+        });
+        if (recordError && recordError.code !== "23505") {
+          await alertCheckoutPolicyFailure(supabase, {
+            source: "paystack-webhook",
+            stage: "record_processed_payment",
+            error: recordError,
+            userId,
+            reference,
+            context: { event: event.event },
+          });
+        }
       }
 
       if (isOneTime) {
@@ -228,13 +238,23 @@ serve(async (req) => {
         const tokens = resolveTokens(metadata, amount);
 
         if (reference) {
-          await supabase.from("processed_payments").insert({
+          const { error: recordError } = await supabase.from("processed_payments").insert({
             reference,
             user_id: userId,
             event_type: `webhook:${event.event}`,
             amount,
             currency: event.data?.currency,
-          }).catch(() => {});
+          });
+          if (recordError && recordError.code !== "23505") {
+            await alertCheckoutPolicyFailure(supabase, {
+              source: "paystack-webhook",
+              stage: "record_invoice_payment",
+              error: recordError,
+              userId,
+              reference,
+              context: { event: event.event },
+            });
+          }
         }
 
         const { error } = await supabase
