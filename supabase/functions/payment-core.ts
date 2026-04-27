@@ -9,6 +9,11 @@ export const PLANS: Record<string, { name: string; amount: number; tokens: numbe
   premium: { name: "Renderme AI Premium", amount: 50000, tokens: 500 },
 };
 
+export const PAYMENT_CHANNELS: Record<PaymentMethod, string[]> = {
+  card: ["card"],
+  mobile_money: ["mobile_money"],
+};
+
 export function buildPaystackTransactionBody(args: {
   userEmail: string;
   userId: string;
@@ -33,7 +38,7 @@ export function buildPaystackTransactionBody(args: {
       payment_method: args.paymentMethod,
       billing_type: args.paymentMethod === "card" ? "subscription" : "one_time",
     },
-    channels: [args.paymentMethod === "card" ? "card" : "mobile_money"],
+    channels: PAYMENT_CHANNELS[args.paymentMethod],
   };
 
   if (args.paymentMethod === "card") {
