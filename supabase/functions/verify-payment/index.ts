@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { alertCheckoutPolicyFailure } from "../checkout-alerts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -224,6 +225,13 @@ serve(async (req) => {
           });
         }
         console.error("Error recording payment:", insertError);
+        await alertCheckoutPolicyFailure(adminClient, {
+          source: "verify-payment",
+          stage: "record_processed_payment",
+          error: insertError,
+          userId,
+          reference,
+        });
         throw insertError;
       }
 
@@ -252,6 +260,13 @@ serve(async (req) => {
 
         if (updateErr) {
           console.error("Error adding one-time tokens:", updateErr);
+          await alertCheckoutPolicyFailure(adminClient, {
+            source: "verify-payment",
+            stage: "credit_one_time_tokens",
+            error: updateErr,
+            userId,
+            reference,
+          });
           throw updateErr;
         }
         console.log(`verify-payment one-time: +${tokens} tokens for ${userId} (total ${newTotal})`);
@@ -268,6 +283,13 @@ serve(async (req) => {
 
         if (updateErr) {
           console.error("Error granting premium:", updateErr);
+          await alertCheckoutPolicyFailure(adminClient, {
+            source: "verify-payment",
+            stage: "grant_subscription_tokens",
+            error: updateErr,
+            userId,
+            reference,
+          });
           throw updateErr;
         }
         console.log(`verify-payment subscription: ${tokens} tokens + premium for ${userId}`);
