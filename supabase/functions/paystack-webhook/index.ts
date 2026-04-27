@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { alertCheckoutPolicyFailure } from "../checkout-alerts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -150,6 +151,14 @@ serve(async (req) => {
 
         if (error) {
           console.error("Error adding one-time tokens:", error);
+          await alertCheckoutPolicyFailure(supabase, {
+            source: "paystack-webhook",
+            stage: "credit_one_time_tokens",
+            error,
+            userId,
+            reference,
+            context: { event: event.event },
+          });
           throw error;
         }
         console.log(`One-time MoMo: added ${tokens} tokens to user ${userId} (total ${newTotal})`);
@@ -166,6 +175,14 @@ serve(async (req) => {
 
         if (error) {
           console.error("Error updating credits:", error);
+          await alertCheckoutPolicyFailure(supabase, {
+            source: "paystack-webhook",
+            stage: "grant_subscription_tokens",
+            error,
+            userId,
+            reference,
+            context: { event: event.event },
+          });
           throw error;
         }
       }
