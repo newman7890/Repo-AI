@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildPaystackTransactionBody, PLANS, PLAN_CURRENCY, type PaymentMethod } from "../payment-core.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,51 +15,7 @@ export interface PaystackPlan {
   plan_code: string;
 }
 
-export const PLANS: Record<string, { name: string; amount: number; tokens: number }> = {
-  starter:  { name: "Renderme AI Starter",  amount: 5000,  tokens: 50 },
-  standard: { name: "Renderme AI Standard", amount: 10000, tokens: 100 },
-  pro:      { name: "Renderme AI Pro",      amount: 20000, tokens: 200 },
-  premium:  { name: "Renderme AI Premium",  amount: 50000, tokens: 500 },
-};
-
 const PLAN_INTERVAL = "monthly";
-const PLAN_CURRENCY = "GHS";
-export type PaymentMethod = "card" | "mobile_money";
-
-export function buildPaystackTransactionBody(args: {
-  userEmail: string;
-  userId: string;
-  planId: string;
-  paymentMethod: PaymentMethod;
-  callbackBase: string;
-  planCode?: string;
-}): Record<string, unknown> {
-  const plan = PLANS[args.planId];
-  if (!plan) throw new Error(`Unknown plan: ${args.planId}`);
-
-  const txBody: Record<string, unknown> = {
-    email: args.userEmail,
-    amount: plan.amount,
-    currency: PLAN_CURRENCY,
-    callback_url: `${args.callbackBase}/app?payment=success`,
-    metadata: {
-      user_id: args.userId,
-      plan: args.planId,
-      plan_id: args.planId,
-      tokens: plan.tokens,
-      payment_method: args.paymentMethod,
-      billing_type: args.paymentMethod === "card" ? "subscription" : "one_time",
-    },
-    channels: [args.paymentMethod === "card" ? "card" : "mobile_money"],
-  };
-
-  if (args.paymentMethod === "card") {
-    if (!args.planCode) throw new Error("Card checkout requires a Paystack plan code");
-    txBody.plan = args.planCode;
-  }
-
-  return txBody;
-}
 
 async function getOrCreatePlan(secretKey: string, planId: string): Promise<string> {
   const plan = PLANS[planId];
