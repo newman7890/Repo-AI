@@ -144,8 +144,6 @@ serve(async (req) => {
       });
     }
 
-    const plan = PLANS[planId];
-
     // Rate limit
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: rateLimitOk } = await adminClient.rpc("check_rate_limit", {
@@ -167,30 +165,17 @@ serve(async (req) => {
     const callbackBase = req.headers.get("origin") || "https://renderme.lovable.app";
     const callbackUrl = `${callbackBase}/app?payment=success`;
 
-    const txBody: Record<string, unknown> = {
-      email: userEmail,
-      amount: plan.amount,
-      currency: PLAN_CURRENCY,
-      callback_url: callbackUrl,
-      metadata: {
-        user_id: userId,
-        plan: planId,
-        plan_id: planId,
-        tokens: plan.tokens,
-        payment_method: paymentMethod,
-        billing_type: paymentMethod === "card" ? "subscription" : "one_time",
-      },
-    };
-
-    if (paymentMethod === "card") {
-      // Card → recurring subscription via plan
-      const planCode = await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId);
-      txBody.plan = planCode;
-      txBody.channels = ["card"];
-    } else {
-      // Mobile money → one-time payment, Paystack hosted UI handles network + PIN/OTP
-      txBody.channels = ["mobile_money"];
-    }
+    const planCode = paymentMethod === "card"
+      ? await getOrCreatePlan(PAYSTACK_SECRET_KEY, planId)
+      : undefined;
+    const txBody = buildPaystackTransactionBody({
+      userEmail,
+      userId,
+      planId,
+      paymentMethod,
+      callbackBase,
+      planCode,
+    });
 
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
