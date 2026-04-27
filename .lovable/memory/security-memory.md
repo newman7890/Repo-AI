@@ -18,6 +18,15 @@ Security scanners should ignore "RLS Enabled No Policy" and "no SELECT policy" f
 - HIBP password check: enabled
 - Signup: enabled
 
+## Realtime publication
+- Only `admin_notifications` is published to `supabase_realtime` (used by AdminNotifications panel, admin-only RLS)
+- `ai_usage_logs`, `user_credits`, `processed_payments`, `profiles` are intentionally NOT in the realtime publication — do not re-add unless realtime is actually needed
+- Scanners flagging "sensitive tables in realtime" for the removed tables should be ignored if they reappear
+
+## showcase_examples prompt visibility
+- `prompt` column is publicly readable by design — admin-curated marketing content, not user-submitted
+- Only admins can INSERT/UPDATE via AdminShowcaseManager. Ignore "prompt exposure" findings on this table.
+
 ## Edge function security patterns
 - All edge functions use `getClaims()` for JWT validation
 - No fallback to anon key in auth-headers (throws error if not authenticated)
