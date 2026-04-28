@@ -75,6 +75,7 @@ const Welcome = () => {
         </nav>
       </header>
 
+      <main>
       {/* Hero */}
       <section className="px-4 md:px-8 pt-16 md:pt-28 pb-16 md:pb-24">
         <div className="max-w-5xl mx-auto text-center space-y-6 md:space-y-8">
@@ -285,6 +286,7 @@ const Welcome = () => {
           </Link>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="px-4 md:px-8 py-8 md:py-10 border-t border-border/40">
