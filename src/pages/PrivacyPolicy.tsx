@@ -92,7 +92,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-3">6. Data Security</h2>
             <p>
-              We use industry-standard encryption, secure authentication, and row-level security on our database to
+              We use industry standard encryption, secure authentication, and row-level security on our database to
               protect your data. However, no system is 100% secure.
             </p>
           </section>
