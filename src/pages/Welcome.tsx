@@ -109,7 +109,7 @@ const Welcome = () => {
           <div className="max-w-5xl mx-auto text-center space-y-6 md:space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-primary font-medium">AI-powered photo magic</span>
+              <span className="text-primary font-medium">AI powered photo magic</span>
             </div>
             <h1 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05]">
               Edit any photo
