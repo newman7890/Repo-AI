@@ -275,19 +275,23 @@ export const InstallStepsCarousel = () => {
           <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{step.desc}</p>
 
           {/* Progress dots */}
-          <div className="flex items-center gap-1.5 pt-2">
+          <div className="flex items-center pt-2">
             {STEPS.map((s, i) => (
               <button
                 key={i}
                 onClick={() => setIndex(i)}
                 aria-label={`Go to step ${i + 1}`}
-                className={cn(
-                  "h-1.5 rounded-full transition-all",
-                  i === index
-                    ? cn("w-8", isIOS ? "bg-primary" : "bg-accent")
-                    : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50",
-                )}
-              />
+                className="h-6 min-w-6 px-1.5 flex items-center justify-center group"
+              >
+                <span
+                  className={cn(
+                    "h-1.5 rounded-full transition-all block",
+                    i === index
+                      ? cn("w-8", isIOS ? "bg-primary" : "bg-accent")
+                      : "w-1.5 bg-muted-foreground/30 group-hover:bg-muted-foreground/50",
+                  )}
+                />
+              </button>
             ))}
           </div>
           <p className="text-xs text-muted-foreground">Auto-advancing. Hover to pause</p>
