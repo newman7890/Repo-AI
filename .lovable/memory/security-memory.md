@@ -27,6 +27,18 @@ Security scanners should ignore "RLS Enabled No Policy" and "no SELECT policy" f
 - `prompt` column is publicly readable by design — admin-curated marketing content, not user-submitted
 - Only admins can INSERT/UPDATE via AdminShowcaseManager. Ignore "prompt exposure" findings on this table.
 
+## SECURITY DEFINER function execute privileges (locked down 2026-04-28)
+- Trigger-only functions (`update_updated_at_column`, `handle_new_user_credits`, `handle_new_user_profile`): EXECUTE revoked from PUBLIC/anon/authenticated. Triggers run as table owner regardless.
+- Service-role only (`check_rate_limit`): EXECUTE revoked from PUBLIC/anon/authenticated.
+- `has_role(uuid, app_role)`: STRICT, pinned search_path; EXECUTE revoked from anon, granted to authenticated only. Required by RLS policies — do NOT switch to SECURITY INVOKER (causes RLS recursion on user_roles).
+- `check_and_deduct_credits`: EXECUTE revoked from anon, granted to authenticated. Internally asserts `auth.uid() = p_user_id`.
+
+## user_roles anti self-escalation
+- RESTRICTIVE policies "No self role assignment" (INSERT) and "No self role update" (UPDATE) block writes where `user_id = auth.uid()`. Even an admin cannot promote themselves through the API.
+
+## admin_notifications explicit deny
+- RESTRICTIVE SELECT policy "Only admins can read admin_notifications" enforces admin-only reads regardless of any future permissive policy additions.
+
 ## Edge function security patterns
 - All edge functions use `getClaims()` for JWT validation
 - No fallback to anon key in auth-headers (throws error if not authenticated)

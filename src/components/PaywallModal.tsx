@@ -344,7 +344,7 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
         <div className="bg-muted/50 rounded-lg p-2 mt-2">
           <p className="text-[11px] text-muted-foreground text-center">
             {isMomo
-              ? "Enter your number, we'll push a PIN prompt to your phone — no redirects."
+              ? "Enter your number, we'll push a PIN prompt to your phone. No redirects."
               : "Auto-renewing monthly subscription via Paystack. Cancel anytime."}
           </p>
         </div>
@@ -471,12 +471,12 @@ const PaywallModal = ({ open, onOpenChange }: PaywallModalProps) => {
               ) : paymentMethod === "card" ? (
                 <>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Subscribe — GHS {plan.price}/month
+                  Subscribe GHS {plan.price}/month
                 </>
               ) : step === "select" ? (
                 <>
                   <Smartphone className="w-4 h-4 mr-2" />
-                  Continue — GHS {plan.price}
+                  Continue GHS {plan.price}
                 </>
               ) : step === "otp" ? (
                 "Submit OTP"

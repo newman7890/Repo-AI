@@ -72,7 +72,7 @@ const ShowcaseSection = () => {
 
         {examples.length === 1 && (
           <p className="text-center text-xs md:text-sm text-muted-foreground mt-8 italic">
-            More examples coming soon — every image is a real edit, never a stock photo.
+            More examples coming soon. Every image is a real edit, never a stock photo.
           </p>
         )}
       </div>

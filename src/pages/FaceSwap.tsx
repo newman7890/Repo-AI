@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
 import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2, AlertCircle } from "lucide-react";
+import faceSwapIcon from "@/assets/face-swap-icon.png";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -239,7 +240,7 @@ const FaceSwap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="AI Face Swap – Swap Up to 4 Faces"
+        title="AI Face Swap Swap Up to 4 Faces"
         description="Swap up to 4 faces onto any photo with cinematic, hyper-realistic AI. Powered by Renderme AI."
         canonical="/face-swap"
         noindex
@@ -251,8 +252,8 @@ const FaceSwap = () => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center bg-accent/20">
-                <Repeat className="w-4 h-4 md:w-5 md:h-5 text-accent" />
+              <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center bg-accent/10 ring-1 ring-accent/30 overflow-hidden">
+                <img src={faceSwapIcon} alt="Face Swap" width={44} height={44} className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-base md:text-lg font-bold tracking-tight leading-tight">Face Swap</h1>
@@ -274,7 +275,7 @@ const FaceSwap = () => {
             <AlertTitle>Account Blocked</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               <span>Your account has been blocked and you cannot use Face Swap.</span>
-              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20-%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
+              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
                 Contact Support →
               </a>
             </AlertDescription>
