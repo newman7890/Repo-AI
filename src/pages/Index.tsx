@@ -19,6 +19,7 @@ import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
+import faceSwapIcon from "@/assets/face-swap-icon.png";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -248,7 +249,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="AI Photo Editor – Edit Your Photos"
+        title="AI Photo Editor Edit Your Photos"
         description="Edit photos with a single prompt. Change backgrounds, outfits, lighting and more with hyper-realistic AI."
         canonical="/app"
         noindex
@@ -265,12 +266,13 @@ const Index = () => {
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               onClick={() => navigate("/face-swap")}
-              className="rounded-lg h-8 w-8 md:h-9 md:w-9"
+              className="rounded-lg h-8 md:h-9 gap-1.5 px-2 md:px-2.5 border-accent/40 hover:bg-accent/10"
               title="Face Swap"
             >
-              <Repeat className="w-3.5 h-3.5" />
+              <img src={faceSwapIcon} alt="" width={20} height={20} className="w-5 h-5 md:w-6 md:h-6 object-contain" />
+              <span className="hidden sm:inline text-xs font-semibold">Face Swap</span>
             </Button>
             <HistoryGallery onSelect={handleHistorySelect} />
             <UserMenu />
@@ -287,7 +289,7 @@ const Index = () => {
             <AlertTitle>Account Blocked</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               <span>Your account has been blocked and you cannot edit photos.</span>
-              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20-%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
+              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
                 Contact Support →
               </a>
             </AlertDescription>
