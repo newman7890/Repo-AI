@@ -33,10 +33,9 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-3">1. Introduction</h2>
             <p>
-              Welcome to Renderme AI ("we", "our", "us"). We respect your privacy and are
-              committed to protecting your personal data. This privacy policy explains how
-              we collect, use, and safeguard your information when you use our website and
-              AI photo editing services.
+              Welcome to Renderme AI ("we", "our", "us"). We respect your privacy and are committed to protecting your
+              personal data. This privacy policy explains how we collect, use, and safeguard your information when you
+              use our website and AI photo editing services.
             </p>
           </section>
 
@@ -45,20 +44,17 @@ const PrivacyPolicy = () => {
             <p>We collect the following types of information:</p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
               <li>
-                <strong>Account information:</strong> email address, authentication details
-                when you sign up or log in.
+                <strong>Account information:</strong> email address, authentication details when you sign up or log in.
               </li>
               <li>
-                <strong>Photos and prompts:</strong> images you upload and text prompts you
-                submit for AI processing.
+                <strong>Photos and prompts:</strong> images you upload and text prompts you submit for AI processing.
               </li>
               <li>
-                <strong>Usage data:</strong> device information, browser type, and how you
-                interact with our app.
+                <strong>Usage data:</strong> device information, browser type, and how you interact with our app.
               </li>
               <li>
-                <strong>Payment data:</strong> processed securely through our payment
-                provider; we do not store full card details.
+                <strong>Payment data:</strong> processed securely through our payment provider; we do not store full
+                card details.
               </li>
             </ul>
           </section>
@@ -77,17 +73,15 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-3">4. Your Photos</h2>
             <p>
-              Photos you upload are processed by AI models to generate edited results. We
-              do not sell your photos or use them to train third-party models without your
-              consent. You can delete your edit history at any time from the app.
+              Photos you upload are processed by AI models to generate edited results. We do not sell your photos or use
+              them to train third party models without your consent. You can delete your edit history at any time from
+              the app.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">5. Data Sharing</h2>
-            <p>
-              We do not sell your personal information. We share data only with:
-            </p>
+            <p>We do not sell your personal information. We share data only with:</p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
               <li>AI model providers strictly to process your edit requests.</li>
               <li>Payment processors to complete transactions.</li>
@@ -98,34 +92,30 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-3">6. Data Security</h2>
             <p>
-              We use industry-standard encryption, secure authentication, and row-level
-              security on our database to protect your data. However, no system is 100%
-              secure.
+              We use industry-standard encryption, secure authentication, and row-level security on our database to
+              protect your data. However, no system is 100% secure.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">7. Your Rights</h2>
             <p>
-              You have the right to access, correct, or delete your personal data, and to
-              withdraw consent at any time. To exercise these rights, contact us at the
-              email below.
+              You have the right to access, correct, or delete your personal data, and to withdraw consent at any time.
+              To exercise these rights, contact us at the email below.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">8. Children's Privacy</h2>
             <p>
-              Renderme AI is not intended for users under the age of 13. We do not knowingly
-              collect data from children.
+              Renderme AI is not intended for users under the age of 13. We do not knowingly collect data from children.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">9. Changes to This Policy</h2>
             <p>
-              We may update this policy from time to time. Changes will be posted on this
-              page with an updated date.
+              We may update this policy from time to time. Changes will be posted on this page with an updated date.
             </p>
           </section>
 
