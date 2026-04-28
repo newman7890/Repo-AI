@@ -156,7 +156,7 @@ const STEPS: Step[] = [
     platform: "iOS",
     platformIcon: Smartphone,
     title: "You're done!",
-    desc: "Renderme AI is now on your home screen — open it like a native app.",
+    desc: "Renderme AI is now on your home screen. Open it like a native app.",
     illustration: (
       <PhoneFrame accent="hsl(var(--primary) / 0.5)">
         <InstalledHomeScreen accent="hsl(var(--primary) / 0.5)" />
@@ -222,7 +222,7 @@ const STEPS: Step[] = [
     platform: "Android",
     platformIcon: Chrome,
     title: "Installed!",
-    desc: "Renderme AI is now on your home screen — open it like a native app.",
+    desc: "Renderme AI is now on your home screen. Open it like a native app.",
     illustration: (
       <PhoneFrame accent="hsl(var(--accent) / 0.5)">
         <InstalledHomeScreen accent="hsl(var(--accent) / 0.5)" />
@@ -290,7 +290,7 @@ export const InstallStepsCarousel = () => {
               />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground/70">Auto-advancing — hover to pause</p>
+          <p className="text-xs text-muted-foreground/70">Auto-advancing. Hover to pause</p>
         </div>
       </div>
     </div>
