@@ -275,7 +275,7 @@ const FaceSwap = () => {
             <AlertTitle>Account Blocked</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               <span>Your account has been blocked and you cannot use Face Swap.</span>
-              <a href="mailto:newm5811@gmail.com?subject=Account%20Blocked%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
+              <a href="mailto:renderme.site.ai@gmail.com?subject=Account%20Blocked%20Renderme%20AI" className="inline-flex items-center gap-1 text-destructive-foreground underline font-semibold text-xs hover:opacity-80">
                 Contact Support →
               </a>
             </AlertDescription>

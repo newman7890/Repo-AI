@@ -123,8 +123,8 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-semibold mb-3">10. Contact Us</h2>
             <p>
               If you have any questions about this Privacy Policy, contact us at{" "}
-              <a href="mailto:support@renderme.site" className="text-primary underline">
-                support@renderme.site
+              <a href="mailto:renderme.site.ai@gmail.com" className="text-primary underline">
+                renderme.site.ai@gmail.com
               </a>
               .
             </p>
