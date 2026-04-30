@@ -361,7 +361,7 @@ const Welcome = () => {
             <Link to="/privacy" className="hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
-            <a href="mailto:newm5811@gmail.com" className="hover:text-foreground transition-colors">
+            <a href="mailto:renderme.site.ai@gmail.com" className="hover:text-foreground transition-colors">
               Contact support
             </a>
             {!isAuthed && (
