@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Loader2, Wand2, Repeat, Zap } from "lucide-react";
+import { Sparkles, Loader2, Wand2, Repeat, Zap, Palette } from "lucide-react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
