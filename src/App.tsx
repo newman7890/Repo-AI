@@ -12,6 +12,7 @@ import AdminRoute from "./components/AdminRoute";
 // Lazy-load non-landing routes so the initial bundle stays small
 const Index = lazy(() => import("./pages/Index"));
 const FaceSwap = lazy(() => import("./pages/FaceSwap"));
+const DesignerStudio = lazy(() => import("./pages/DesignerStudio"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
