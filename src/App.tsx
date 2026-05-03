@@ -12,6 +12,7 @@ import AdminRoute from "./components/AdminRoute";
 // Lazy-load non-landing routes so the initial bundle stays small
 const Index = lazy(() => import("./pages/Index"));
 const FaceSwap = lazy(() => import("./pages/FaceSwap"));
+const DesignerStudio = lazy(() => import("./pages/DesignerStudio"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/face-swap" element={<ProtectedRoute><FaceSwap /></ProtectedRoute>} />
+              <Route path="/designer" element={<ProtectedRoute><DesignerStudio /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
