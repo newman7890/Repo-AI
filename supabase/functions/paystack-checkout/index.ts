@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildPaystackTransactionBody, PLANS, PLAN_CURRENCY, type PaymentMethod } from "../payment-core.ts";
+import { buildPaystackTransactionBody, PLANS, PLAN_CURRENCY, resolveCallbackBase, type PaymentMethod } from "../payment-core.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -118,21 +118,13 @@ serve(async (req) => {
     }
 
     // ------ Hosted Paystack checkout for BOTH card and mobile money ------
-    // Paystack handles network selection, phone entry, PIN push, OTP, etc. on their side.
-    // SECURITY: Never trust the Origin header for the callback URL — a non-browser
-    // client could spoof it and redirect victims to an attacker-controlled site after
-    // they pay on the legitimate Paystack page. Use an env-controlled allowlist.
-    const DEFAULT_BASE = Deno.env.get("APP_BASE_URL") || "https://renderme.site";
-    const ALLOWED_ORIGINS = new Set([
-      "https://renderme.site",
-      "https://www.renderme.site",
-      "https://renderme.lovable.app",
-      "https://id-preview--847849db-51d3-46ca-9ff0-0602130807c1.lovable.app",
-    ]);
-    const requestOrigin = req.headers.get("origin");
-    const callbackBase = requestOrigin && ALLOWED_ORIGINS.has(requestOrigin)
-      ? requestOrigin
-      : DEFAULT_BASE;
+    // SECURITY: Origin header is spoofable from non-browser clients. We use
+    // resolveCallbackBase() which falls back to the safe default for any value
+    // not in our hardcoded allowlist. See payment-core.ts.
+    const callbackBase = resolveCallbackBase(
+      req.headers.get("origin"),
+      Deno.env.get("APP_BASE_URL"),
+    );
     const callbackUrl = `${callbackBase}/app?payment=success`;
 
     const planCode = paymentMethod === "card"

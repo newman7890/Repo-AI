@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertCheckoutPolicyFailure } from "../checkout-alerts.ts";
+import { ALLOWED_CALLBACK_ORIGINS } from "../payment-core.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -84,6 +85,17 @@ async function ensureUserCreditsRow(supabase: ReturnType<typeof createClient>, u
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // SECURITY: Reject requests whose Origin (when present) is not in our
+  // allowlist. This blocks spoofed origins from triggering payment-success
+  // crediting flows even if they hold a valid token.
+  const origin = req.headers.get("origin");
+  if (origin && !ALLOWED_CALLBACK_ORIGINS.includes(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
