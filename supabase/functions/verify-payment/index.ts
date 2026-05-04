@@ -87,6 +87,17 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // SECURITY: Reject requests whose Origin (when present) is not in our
+  // allowlist. This blocks spoofed origins from triggering payment-success
+  // crediting flows even if they hold a valid token.
+  const origin = req.headers.get("origin");
+  if (origin && !ALLOWED_CALLBACK_ORIGINS.includes(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!PAYSTACK_SECRET_KEY) throw new Error("PAYSTACK_SECRET_KEY is not configured");
