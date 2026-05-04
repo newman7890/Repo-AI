@@ -193,17 +193,18 @@ serve(async (req) => {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!creditsRow?.is_premium) {
+    // Token-gated: any user with enough tokens (or trial uses) can access.
+    const tokenCost = quality === "ultra" ? 4 : 3;
+    const hasTrial = (creditsRow?.trial_uses_remaining ?? 0) > 0;
+    const hasTokens = (creditsRow?.tokens ?? 0) >= tokenCost;
+    if (!creditsRow?.is_premium && !hasTrial && !hasTokens) {
       return new Response(JSON.stringify({
-        error: "premium_required",
-        message: "Designer Studio is a Premium feature. Upgrade to unlock unlimited flyers, banners, logos and more.",
+        error: "insufficient_credits",
+        message: `You need at least ${tokenCost} tokens to generate this design. Top up to continue.`,
       }), {
         status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Deduct tokens (premium still uses tokens for tracking)
-    const tokenCost = quality === "ultra" ? 4 : 3;
     const { data: creditResult, error: creditError } = await supabaseAdmin.rpc("check_and_deduct_credits", {
       p_user_id: userId,
       p_token_cost: tokenCost,

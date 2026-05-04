@@ -77,12 +77,17 @@ const DesignerStudio = () => {
   const abortRef = useRef<AbortController | null>(null);
 
   const isPremium = !!credits?.is_premium;
+  const tokenCost = quality === "ultra" ? 4 : 3;
+  const hasAccess =
+    isPremium ||
+    (credits?.trial_uses_remaining ?? 0) > 0 ||
+    (credits?.tokens ?? 0) >= tokenCost;
 
   const updateField = (key: keyof Fields, value: string) =>
     setFields((f) => ({ ...f, [key]: value }));
 
   const handleGenerate = async () => {
-    if (!isPremium) { setShowPaywall(true); return; }
+    if (!hasAccess) { setShowPaywall(true); return; }
     if (credits?.blocked) {
       toast({ title: "Account Blocked", variant: "destructive" });
       return;
@@ -187,14 +192,14 @@ const DesignerStudio = () => {
       </header>
 
       <main className="flex-1 px-4 pb-8 md:px-6 max-w-6xl mx-auto w-full flex flex-col gap-4 md:gap-6 pt-4">
-        {!isPremium && !creditsLoading && (
+        {!hasAccess && !creditsLoading && (
           <Alert className="border-primary/40 bg-primary/5">
             <Lock className="h-4 w-4" />
-            <AlertTitle className="text-sm">Premium feature</AlertTitle>
+            <AlertTitle className="text-sm">Need tokens to generate</AlertTitle>
             <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
-              <span>Designer Studio is for Premium members only — unlock unlimited pro-level designs.</span>
+              <span>Designer Studio uses {tokenCost} tokens per design. Top up or go Premium for unlimited.</span>
               <Button size="sm" onClick={() => setShowPaywall(true)} className="shrink-0">
-                Upgrade
+                Get tokens
               </Button>
             </AlertDescription>
           </Alert>
@@ -313,15 +318,15 @@ const DesignerStudio = () => {
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Designing…
                 </>
-              ) : !isPremium ? (
+              ) : !hasAccess ? (
                 <>
                   <Lock className="w-4 h-4 mr-2" />
-                  Unlock Designer Studio
+                  Get tokens to generate
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Design ({quality === "ultra" ? 4 : 3} tokens)
+                  Generate Design ({tokenCost} tokens)
                 </>
               )}
             </Button>
