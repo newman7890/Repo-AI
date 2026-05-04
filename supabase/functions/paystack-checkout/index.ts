@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildPaystackTransactionBody, PLANS, PLAN_CURRENCY, type PaymentMethod } from "../payment-core.ts";
+import { buildPaystackTransactionBody, PLANS, PLAN_CURRENCY, resolveCallbackBase, type PaymentMethod } from "../payment-core.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
