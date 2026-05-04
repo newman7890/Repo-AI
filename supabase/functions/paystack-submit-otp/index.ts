@@ -7,6 +7,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -18,31 +25,49 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Not authenticated" }, 401);
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Invalid token" }, 401);
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // Rate limit: 5 OTP attempts per minute per user (defense-in-depth against brute force)
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const { data: rateLimitOk } = await adminClient.rpc("check_rate_limit", {
+      p_user_id: userId,
+      p_endpoint: "paystack-submit-otp",
+      p_max_requests: 5,
+      p_window_seconds: 60,
+    });
+    if (!rateLimitOk) {
+      return jsonResponse({ error: "Too many attempts. Please wait a moment." }, 429);
     }
 
     const { otp, reference } = await req.json();
-    if (!otp || !reference) {
-      return new Response(JSON.stringify({ error: "OTP and reference required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+
+    // Server-side input validation (consistent with other payment edge functions)
+    const otpStr = String(otp ?? "").trim();
+    if (!/^\d{4,8}$/.test(otpStr)) {
+      return jsonResponse({ error: "Invalid OTP format." }, 400);
+    }
+
+    if (
+      !reference ||
+      typeof reference !== "string" ||
+      reference.length > 100 ||
+      !/^[a-zA-Z0-9_.-]+$/.test(reference)
+    ) {
+      return jsonResponse({ error: "Invalid reference." }, 400);
     }
 
     const res = await fetch("https://api.paystack.co/charge/submit_otp", {
@@ -51,7 +76,7 @@ serve(async (req) => {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ otp: String(otp).trim(), reference }),
+      body: JSON.stringify({ otp: otpStr, reference }),
     });
     const data = await res.json();
 
@@ -64,28 +89,19 @@ serve(async (req) => {
     }));
 
     if (!res.ok || !data.status) {
-      return new Response(JSON.stringify({
+      return jsonResponse({
         error: data.message || "Invalid OTP. Please try again.",
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }, 400);
     }
 
-    return new Response(JSON.stringify({
+    return jsonResponse({
       status: data.data?.status,
       reference: data.data?.reference,
       display_text: data.data?.display_text,
       message: data.message,
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("submit_otp error:", error);
-    return new Response(JSON.stringify({ error: "OTP submission failed. Please try again." }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: "OTP submission failed. Please try again." }, 500);
   }
 });
