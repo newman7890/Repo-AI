@@ -119,7 +119,20 @@ serve(async (req) => {
 
     // ------ Hosted Paystack checkout for BOTH card and mobile money ------
     // Paystack handles network selection, phone entry, PIN push, OTP, etc. on their side.
-    const callbackBase = req.headers.get("origin") || "https://renderme.lovable.app";
+    // SECURITY: Never trust the Origin header for the callback URL — a non-browser
+    // client could spoof it and redirect victims to an attacker-controlled site after
+    // they pay on the legitimate Paystack page. Use an env-controlled allowlist.
+    const DEFAULT_BASE = Deno.env.get("APP_BASE_URL") || "https://renderme.site";
+    const ALLOWED_ORIGINS = new Set([
+      "https://renderme.site",
+      "https://www.renderme.site",
+      "https://renderme.lovable.app",
+      "https://id-preview--847849db-51d3-46ca-9ff0-0602130807c1.lovable.app",
+    ]);
+    const requestOrigin = req.headers.get("origin");
+    const callbackBase = requestOrigin && ALLOWED_ORIGINS.has(requestOrigin)
+      ? requestOrigin
+      : DEFAULT_BASE;
     const callbackUrl = `${callbackBase}/app?payment=success`;
 
     const planCode = paymentMethod === "card"
