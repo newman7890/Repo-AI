@@ -2,6 +2,29 @@ export type PaymentMethod = "card" | "mobile_money";
 
 export const PLAN_CURRENCY = "GHS";
 
+// SECURITY: Hardcoded allowlist of origins that may be used as the Paystack
+// callback URL base. The Origin header is attacker-controllable from
+// non-browser clients, so we never accept arbitrary values — a spoofed origin
+// would let an attacker redirect a victim's post-payment flow to a site they
+// control. Anything not in this set falls back to DEFAULT_CALLBACK_BASE.
+export const ALLOWED_CALLBACK_ORIGINS: readonly string[] = [
+  "https://renderme.site",
+  "https://www.renderme.site",
+  "https://renderme.lovable.app",
+  "https://id-preview--847849db-51d3-46ca-9ff0-0602130807c1.lovable.app",
+];
+
+export const DEFAULT_CALLBACK_BASE = "https://renderme.site";
+
+export function resolveCallbackBase(
+  requestOrigin: string | null | undefined,
+  envBase?: string | null,
+): string {
+  const fallback = envBase && envBase.length > 0 ? envBase : DEFAULT_CALLBACK_BASE;
+  if (!requestOrigin) return fallback;
+  return ALLOWED_CALLBACK_ORIGINS.includes(requestOrigin) ? requestOrigin : fallback;
+}
+
 export const PLANS: Record<string, { name: string; amount: number; tokens: number }> = {
   starter: { name: "Renderme AI Starter", amount: 5000, tokens: 50 },
   standard: { name: "Renderme AI Standard", amount: 10000, tokens: 100 },
