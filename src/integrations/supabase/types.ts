@@ -107,6 +107,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_history: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          is_first_payment: boolean
+          plan_id: string | null
+          reference: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          is_first_payment?: boolean
+          plan_id?: string | null
+          reference: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          is_first_payment?: boolean
+          plan_id?: string | null
+          reference?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       processed_payments: {
         Row: {
           amount: number | null
@@ -143,9 +173,14 @@ export type Database = {
           created_at: string
           device_info: string | null
           email: string | null
+          flagged_suspicious: boolean
           id: string
           ip_address: string | null
           last_seen_at: string | null
+          phone_number: string | null
+          phone_verified: boolean
+          referral_code: string | null
+          referred_by: string | null
           user_agent: string | null
           user_id: string
         }
@@ -154,9 +189,14 @@ export type Database = {
           created_at?: string
           device_info?: string | null
           email?: string | null
+          flagged_suspicious?: boolean
           id?: string
           ip_address?: string | null
           last_seen_at?: string | null
+          phone_number?: string | null
+          phone_verified?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           user_agent?: string | null
           user_id: string
         }
@@ -165,9 +205,14 @@ export type Database = {
           created_at?: string
           device_info?: string | null
           email?: string | null
+          flagged_suspicious?: boolean
           id?: string
           ip_address?: string | null
           last_seen_at?: string | null
+          phone_number?: string | null
+          phone_verified?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           user_agent?: string | null
           user_id?: string
         }
@@ -194,6 +239,51 @@ export type Database = {
           request_count?: number
           user_id?: string
           window_start?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          id: string
+          payment_reference: string | null
+          plan_amount: number
+          plan_id: string | null
+          referred_user_id: string
+          referrer_id: string
+          rejected_reason: string | null
+          reward_amount: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          payment_reference?: string | null
+          plan_amount: number
+          plan_id?: string | null
+          referred_user_id: string
+          referrer_id: string
+          rejected_reason?: string | null
+          reward_amount: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          payment_reference?: string | null
+          plan_amount?: number
+          plan_id?: string | null
+          referred_user_id?: string
+          referrer_id?: string
+          rejected_reason?: string | null
+          reward_amount?: number
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -281,9 +371,12 @@ export type Database = {
           id: string
           is_premium: boolean
           tokens: number
+          total_earned: number
           trial_uses_remaining: number
           updated_at: string
           user_id: string
+          wallet_available: number
+          wallet_pending: number
         }
         Insert: {
           blocked?: boolean
@@ -291,9 +384,12 @@ export type Database = {
           id?: string
           is_premium?: boolean
           tokens?: number
+          total_earned?: number
           trial_uses_remaining?: number
           updated_at?: string
           user_id: string
+          wallet_available?: number
+          wallet_pending?: number
         }
         Update: {
           blocked?: boolean
@@ -301,9 +397,12 @@ export type Database = {
           id?: string
           is_premium?: boolean
           tokens?: number
+          total_earned?: number
           trial_uses_remaining?: number
           updated_at?: string
           user_id?: string
+          wallet_available?: number
+          wallet_pending?: number
         }
         Relationships: []
       }
@@ -325,11 +424,97 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          momo_number: string
+          network: string
+          paid_at: string | null
+          paystack_transfer_code: string | null
+          recipient_code: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          momo_number: string
+          network: string
+          paid_at?: string | null
+          paystack_transfer_code?: string | null
+          recipient_code?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          momo_number?: string
+          network?: string
+          paid_at?: string | null
+          paystack_transfer_code?: string | null
+          recipient_code?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_pending_reward: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
+      approve_referral_reward: {
+        Args: { p_referral_id: string }
+        Returns: Json
+      }
       check_and_deduct_credits: {
         Args: { p_token_cost: number; p_user_id: string }
         Returns: Json
@@ -343,12 +528,29 @@ export type Database = {
         }
         Returns: boolean
       }
+      generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      mark_withdrawal_failed: {
+        Args: { p_reason: string; p_withdrawal_id: string }
+        Returns: Json
+      }
+      mark_withdrawal_paid: {
+        Args: { p_transfer_code?: string; p_withdrawal_id: string }
+        Returns: Json
+      }
+      reject_referral_reward: {
+        Args: { p_reason: string; p_referral_id: string }
+        Returns: Json
+      }
+      request_withdrawal: {
+        Args: { p_amount: number; p_momo_number: string; p_network: string }
+        Returns: Json
       }
     }
     Enums: {
