@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Settings, BarChart3, LogOut, Crown } from "lucide-react";
+import { Settings, BarChart3, LogOut, Crown, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -51,6 +51,11 @@ const UserMenu = () => {
             <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuItem onClick={() => navigate("/referrals")} className="gap-2 cursor-pointer">
+          <Gift className="w-4 h-4" />
+          Refer & Earn
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         {isAdmin && (
           <>
             <DropdownMenuItem onClick={() => navigate("/admin")} className="gap-2 cursor-pointer">
