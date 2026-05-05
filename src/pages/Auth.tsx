@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Sparkles, Gift } from "lucide-react";
 import { saveDeviceInfo, notifyAdminNewUser } from "@/lib/device-info";
 import { SEO } from "@/components/SEO";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get("ref")?.toUpperCase().slice(0, 12) || "";
+  const initialIsLogin = !refCode; // referrals land on signup
+
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,26 +23,21 @@ const Auth = () => {
   const navigate = useNavigate();
   const handledSignInsRef = useRef<Set<string>>(new Set());
 
+  // Persist ref code so it survives email-confirmation redirect
+  useEffect(() => {
+    if (refCode) {
+      try { localStorage.setItem("renderme_ref_code", refCode); } catch { /* ignore */ }
+    }
+  }, [refCode]);
+
   const runPostSignInSetup = async (userId: string, email?: string) => {
     if (handledSignInsRef.current.has(userId)) return;
     handledSignInsRef.current.add(userId);
 
-    try {
-      await saveDeviceInfo(userId, email);
-    } catch (e) {
-      console.error("Failed to save device info:", e);
-    }
-
-    try {
-      await notifyAdminNewUser(userId, email || "Unknown");
-    } catch (e) {
-      console.error("Failed to notify admin:", e);
-    }
+    try { await saveDeviceInfo(userId, email); } catch (e) { console.error(e); }
+    try { await notifyAdminNewUser(userId, email || "Unknown"); } catch (e) { console.error(e); }
   };
 
-  // Track device info and notify admin on first sign-in.
-  // The "first sign-in" check is performed server-side in the notify-new-user
-  // edge function (admins-only RLS prevents reading admin_notifications here).
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user && event === "SIGNED_IN") {
@@ -56,16 +55,20 @@ const Auth = () => {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        if (data.user) {
-          await runPostSignInSetup(data.user.id, data.user.email);
-        }
+        if (data.user) await runPostSignInSetup(data.user.id, data.user.email);
         toast.success("Welcome back!");
         navigate("/app");
       } else {
+        const storedRef = (() => {
+          try { return localStorage.getItem("renderme_ref_code") || refCode; } catch { return refCode; }
+        })();
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: "https://renderme.site/app" },
+          options: {
+            emailRedirectTo: "https://renderme.site/app",
+            data: storedRef ? { ref_code: storedRef } : undefined,
+          },
         });
         if (error) throw error;
         toast.success("Check your email to verify your account!");
@@ -77,32 +80,18 @@ const Auth = () => {
     }
   };
 
-
   const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error("Enter your email first");
-      return;
-    }
+    if (!email) { toast.error("Enter your email first"); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: "https://renderme.site/reset-password",
     });
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Password reset email sent!");
-    }
+    if (error) toast.error(error.message); else toast.success("Password reset email sent!");
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
-      <SEO
-        title="Sign in or Sign up"
-        description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images."
-        canonical="/auth"
-        noindex
-      />
+      <SEO title="Sign in or Sign up" description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images." canonical="/auth" noindex />
       <div className="w-full max-w-md md:max-w-lg space-y-6 md:space-y-8 bg-card/40 md:border md:border-border/40 md:rounded-3xl md:p-10 md:shadow-2xl backdrop-blur-sm">
-        {/* Logo */}
         <div className="text-center space-y-2 md:space-y-3">
           <div className="inline-flex items-center gap-2 md:gap-3">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -117,21 +106,19 @@ const Auth = () => {
           </p>
         </div>
 
-        {/* Email Form */}
+        {!isLogin && refCode && (
+          <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center gap-2 text-sm">
+            <Gift className="w-4 h-4 text-primary shrink-0" />
+            <span>You were invited! Code <span className="font-mono font-semibold">{refCode}</span> applied.</span>
+          </div>
+        )}
+
         <form onSubmit={handleEmailAuth} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12 bg-secondary border-border/50"
-                required
-              />
+              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 h-12 bg-secondary border-border/50" required />
             </div>
           </div>
 
@@ -139,51 +126,27 @@ const Auth = () => {
             <Label htmlFor="password" className="text-sm text-muted-foreground">Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 h-12 bg-secondary border-border/50"
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
+              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10 h-12 bg-secondary border-border/50" required minLength={6} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {isLogin && (
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="text-xs text-primary hover:underline"
-            >
+            <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:underline">
               Forgot password?
             </button>
           )}
 
-          <Button
-            type="submit"
-            className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90" disabled={loading}>
             {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-primary hover:underline font-medium"
-          >
+          <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline font-medium">
             {isLogin ? "Sign up" : "Sign in"}
           </button>
         </p>
