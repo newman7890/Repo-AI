@@ -507,6 +507,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_pending_reward: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
       approve_referral_reward: {
         Args: { p_referral_id: string }
         Returns: Json
