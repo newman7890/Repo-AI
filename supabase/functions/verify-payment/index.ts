@@ -313,6 +313,83 @@ serve(async (req) => {
         console.error("Failed to create admin notification from verify-payment:", notifyError);
       }
 
+      // ===== Referral reward (only on user's FIRST successful payment) =====
+      try {
+        const { count: priorCount } = await adminClient
+          .from("payment_history")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId);
+
+        const isFirstPayment = (priorCount ?? 0) === 0;
+
+        await adminClient.from("payment_history").insert({
+          user_id: userId,
+          reference,
+          amount,
+          plan_id: planName,
+          is_first_payment: isFirstPayment,
+        });
+
+        if (isFirstPayment) {
+          // Look up referrer
+          const { data: refProfile } = await adminClient
+            .from("profiles")
+            .select("referred_by, phone_number, flagged_suspicious")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          if (refProfile?.referred_by && !refProfile.flagged_suspicious) {
+            // Anti-fraud: same phone number on referrer?
+            let allow = true;
+            if (refProfile.phone_number) {
+              const { data: referrerProfile } = await adminClient
+                .from("profiles")
+                .select("phone_number")
+                .eq("user_id", refProfile.referred_by)
+                .maybeSingle();
+              if (referrerProfile?.phone_number && referrerProfile.phone_number === refProfile.phone_number) {
+                allow = false;
+                console.log("Blocked referral reward: same phone number");
+              }
+            }
+
+            if (allow) {
+              // Flat 10% reward (in cedis), amount is in pesewas
+              const rewardAmount = Math.round(amount / 10) / 100; // amount/1000 cedis
+              const { error: refErr } = await adminClient.from("referrals").insert({
+                referrer_id: refProfile.referred_by,
+                referred_user_id: userId,
+                payment_reference: reference,
+                plan_id: planName,
+                plan_amount: amount,
+                reward_amount: rewardAmount,
+                status: "pending",
+              });
+
+              if (!refErr) {
+                // Add to pending wallet balance
+                await adminClient.rpc("add_pending_reward" as never, {
+                  p_user_id: refProfile.referred_by,
+                  p_amount: rewardAmount,
+                });
+                // Notify referrer
+                await adminClient.from("admin_notifications").insert({
+                  user_id: refProfile.referred_by,
+                  type: "referral_pending",
+                  title: "Referral Reward Pending",
+                  message: `You earned GHS ${rewardAmount} (pending approval)`,
+                  metadata: { reward_amount: rewardAmount },
+                });
+              } else if (refErr.code !== "23505") {
+                console.error("Referral insert error:", refErr);
+              }
+            }
+          }
+        }
+      } catch (refError) {
+        console.error("Referral processing error (non-fatal):", refError);
+      }
+
       return new Response(JSON.stringify({
         payment_status: "success",
         tokens_added: tokens,
