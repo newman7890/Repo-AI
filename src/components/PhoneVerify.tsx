@@ -18,18 +18,35 @@ const PhoneVerify = ({ onVerified }: Props) => {
   const [stage, setStage] = useState<"input" | "verify">("input");
   const [busy, setBusy] = useState(false);
 
+  // Normalize to E.164. Defaults to Ghana (+233) if a 10-digit local number starting with 0 is given.
+  const toE164 = (raw: string): string | null => {
+    let s = raw.replace(/[\s\-()]/g, "");
+    if (s.startsWith("+")) {
+      const digits = s.slice(1);
+      if (!/^\d{8,15}$/.test(digits)) return null;
+      return "+" + digits;
+    }
+    // Local Ghana format: 0XXXXXXXXX -> +233XXXXXXXXX
+    if (/^0\d{9}$/.test(s)) return "+233" + s.slice(1);
+    // Bare country-code digits
+    if (/^\d{9,15}$/.test(s)) return "+" + s;
+    return null;
+  };
+
   const sendOtp = async () => {
-    if (!phone.match(/^\+?\d{9,15}$/)) {
-      toast({ title: "Invalid phone", description: "Use international format e.g. +233241234567", variant: "destructive" });
+    const e164 = toE164(phone);
+    if (!e164) {
+      toast({ title: "Invalid phone", description: "Use format +233241234567 or 0241234567", variant: "destructive" });
       return;
     }
+    setPhone(e164);
     setBusy(true);
     try {
       // updateUser with phone triggers Supabase to send a verification SMS
-      const { error } = await supabase.auth.updateUser({ phone });
+      const { error } = await supabase.auth.updateUser({ phone: e164.replace(/^\+/, "") });
       if (error) throw error;
       setStage("verify");
-      toast({ title: "Code sent", description: "Check your phone for the OTP." });
+      toast({ title: "Code sent", description: `OTP sent to ${e164}` });
     } catch (e: any) {
       toast({ title: "Failed to send", description: e.message || "SMS provider may not be configured", variant: "destructive" });
     } finally { setBusy(false); }
