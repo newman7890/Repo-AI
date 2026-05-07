@@ -69,7 +69,13 @@ const Welcome = () => {
       {/* Nav */}
       <header className="px-4 md:px-8 py-4 md:py-6 border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <nav className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            aria-label="Refresh page"
+            title="Tap to refresh"
+          >
             <div
               className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center"
               style={{ background: "var(--gradient-primary)" }}
@@ -77,7 +83,7 @@ const Welcome = () => {
               <Wand2 className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-base md:text-lg tracking-tight">Renderme AI</span>
-          </div>
+          </button>
           <div className="flex items-center gap-2 md:gap-3">
             {isAuthed ? (
               <Link to="/app">
