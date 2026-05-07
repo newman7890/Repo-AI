@@ -51,9 +51,13 @@ const UserMenu = () => {
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem onClick={() => navigate("/referrals")} className="gap-2 cursor-pointer">
+        <DropdownMenuItem
+          onClick={() => isAdmin ? navigate("/referrals") : toast({ title: "Coming soon", description: "Referrals & rewards launching soon." })}
+          className="gap-2 cursor-pointer"
+        >
           <Gift className="w-4 h-4" />
           Refer & Earn
+          {!isAdmin && <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">Soon</span>}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {isAdmin && (
