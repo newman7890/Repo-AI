@@ -80,10 +80,25 @@ export default {
             height: "0",
           },
         },
+        "gradient-shift": {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
+        "text-float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
+        "shimmer": {
+          "0%": { "background-position": "-200% 0" },
+          "100%": { "background-position": "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "gradient-shift": "gradient-shift 6s ease-in-out infinite",
+        "text-float": "text-float 4s ease-in-out infinite",
+        "shimmer": "shimmer 3s linear infinite",
       },
     },
   },

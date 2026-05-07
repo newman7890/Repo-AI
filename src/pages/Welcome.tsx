@@ -117,11 +117,17 @@ const Welcome = () => {
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span className="text-primary font-medium">AI powered photo magic</span>
             </div>
-            <h1 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05]">
+            <h1 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05] animate-text-float">
               Edit any photo
               <br />
               with{" "}
-              <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>
+              <span
+                className="bg-clip-text text-transparent animate-gradient-shift"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)))",
+                  backgroundSize: "200% 200%",
+                }}
+              >
                 just words.
               </span>
             </h1>
