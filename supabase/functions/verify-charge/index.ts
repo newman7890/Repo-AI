@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
     const metaUserId = metadata.user_id;
 
     // Owner check — caller must be the buyer
-    if (metaUserId && metaUserId !== userId) {
+    if (!metaUserId || metaUserId !== userId) {
       console.error(`verify-charge user mismatch: meta=${metaUserId} auth=${userId}`);
       return new Response(JSON.stringify({ status: "failed", gateway_response: "User mismatch" }), {
         status: 403,
