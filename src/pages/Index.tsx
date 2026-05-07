@@ -256,12 +256,18 @@ const Index = () => {
       />
       <header className="px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-1.5 md:gap-3">
-          <div className="flex items-center gap-1.5 md:gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-1.5 md:gap-2.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+            aria-label="Refresh app"
+            title="Tap to refresh"
+          >
             <div className="w-7 h-7 md:w-9 md:h-9 rounded-md md:rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
               <Wand2 className="w-3 h-3 md:w-4 md:h-4 text-white" />
             </div>
             <h1 className="text-xs md:text-base font-bold tracking-tight truncate">Renderme AI</h1>
-          </div>
+          </button>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
             <Button
