@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_notifications: {
         Row: {
           created_at: string
@@ -510,6 +537,10 @@ export type Database = {
       add_pending_reward: {
         Args: { p_amount: number; p_user_id: string }
         Returns: undefined
+      }
+      admin_set_user_blocked: {
+        Args: { p_blocked: boolean; p_target_user_id: string }
+        Returns: Json
       }
       approve_referral_reward: {
         Args: { p_referral_id: string }
