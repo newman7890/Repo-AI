@@ -27,8 +27,9 @@ export const Reveal = ({ children, delay = 0, className = "", as: Tag = "div" }:
     return () => observer.disconnect();
   }, []);
 
+  const TagAny = Tag as unknown as React.ElementType;
   return (
-    <Tag
+    <TagAny
       ref={ref as never}
       style={{ transitionDelay: `${delay}ms` }}
       className={`transition-all duration-700 ease-out will-change-transform ${
@@ -36,7 +37,7 @@ export const Reveal = ({ children, delay = 0, className = "", as: Tag = "div" }:
       } ${className}`}
     >
       {children}
-    </Tag>
+    </TagAny>
   );
 };
 
