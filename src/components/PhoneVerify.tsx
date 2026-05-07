@@ -87,10 +87,8 @@ const PhoneVerify = ({ onVerified }: Props) => {
       const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "phone_change" });
       if (error) throw error;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from("profiles").update({ phone_number: phone, phone_verified: true }).eq("user_id", user.id);
-      }
+      const { error: rpcErr } = await supabase.rpc("mark_phone_verified", { p_phone: phone });
+      if (rpcErr) throw rpcErr;
       toast({ title: "Phone verified ✓" });
       onVerified?.();
     } catch (e: any) {

@@ -37,7 +37,16 @@ Deno.serve(async (req) => {
     const email = (claims.claims.email as string) || "unknown";
 
     const body = await req.json().catch(() => ({}));
-    const deviceInfo = body?.deviceInfo || {};
+    const rawDeviceInfo = body?.deviceInfo || {};
+    const cap = (s: unknown, max: number) =>
+      typeof s === "string" && s.length > 0 ? s.slice(0, max) : null;
+    const deviceInfo = {
+      deviceModel: cap(rawDeviceInfo.deviceModel, 128),
+      screenResolution: cap(rawDeviceInfo.screenResolution, 32),
+      platform: cap(rawDeviceInfo.platform, 64),
+      userAgent: cap(rawDeviceInfo.userAgent, 512),
+      browser: cap(rawDeviceInfo.browser, 64),
+    };
 
     // Capture client IP from forwarding headers
     const ipHeader =

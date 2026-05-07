@@ -134,10 +134,10 @@ const AdminUserManagement = () => {
 
   const toggleBlock = async (userId: string, currentlyBlocked: boolean) => {
     setToggling(userId);
-    const { error } = await supabase
-      .from("user_credits")
-      .update({ blocked: !currentlyBlocked })
-      .eq("user_id", userId);
+    const { error } = await supabase.rpc("admin_set_user_blocked", {
+      p_target_user_id: userId,
+      p_blocked: !currentlyBlocked,
+    });
 
     if (error) {
       toast({ title: "Error", description: "Failed to update user", variant: "destructive" });
