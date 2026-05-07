@@ -50,7 +50,7 @@ const ShowcaseSection = () => {
     <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026') }}
       />
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 md:mb-14">
