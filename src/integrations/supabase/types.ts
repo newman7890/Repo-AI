@@ -567,6 +567,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_email_verified: { Args: never; Returns: Json }
       mark_phone_verified: { Args: { p_phone: string }; Returns: Json }
       mark_withdrawal_failed: {
         Args: { p_reason: string; p_withdrawal_id: string }
