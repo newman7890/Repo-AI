@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/hooks/useWallet";
 import { SEO } from "@/components/SEO";
-import PhoneVerify from "@/components/PhoneVerify";
+import EmailVerify from "@/components/EmailVerify";
 
 interface WithdrawalRow {
   id: string; amount: number; status: string; momo_number: string; network: string; created_at: string;
@@ -104,11 +104,11 @@ const Withdraw = () => {
         {!loading && !wallet?.phone_verified && (
           <Card className="border-yellow-500/30 bg-yellow-500/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-yellow-500" />Verify your phone first</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-yellow-500" />Verify your email first</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground mb-3">For security, we require phone verification before any payout.</p>
-              <PhoneVerify onVerified={refresh} />
+              <p className="text-xs text-muted-foreground mb-3">For security, we send a 6-digit code to your account email before any payout.</p>
+              <EmailVerify onVerified={refresh} />
             </CardContent>
           </Card>
         )}
