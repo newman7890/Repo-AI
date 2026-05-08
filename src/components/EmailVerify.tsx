@@ -55,7 +55,7 @@ const EmailVerify = ({ onVerified }: Props) => {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "reauthentication" });
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" } as any);
       if (error) throw error;
       const { error: rpcErr } = await supabase.rpc("mark_email_verified");
       if (rpcErr) throw rpcErr;
