@@ -9,6 +9,9 @@ interface Props { onVerified?: () => void }
 
 const RESEND_COOLDOWN = 60;
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Something went wrong. Please try again.";
+
 /**
  * Email OTP verification using Supabase reauthenticate().
  * Sends a code to the signed-in user's account email.
@@ -41,8 +44,8 @@ const EmailVerify = ({ onVerified }: Props) => {
       setStage("sent");
       setCooldown(RESEND_COOLDOWN);
       toast({ title: "Code sent", description: `Check ${email} for the verification code.` });
-    } catch (e: any) {
-      toast({ title: "Failed to send", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Failed to send", description: getErrorMessage(e), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -56,14 +59,16 @@ const EmailVerify = ({ onVerified }: Props) => {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ type: "reauthentication", token: cleaned } as any);
+      const { error } = await supabase.auth.verifyOtp(
+        { type: "reauthentication", token: cleaned } as unknown as Parameters<typeof supabase.auth.verifyOtp>[0]
+      );
       if (error) throw error;
       const { error: rpcErr } = await supabase.rpc("mark_email_verified");
       if (rpcErr) throw rpcErr;
       toast({ title: "Email verified ✓" });
       onVerified?.();
-    } catch (e: any) {
-      toast({ title: "Verification failed", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Verification failed", description: getErrorMessage(e), variant: "destructive" });
     } finally { setBusy(false); }
   };
 
