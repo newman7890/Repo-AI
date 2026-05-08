@@ -82,9 +82,9 @@ const EmailVerify = ({ onVerified }: Props) => {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="otp">Enter the 6-digit code sent to {email}</Label>
+      <Label htmlFor="otp">Enter the code sent to {email}</Label>
       <div className="flex gap-2">
-        <Input id="otp" inputMode="numeric" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value)} />
+        <Input id="otp" inputMode="numeric" maxLength={8} placeholder="6–8 digit code" value={otp} onChange={(e) => setOtp(e.target.value)} />
         <Button onClick={verify} disabled={busy}>{busy ? "…" : "Verify"}</Button>
       </div>
       <div className="flex items-center justify-end pt-1">
