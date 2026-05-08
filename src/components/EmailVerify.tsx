@@ -49,13 +49,14 @@ const EmailVerify = ({ onVerified }: Props) => {
   }, [email, toast]);
 
   const verify = async () => {
-    if (!otp.match(/^\d{6}$/)) {
-      toast({ title: "Enter the 6-digit code", variant: "destructive" });
+    const cleaned = otp.replace(/\s/g, "");
+    if (!cleaned.match(/^\d{6,8}$/)) {
+      toast({ title: "Enter the code from your email", variant: "destructive" });
       return;
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" } as any);
+      const { error } = await supabase.auth.verifyOtp({ email, token: cleaned, type: "email" } as any);
       if (error) throw error;
       const { error: rpcErr } = await supabase.rpc("mark_email_verified");
       if (rpcErr) throw rpcErr;
