@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/hooks/useWallet";
 import { SEO } from "@/components/SEO";
-import PhoneVerify from "@/components/PhoneVerify";
+import EmailVerify from "@/components/EmailVerify";
 
 interface WithdrawalRow {
   id: string; amount: number; status: string; momo_number: string; network: string; created_at: string;
