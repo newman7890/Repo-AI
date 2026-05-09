@@ -14,7 +14,7 @@ const getErrorMessage = (error: unknown) =>
 
 /**
  * Email OTP verification using a one-time email sign-in code.
- * Sends a code to the signed-in user's account email.
+ * Sends a code to the signed-in user's account email and accepts the matching auth code type.
  */
 const EmailVerify = ({ onVerified }: Props) => {
   const { toast } = useToast();
@@ -55,15 +55,31 @@ const EmailVerify = ({ onVerified }: Props) => {
   }, [email, toast]);
 
   const verify = async () => {
-    const cleaned = otp.replace(/\s/g, "");
+    const cleaned = otp.replace(/\D/g, "");
     if (!cleaned.match(/^\d{6,8}$/)) {
       toast({ title: "Enter the code from your email", variant: "destructive" });
       return;
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email, token: cleaned, type: "email" });
-      if (error) throw error;
+      const otpTypes = ["email", "magiclink", "recovery"] as const;
+      let lastError: unknown;
+      let verified = false;
+
+      for (const type of otpTypes) {
+        const { data, error } = await supabase.auth.verifyOtp({ email, token: cleaned, type });
+        if (!error) {
+          const verifiedEmail = data.user?.email?.toLowerCase();
+          if (verifiedEmail && verifiedEmail !== email.toLowerCase()) {
+            throw new Error("This code belongs to a different email address.");
+          }
+          verified = true;
+          break;
+        }
+        lastError = error;
+      }
+
+      if (!verified) throw lastError;
       const { error: rpcErr } = await supabase.rpc("mark_email_verified");
       if (rpcErr) throw rpcErr;
       toast({ title: "Email verified ✓" });
@@ -90,7 +106,7 @@ const EmailVerify = ({ onVerified }: Props) => {
     <div className="space-y-2">
       <Label htmlFor="otp">Enter the code sent to {email}</Label>
       <div className="flex gap-2">
-        <Input id="otp" inputMode="numeric" maxLength={8} placeholder="Enter email code" value={otp} onChange={(e) => setOtp(e.target.value)} />
+        <Input id="otp" inputMode="numeric" maxLength={12} placeholder="Enter email code" value={otp} onChange={(e) => setOtp(e.target.value)} />
         <Button onClick={verify} disabled={busy}>{busy ? "…" : "Verify"}</Button>
       </div>
       <div className="flex items-center justify-end pt-1">
