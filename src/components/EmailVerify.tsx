@@ -13,7 +13,7 @@ const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Something went wrong. Please try again.";
 
 /**
- * Email OTP verification using Supabase reauthenticate().
+ * Email OTP verification using a one-time email sign-in code.
  * Sends a code to the signed-in user's account email.
  */
 const EmailVerify = ({ onVerified }: Props) => {
@@ -39,7 +39,10 @@ const EmailVerify = ({ onVerified }: Props) => {
   const sendCode = useCallback(async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.auth.reauthenticate();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
       if (error) throw error;
       setStage("sent");
       setCooldown(RESEND_COOLDOWN);
@@ -59,9 +62,7 @@ const EmailVerify = ({ onVerified }: Props) => {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp(
-        { type: "reauthentication", token: cleaned } as unknown as Parameters<typeof supabase.auth.verifyOtp>[0]
-      );
+      const { error } = await supabase.auth.verifyOtp({ email, token: cleaned, type: "email" });
       if (error) throw error;
       const { error: rpcErr } = await supabase.rpc("mark_email_verified");
       if (rpcErr) throw rpcErr;
