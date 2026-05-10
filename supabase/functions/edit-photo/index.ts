@@ -293,9 +293,9 @@ serve(async (req) => {
       // Refund credits on AI failure
       try {
         if (creditResult.used === "trial") {
-          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", userId);
+          await supabaseAdmin.rpc("refund_credits", { p_user_id: userId, p_kind: "trial", p_amount: 1 });
         } else if (creditResult.used === "tokens") {
-          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + tokenCost }).eq("user_id", userId);
+          await supabaseAdmin.rpc("refund_credits", { p_user_id: userId, p_kind: "tokens", p_amount: tokenCost });
         }
       } catch (refundErr) {
         console.error("Failed to refund credits:", refundErr);
