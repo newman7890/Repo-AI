@@ -577,6 +577,10 @@ export type Database = {
         Args: { p_transfer_code?: string; p_withdrawal_id: string }
         Returns: Json
       }
+      refund_credits: {
+        Args: { p_amount: number; p_kind: string; p_user_id: string }
+        Returns: undefined
+      }
       reject_referral_reward: {
         Args: { p_reason: string; p_referral_id: string }
         Returns: Json
