@@ -166,9 +166,9 @@ Rules:
       // Refund
       try {
         if (creditResult.used === "trial") {
-          await supabaseAdmin.from("user_credits").update({ trial_uses_remaining: (creditResult.remaining_trials || 0) + 1 }).eq("user_id", userId);
+          await supabaseAdmin.rpc("refund_credits", { p_user_id: userId, p_kind: "trial", p_amount: 1 });
         } else if (creditResult.used === "tokens") {
-          await supabaseAdmin.from("user_credits").update({ tokens: (creditResult.tokens || 0) + TOKEN_COST }).eq("user_id", userId);
+          await supabaseAdmin.rpc("refund_credits", { p_user_id: userId, p_kind: "tokens", p_amount: TOKEN_COST });
         }
       } catch (e) { console.error("Refund failed:", e); }
 
