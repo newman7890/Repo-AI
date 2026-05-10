@@ -62,9 +62,9 @@ const EmailVerify = ({ onVerified }: Props) => {
     setBusy(true);
     try {
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
+        type: "reauthentication" as never,
         token: cleaned,
-        type: "reauthentication",
+        email,
       });
       if (error) throw error;
       const verifiedEmail = data.user?.email?.toLowerCase();
