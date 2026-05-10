@@ -49,10 +49,12 @@ Deno.serve(async (req) => {
     };
 
     // Capture client IP from forwarding headers
+    // Prefer infrastructure-injected headers (cannot be forged by end clients)
+    // before falling back to the client-controllable x-forwarded-for.
     const ipHeader =
-      req.headers.get("x-forwarded-for") ||
       req.headers.get("cf-connecting-ip") ||
       req.headers.get("x-real-ip") ||
+      req.headers.get("x-forwarded-for") ||
       "";
     const clientIp = ipHeader.split(",")[0]?.trim() || null;
 
