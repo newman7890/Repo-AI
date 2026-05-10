@@ -39,10 +39,9 @@ const EmailVerify = ({ onVerified }: Props) => {
   const sendCode = useCallback(async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
+      // Use reauthenticate flow so the verified session is elevated to AAL2,
+      // which is required server-side by mark_email_verified().
+      const { error } = await supabase.auth.reauthenticate();
       if (error) throw error;
       setStage("sent");
       setCooldown(RESEND_COOLDOWN);
