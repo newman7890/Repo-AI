@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Smartphone, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/hooks/useWallet";
 import { SEO } from "@/components/SEO";
-import EmailVerify from "@/components/EmailVerify";
 
 interface WithdrawalRow {
   id: string; amount: number; status: string; momo_number: string; network: string; created_at: string;
@@ -53,7 +52,6 @@ const Withdraw = () => {
 
   const amountNum = parseFloat(amount) || 0;
   const canSubmit =
-    !!wallet?.phone_verified &&
     amountNum >= MIN &&
     amountNum <= (wallet?.wallet_available ?? 0) &&
     momo.trim().length >= 9 &&
@@ -100,18 +98,6 @@ const Withdraw = () => {
             <p className="text-xs text-muted-foreground mt-1">Minimum withdrawal ₵{MIN}</p>
           </CardContent>
         </Card>
-
-        {!loading && !wallet?.phone_verified && (
-          <Card className="border-yellow-500/30 bg-yellow-500/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-yellow-500" />Verify your email first</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground mb-3">For security, we send a 6-digit code to your account email before any payout.</p>
-              <EmailVerify onVerified={refresh} />
-            </CardContent>
-          </Card>
-        )}
 
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Smartphone className="w-4 h-4" />Withdrawal details</CardTitle></CardHeader>
