@@ -39,10 +39,9 @@ const EmailVerify = ({ onVerified }: Props) => {
   const sendCode = useCallback(async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
+      // Use reauthenticate flow so the verified session is elevated to AAL2,
+      // which is required server-side by mark_email_verified().
+      const { error } = await supabase.auth.reauthenticate();
       if (error) throw error;
       setStage("sent");
       setCooldown(RESEND_COOLDOWN);
@@ -62,24 +61,16 @@ const EmailVerify = ({ onVerified }: Props) => {
     }
     setBusy(true);
     try {
-      const otpTypes = ["email", "magiclink", "recovery"] as const;
-      let lastError: unknown;
-      let verified = false;
-
-      for (const type of otpTypes) {
-        const { data, error } = await supabase.auth.verifyOtp({ email, token: cleaned, type });
-        if (!error) {
-          const verifiedEmail = data.user?.email?.toLowerCase();
-          if (verifiedEmail && verifiedEmail !== email.toLowerCase()) {
-            throw new Error("This code belongs to a different email address.");
-          }
-          verified = true;
-          break;
-        }
-        lastError = error;
+      const { data, error } = await supabase.auth.verifyOtp({
+        type: "reauthentication" as never,
+        token: cleaned,
+        email,
+      });
+      if (error) throw error;
+      const verifiedEmail = data.user?.email?.toLowerCase();
+      if (verifiedEmail && verifiedEmail !== email.toLowerCase()) {
+        throw new Error("This code belongs to a different email address.");
       }
-
-      if (!verified) throw lastError;
       const { error: rpcErr } = await supabase.rpc("mark_email_verified");
       if (rpcErr) throw rpcErr;
       toast({ title: "Email verified ✓" });
