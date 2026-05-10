@@ -585,6 +585,10 @@ export type Database = {
         Args: { p_amount: number; p_momo_number: string; p_network: string }
         Returns: Json
       }
+      update_own_device_info: {
+        Args: { p_browser: string; p_device_info: string; p_user_agent: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
