@@ -154,7 +154,9 @@ serve(async (req) => {
         }
       }
 
-      if (isOneTime) {
+      if (alreadyCredited) {
+        console.log(`Skipping credit for ${reference}: already credited by another path`);
+      } else if (isOneTime) {
         // One-time MoMo: ADD tokens to existing balance, do NOT mark recurring premium
         const { data: existing } = await supabase
           .from("user_credits")
