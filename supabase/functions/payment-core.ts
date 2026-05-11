@@ -80,6 +80,55 @@ export function resolveTokens(metadata: { tokens?: number } | null | undefined, 
   return Object.values(PLANS).find((plan) => plan.amount === amount)?.tokens || 0;
 }
 
+// ---------------------------------------------------------------------------
+// Cross-event idempotency
+// ---------------------------------------------------------------------------
+// A single Paystack `reference` can be observed by up to three independent
+// crediting paths: verify-payment (server-side verify after redirect),
+// verify-charge (inline charge polling), and paystack-webhook (async event).
+// Each path inserts its own audit row in `processed_payments` with a distinct
+// `event_type`, but tokens may only be credited ONCE per reference across
+// every path. `evaluateIdempotency` is the pure decision used by every path.
+//
+// Inputs:
+//   existingRows  — any rows already present for this reference (any event_type)
+//   currentEventType — the event_type this path is about to insert
+//   insertErrorCode  — Postgres error code from the audit-row insert (e.g.
+//                      "23505" on unique-constraint conflict for the same
+//                      (reference, event_type)) — undefined on success
+//
+// Output:
+//   shouldCredit      — true only when no other path has credited yet AND
+//                       this path's audit row was inserted cleanly
+//   alreadyProcessed  — true when this exact event has already been recorded
+//                       (caller should short-circuit with success)
+export type IdempotencyDecision = {
+  shouldCredit: boolean;
+  alreadyProcessed: boolean;
+};
+
+export function evaluateIdempotency(args: {
+  existingRows: ReadonlyArray<{ event_type: string }> | null | undefined;
+  currentEventType: string;
+  insertErrorCode?: string | null;
+}): IdempotencyDecision {
+  const rows = args.existingRows ?? [];
+  const sameEventAlreadyRecorded =
+    rows.some((r) => r.event_type === args.currentEventType) ||
+    args.insertErrorCode === "23505";
+
+  if (sameEventAlreadyRecorded) {
+    return { shouldCredit: false, alreadyProcessed: true };
+  }
+
+  // A different path already credited this reference — record audit only.
+  if (rows.length > 0) {
+    return { shouldCredit: false, alreadyProcessed: false };
+  }
+
+  return { shouldCredit: true, alreadyProcessed: false };
+}
+
 export function buildProcessedPaymentRecord(args: {
   reference: string;
   userId: string;
