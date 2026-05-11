@@ -268,16 +268,20 @@ serve(async (req) => {
           }
         }
 
-        const { error } = await supabase
-          .from("user_credits")
-          .update({
-            tokens,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId);
+        if (alreadyCredited) {
+          console.log(`Skipping invoice credit for ${reference}: already credited by another path`);
+        } else {
+          const { error } = await supabase
+            .from("user_credits")
+            .update({
+              tokens,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId);
 
-        if (error) console.error("Error refilling tokens:", error);
-        else console.log(`Tokens refilled for user ${userId}: ${tokens}`);
+          if (error) console.error("Error refilling tokens:", error);
+          else console.log(`Tokens refilled for user ${userId}: ${tokens}`);
+        }
       }
     }
 
