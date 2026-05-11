@@ -174,7 +174,17 @@ Deno.serve(async (req) => {
     const planName = metadata.plan_id || metadata.plan || "unknown";
     const currency = data.data.currency || "GHS";
 
-    // Idempotency: insert (reference, "verify-charge"). Unique index prevents double credit.
+    // Cross-event idempotency: if ANY row exists for this reference (regardless
+    // of event_type), credit was already applied by another path (webhook or
+    // verify-payment). Record this event for audit but skip crediting.
+    const { data: anyExisting } = await adminClient
+      .from("processed_payments")
+      .select("id")
+      .eq("reference", reference)
+      .limit(1)
+      .maybeSingle();
+
+    // Insert this event row for audit / per-path idempotency
     const { error: insertError } = await adminClient
       .from("processed_payments")
       .insert({
@@ -185,14 +195,7 @@ Deno.serve(async (req) => {
         currency,
       });
 
-    if (insertError) {
-      if (insertError.code === "23505") {
-        // Already credited via this path — safe success
-        return new Response(JSON.stringify({ status: "success", already_processed: true }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+    if (insertError && insertError.code !== "23505") {
       console.error("verify-charge insert error:", insertError);
       await alertCheckoutPolicyFailure(adminClient, {
         source: "verify-charge",
@@ -202,6 +205,13 @@ Deno.serve(async (req) => {
         reference,
       });
       throw insertError;
+    }
+
+    if (anyExisting || insertError?.code === "23505") {
+      return new Response(JSON.stringify({ status: "success", already_processed: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { data: profile } = await adminClient

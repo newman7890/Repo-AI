@@ -156,12 +156,13 @@ serve(async (req) => {
       });
     }
 
-    // Idempotency check — already processed via verify-payment
+    // Cross-event idempotency: if ANY row exists for this reference, credit was
+    // already applied by another path (webhook or verify-charge). Skip credit.
     const { data: existingPayment } = await adminClient
       .from("processed_payments")
       .select("id")
       .eq("reference", reference)
-      .eq("event_type", "verify-payment")
+      .limit(1)
       .maybeSingle();
 
     if (existingPayment) {

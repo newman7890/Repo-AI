@@ -96,17 +96,26 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const reference = event.data?.reference;
+    // Cross-event idempotency: if ANY row for this reference already exists
+    // (from verify-payment, verify-charge, or a prior webhook), the credit has
+    // been applied. We still record this webhook event for audit but must not
+    // credit again. Skip-credit flag below.
+    let alreadyCredited = false;
     if (reference) {
-      const { data: existing } = await supabase
+      const { data: existingAny } = await supabase
         .from("processed_payments")
-        .select("id")
+        .select("id, event_type")
         .eq("reference", reference)
-        .eq("event_type", `webhook:${event.event}`)
-        .maybeSingle();
+        .limit(10);
 
-      if (existing) {
-        console.log(`Webhook already processed: ${reference} ${event.event}`);
-        return new Response("OK", { status: 200, headers: corsHeaders });
+      if (existingAny && existingAny.length > 0) {
+        const sameEvent = existingAny.some((r: any) => r.event_type === `webhook:${event.event}`);
+        if (sameEvent) {
+          console.log(`Webhook already processed: ${reference} ${event.event}`);
+          return new Response("OK", { status: 200, headers: corsHeaders });
+        }
+        alreadyCredited = true;
+        console.log(`Reference ${reference} already credited by another path; recording webhook for audit only`);
       }
     }
 
@@ -145,7 +154,9 @@ serve(async (req) => {
         }
       }
 
-      if (isOneTime) {
+      if (alreadyCredited) {
+        console.log(`Skipping credit for ${reference}: already credited by another path`);
+      } else if (isOneTime) {
         // One-time MoMo: ADD tokens to existing balance, do NOT mark recurring premium
         const { data: existing } = await supabase
           .from("user_credits")
@@ -257,16 +268,20 @@ serve(async (req) => {
           }
         }
 
-        const { error } = await supabase
-          .from("user_credits")
-          .update({
-            tokens,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId);
+        if (alreadyCredited) {
+          console.log(`Skipping invoice credit for ${reference}: already credited by another path`);
+        } else {
+          const { error } = await supabase
+            .from("user_credits")
+            .update({
+              tokens,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId);
 
-        if (error) console.error("Error refilling tokens:", error);
-        else console.log(`Tokens refilled for user ${userId}: ${tokens}`);
+          if (error) console.error("Error refilling tokens:", error);
+          else console.log(`Tokens refilled for user ${userId}: ${tokens}`);
+        }
       }
     }
 
