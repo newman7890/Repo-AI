@@ -168,6 +168,7 @@ const DesignerStudio = () => {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Back to editor"
               onClick={() => navigate("/app")}
               className="h-8 w-8 shrink-0"
             >
@@ -340,7 +341,7 @@ const DesignerStudio = () => {
                   <ProcessingSkeleton onCancel={() => abortRef.current?.abort()} />
                 </div>
               ) : resultImage ? (
-                <img src={resultImage} alt="Generated design" className="w-full h-auto" />
+                <img src={resultImage} alt="AI generated design preview" className="w-full h-auto" />
               ) : (
                 <div className="text-center p-8 text-muted-foreground">
                   <Wand2 className="w-10 h-10 mx-auto mb-3 opacity-40" />
