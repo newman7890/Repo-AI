@@ -21,6 +21,7 @@ import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
 import ShowcaseSection from "@/components/ShowcaseSection";
+import LazyVideo from "@/components/LazyVideo";
 
 const features = [
   {
