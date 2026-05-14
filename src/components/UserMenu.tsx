@@ -37,7 +37,7 @@ const UserMenu = () => {
     <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-lg h-8 w-8">
+        <Button variant="outline" size="icon" aria-label="Open settings menu" className="rounded-lg h-8 w-8">
           <Settings className="w-3.5 h-3.5" />
         </Button>
       </DropdownMenuTrigger>

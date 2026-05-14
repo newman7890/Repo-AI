@@ -101,8 +101,11 @@ const Auth = () => {
               Renderme AI
             </span>
           </div>
+          <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
+            {isLogin ? "Sign in to Renderme AI" : "Create your Renderme AI account"}
+          </h1>
           <p className="text-muted-foreground text-sm md:text-base">
-            {isLogin ? "Sign in to continue" : "Create your account"}
+            {isLogin ? "Sign in to continue" : "Start with 3 free AI photo edits"}
           </p>
         </div>
 
@@ -127,7 +130,7 @@ const Auth = () => {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10 h-12 bg-secondary border-border/50" required minLength={6} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>

@@ -113,7 +113,7 @@ const HistoryGallery = ({ onSelect }: HistoryGalleryProps) => {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="Edit history">
+      <Button onClick={() => setOpen(true)} variant="ghost" size="icon" aria-label="Open edit history" className="h-8 w-8 text-muted-foreground" title="Edit history">
         <History className="w-4 h-4" />
       </Button>
     );
@@ -132,7 +132,7 @@ const HistoryGallery = ({ onSelect }: HistoryGalleryProps) => {
               <Trash2 className="w-3.5 h-3.5" /> Clear
             </Button>
           )}
-          <Button onClick={() => setOpen(false)} variant="ghost" size="icon" className="h-8 w-8">
+          <Button onClick={() => setOpen(false)} variant="ghost" size="icon" aria-label="Close edit history" className="h-8 w-8">
             <X className="w-4 h-4" />
           </Button>
         </div>
