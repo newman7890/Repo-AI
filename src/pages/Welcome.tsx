@@ -21,6 +21,7 @@ import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
 import ShowcaseSection from "@/components/ShowcaseSection";
+import LazyVideo from "@/components/LazyVideo";
 
 const features = [
   {
@@ -205,17 +206,12 @@ const Welcome = () => {
               </p>
             </div>
             <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl">
-              <video
+              <LazyVideo
                 src="/videos/tutorial.mp4"
                 className="w-full h-auto block"
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls
-                preload="metadata"
                 poster="/placeholder.svg"
               />
+
             </div>
           </div>
         </section>

@@ -105,6 +105,8 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
           src={example.after_image}
           alt={example.after_alt}
           loading="lazy"
+          decoding="async"
+          fetchPriority="low"
           className="absolute inset-0 w-full h-full object-contain"
         />
         <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
@@ -112,6 +114,8 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
             src={example.before_image}
             alt={example.before_alt}
             loading="lazy"
+            decoding="async"
+            fetchPriority="low"
             className="w-full h-full object-contain"
           />
         </div>
