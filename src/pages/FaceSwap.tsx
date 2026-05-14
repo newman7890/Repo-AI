@@ -79,6 +79,7 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
         <img src={image} alt={label} className="w-full h-full object-cover" />
         <button
           onClick={onClear}
+          aria-label={`Remove ${label} image`}
           className="absolute top-1.5 right-1.5 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-6 h-6 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
         >
           <X className="w-3.5 h-3.5" />
@@ -248,7 +249,7 @@ const FaceSwap = () => {
       <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between gap-2 md:gap-3">
           <div className="flex items-center gap-2 md:gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/app")} className="shrink-0 h-8 w-8 md:h-9 md:w-9">
+            <Button variant="ghost" size="icon" aria-label="Back to editor" onClick={() => navigate("/app")} className="shrink-0 h-8 w-8 md:h-9 md:w-9">
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-2 md:gap-3">
@@ -383,6 +384,7 @@ const FaceSwap = () => {
                       {faceSlots.length > 1 && !slot.image && (
                         <button
                           onClick={() => removeFaceSlot(slot.id)}
+                          aria-label="Remove face slot"
                           className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center z-10"
                         >
                           <Trash2 className="w-3 h-3" />

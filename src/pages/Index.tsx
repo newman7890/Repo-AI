@@ -266,7 +266,7 @@ const Index = () => {
             <div className="w-7 h-7 md:w-9 md:h-9 rounded-md md:rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
               <Wand2 className="w-3 h-3 md:w-4 md:h-4 text-white" />
             </div>
-            <h1 className="text-xs md:text-base font-bold tracking-tight truncate">Renderme AI</h1>
+            <h1 className="text-xs md:text-base font-bold tracking-tight truncate">Renderme AI — Edit your photos</h1>
           </button>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
             <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />

@@ -63,6 +63,7 @@ const ResetPassword = () => {
               Renderme AI
             </span>
           </div>
+          <h1 className="text-xl font-semibold tracking-tight">Reset your password</h1>
           <p className="text-muted-foreground text-sm">Set your new password</p>
         </div>
 
