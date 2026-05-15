@@ -132,7 +132,7 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         onPointerUp={handlePointerUp}
       >
         <img
-          src={example.after_image}
+          src={transformedSrc(example.after_image)}
           alt={example.after_alt}
           loading="lazy"
           decoding="async"
@@ -141,7 +141,7 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         />
         <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
           <img
-            src={example.before_image}
+            src={transformedSrc(example.before_image)}
             alt={example.before_alt}
             loading="lazy"
             decoding="async"
