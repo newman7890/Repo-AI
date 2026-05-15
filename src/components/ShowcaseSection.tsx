@@ -41,7 +41,11 @@ const ShowcaseSection = () => {
         thumbnailUrl: ex.after_image,
         caption: ex.after_alt,
         description: `AI photo edit. Prompt: ${ex.prompt}. Generated in ${ex.generation_seconds} seconds.`,
-        creator: { "@type": "Organization", name: "Renderme AI" },
+        creator: { "@type": "Organization", name: "Renderme AI", url: "https://renderme.site" },
+        copyrightNotice: "© Renderme AI",
+        creditText: "Renderme AI",
+        license: "https://renderme.site/terms",
+        acquireLicensePage: "https://renderme.site/terms",
       },
     })),
   };
