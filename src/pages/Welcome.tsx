@@ -316,7 +316,9 @@ const Welcome = () => {
             </div>
 
             {/* Animated install carousel */}
-            <InstallStepsCarousel />
+            <Suspense fallback={<div className="min-h-[400px]" />}>
+              <InstallStepsCarousel />
+            </Suspense>
           </div>
         </section>
 
