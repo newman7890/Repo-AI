@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import {
   Sparkles,
   Wand2,
@@ -17,11 +17,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
-import ShowcaseSection from "@/components/ShowcaseSection";
-import LazyVideo from "@/components/LazyVideo";
+
+// Below-the-fold sections — split out of the initial Welcome bundle
+const InstallStepsCarousel = lazy(() =>
+  import("@/components/InstallStepsCarousel").then((m) => ({ default: m.InstallStepsCarousel }))
+);
+const ShowcaseSection = lazy(() => import("@/components/ShowcaseSection"));
+const LazyVideo = lazy(() => import("@/components/LazyVideo"));
 
 const features = [
   {
@@ -205,19 +209,21 @@ const Welcome = () => {
                 Upload a photo, type what you want, and let the AI do the rest in under 30 seconds.
               </p>
             </div>
-            <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl">
-              <LazyVideo
-                src="/videos/tutorial.mp4"
-                className="w-full h-auto block"
-                poster="/placeholder.svg"
-              />
-
+            <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl min-h-[200px]">
+              <Suspense fallback={<div className="w-full aspect-video bg-muted/30" />}>
+                <LazyVideo
+                  src="/videos/tutorial.mp4"
+                  className="w-full h-auto block"
+                  poster="/placeholder.svg"
+                />
+              </Suspense>
             </div>
           </div>
         </section>
 
-        {/* Real results: Before / After (admin-managed) */}
-        <ShowcaseSection />
+        <Suspense fallback={<div className="min-h-[400px]" />}>
+          <ShowcaseSection />
+        </Suspense>
 
         {/* How to prompt the AI */}
         <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
@@ -310,7 +316,9 @@ const Welcome = () => {
             </div>
 
             {/* Animated install carousel */}
-            <InstallStepsCarousel />
+            <Suspense fallback={<div className="min-h-[400px]" />}>
+              <InstallStepsCarousel />
+            </Suspense>
           </div>
         </section>
 
