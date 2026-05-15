@@ -75,6 +75,8 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
   const handlePointerDown = (e: React.PointerEvent) => {
     isDragging.current = true;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    // Cache rect once per drag — measuring on every pointermove forces reflow
+    cachedRect.current = containerRef.current?.getBoundingClientRect() ?? null;
     updatePosition(e.clientX);
     setShowInfo(true);
     if (!hasTrackedDrag.current) {
@@ -93,6 +95,11 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
       trackSliderEvent(example.id, "drag_complete");
     }
     isDragging.current = false;
+    cachedRect.current = null;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
   };
 
   return (
