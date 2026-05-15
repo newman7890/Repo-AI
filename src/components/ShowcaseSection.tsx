@@ -60,7 +60,7 @@ const ShowcaseSection = () => {
         <div className="text-center mb-10 md:mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm mb-4">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-primary font-medium">Real results</span>
+            <span className="text-primary-glow font-medium">Real results</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">From plain photo to scene-stealer</h2>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
