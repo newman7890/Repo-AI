@@ -48,6 +48,10 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         setAspectRatio(img.naturalWidth / img.naturalHeight);
       }
     };
+    img.onerror = () => {
+      // Transformer failed — try the original asset
+      if (img.src !== example.after_image) img.src = example.after_image;
+    };
     img.src = transformedSrc(example.after_image);
   }, [example.after_image]);
 
@@ -137,6 +141,10 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
           loading="lazy"
           decoding="async"
           fetchPriority="low"
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (img.src !== example.after_image) img.src = example.after_image;
+          }}
           className="absolute inset-0 w-full h-full object-contain"
         />
         <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
@@ -146,6 +154,10 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
             loading="lazy"
             decoding="async"
             fetchPriority="low"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.src !== example.before_image) img.src = example.before_image;
+            }}
             className="w-full h-full object-contain"
           />
         </div>
