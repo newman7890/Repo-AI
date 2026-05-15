@@ -318,7 +318,7 @@ const Welcome = () => {
         <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Simple pricing</h2>
-            <p className="text-base md:text-lg text-muted-foreground mb-10">
+            <p className="text-base md:text-lg text-foreground/80 mb-10">
               Pay only for what you use. No subscriptions.
             </p>
             <div className="bg-card/50 border border-border/60 rounded-2xl md:rounded-3xl p-6 md:p-10 text-left space-y-4">
