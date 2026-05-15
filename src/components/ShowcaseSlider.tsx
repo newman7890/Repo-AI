@@ -48,7 +48,7 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         setAspectRatio(img.naturalWidth / img.naturalHeight);
       }
     };
-    img.src = example.after_image;
+    img.src = transformedSrc(example.after_image);
   }, [example.after_image]);
 
   // Track impressions when slider scrolls into view
