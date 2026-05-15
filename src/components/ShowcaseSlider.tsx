@@ -48,6 +48,10 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         setAspectRatio(img.naturalWidth / img.naturalHeight);
       }
     };
+    img.onerror = () => {
+      // Transformer failed — try the original asset
+      if (img.src !== example.after_image) img.src = example.after_image;
+    };
     img.src = transformedSrc(example.after_image);
   }, [example.after_image]);
 
