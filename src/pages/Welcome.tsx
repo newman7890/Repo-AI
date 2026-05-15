@@ -221,8 +221,9 @@ const Welcome = () => {
           </div>
         </section>
 
-        {/* Real results: Before / After (admin-managed) */}
-        <ShowcaseSection />
+        <Suspense fallback={<div className="min-h-[400px]" />}>
+          <ShowcaseSection />
+        </Suspense>
 
         {/* How to prompt the AI */}
         <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
