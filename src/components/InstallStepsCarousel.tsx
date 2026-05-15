@@ -247,7 +247,7 @@ export const InstallStepsCarousel = () => {
   const step = STEPS[index];
   const PlatformIcon = step.platformIcon;
   const isIOS = step.platform === "iOS";
-  const accentClass = isIOS ? "text-primary" : "text-accent";
+  const accentClass = isIOS ? "text-primary-glow" : "text-accent";
   const accentBg = isIOS ? "bg-primary/10 border-primary/30" : "bg-accent/10 border-accent/30";
 
   return (
