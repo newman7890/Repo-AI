@@ -16,6 +16,20 @@ interface ShowcaseSliderProps {
   example: ShowcaseExample;
 }
 
+/**
+ * Convert a Supabase public storage URL into the on-the-fly image
+ * transformer URL so the CDN serves a resized WebP instead of the
+ * original multi-MB JPEG/PNG. Falls back to the original URL for any
+ * non-Supabase asset.
+ */
+const transformedSrc = (url: string, width = 800) => {
+  if (!url) return url;
+  return url.replace(
+    "/storage/v1/object/public/",
+    `/storage/v1/render/image/public/`,
+  ) + (url.includes("?") ? "&" : "?") + `width=${width}&quality=70&resize=contain`;
+};
+
 const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
   const [position, setPosition] = useState(50);
   const [aspectRatio, setAspectRatio] = useState<number>(3 / 4);
@@ -34,7 +48,7 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         setAspectRatio(img.naturalWidth / img.naturalHeight);
       }
     };
-    img.src = example.after_image;
+    img.src = transformedSrc(example.after_image);
   }, [example.after_image]);
 
   // Track impressions when slider scrolls into view
@@ -118,7 +132,7 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         onPointerUp={handlePointerUp}
       >
         <img
-          src={example.after_image}
+          src={transformedSrc(example.after_image)}
           alt={example.after_alt}
           loading="lazy"
           decoding="async"
@@ -127,7 +141,7 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
         />
         <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
           <img
-            src={example.before_image}
+            src={transformedSrc(example.before_image)}
             alt={example.before_alt}
             loading="lazy"
             decoding="async"
