@@ -46,12 +46,13 @@ const LazyVideo = ({ src, poster, className }: LazyVideoProps) => {
         />
       ) : (
         <div
+          role="img"
+          aria-label="Tutorial video loading when scrolled into view"
           className={className}
           style={{
             aspectRatio: "16 / 9",
             background: poster ? `center/cover no-repeat url(${poster})` : "hsl(var(--muted))",
           }}
-          aria-label="Tutorial video loading when scrolled into view"
         />
       )}
     </div>

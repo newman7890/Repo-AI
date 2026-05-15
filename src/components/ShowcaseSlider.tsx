@@ -56,16 +56,27 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
     return () => observer.disconnect();
   }, [example.id]);
 
+  const rafRef = useRef<number | null>(null);
+  const cachedRect = useRef<DOMRect | null>(null);
+
   const updatePosition = useCallback((clientX: number) => {
     if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    setPosition((x / rect.width) * 100);
+    if (rafRef.current !== null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (!containerRef.current) return;
+      // Cache the rect during a drag to avoid forced reflow on every move
+      const rect = cachedRect.current ?? containerRef.current.getBoundingClientRect();
+      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+      setPosition((x / rect.width) * 100);
+    });
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     isDragging.current = true;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    // Cache rect once per drag — measuring on every pointermove forces reflow
+    cachedRect.current = containerRef.current?.getBoundingClientRect() ?? null;
     updatePosition(e.clientX);
     setShowInfo(true);
     if (!hasTrackedDrag.current) {
@@ -84,6 +95,11 @@ const ShowcaseSlider = ({ example }: ShowcaseSliderProps) => {
       trackSliderEvent(example.id, "drag_complete");
     }
     isDragging.current = false;
+    cachedRect.current = null;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
   };
 
   return (
