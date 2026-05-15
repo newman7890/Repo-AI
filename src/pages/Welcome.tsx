@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import {
   Sparkles,
   Wand2,
@@ -17,11 +17,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { InstallStepsCarousel } from "@/components/InstallStepsCarousel";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
-import ShowcaseSection from "@/components/ShowcaseSection";
-import LazyVideo from "@/components/LazyVideo";
+
+// Below-the-fold sections — split out of the initial Welcome bundle
+const InstallStepsCarousel = lazy(() =>
+  import("@/components/InstallStepsCarousel").then((m) => ({ default: m.InstallStepsCarousel }))
+);
+const ShowcaseSection = lazy(() => import("@/components/ShowcaseSection"));
+const LazyVideo = lazy(() => import("@/components/LazyVideo"));
 
 const features = [
   {
