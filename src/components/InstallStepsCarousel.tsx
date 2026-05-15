@@ -43,7 +43,7 @@ const SharePopover = () => (
     </div>
     <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg px-2 py-1.5">
       <Plus className="w-3.5 h-3.5 text-primary" />
-      <span className="text-[10px] font-medium text-primary">Add to Home Screen</span>
+      <span className="text-[10px] font-medium text-primary-glow">Add to Home Screen</span>
     </div>
   </div>
 );
@@ -160,7 +160,7 @@ const STEPS: Step[] = [
     illustration: (
       <PhoneFrame accent="hsl(var(--primary) / 0.5)">
         <InstalledHomeScreen accent="hsl(var(--primary) / 0.5)" />
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-primary font-semibold">
+        <div className="flex items-center justify-center gap-1.5 text-[10px] text-primary-glow font-semibold">
           <CheckCircle2 className="w-3.5 h-3.5" /> Installed
         </div>
       </PhoneFrame>
