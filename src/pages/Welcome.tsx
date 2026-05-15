@@ -74,7 +74,7 @@ const Welcome = () => {
             type="button"
             onClick={() => window.location.reload()}
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            aria-label="Refresh page"
+            aria-label="Renderme AI — refresh page"
             title="Tap to refresh"
           >
             <div
