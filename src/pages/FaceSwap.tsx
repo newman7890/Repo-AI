@@ -241,7 +241,7 @@ const FaceSwap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="AI Face Swap — Swap Up to 4 Faces"
+        title="AI Face Swap | Swap Up to 4 Faces"
         description="Swap up to 4 faces onto any photo with cinematic, hyper-realistic AI. Powered by Renderme AI."
         canonical="/face-swap"
         noindex

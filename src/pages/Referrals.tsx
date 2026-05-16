@@ -52,7 +52,7 @@ const Referrals = () => {
   };
 
   const shareWhatsapp = () => {
-    const msg = `Hey! Try Renderme AI – AI photo editing & face swap. Sign up with my link and get started: ${referralLink}`;
+    const msg = `Hey! Try Renderme AI, AI photo editing & face swap. Sign up with my link and get started: ${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -61,7 +61,7 @@ const Referrals = () => {
       try {
         await navigator.share({
           title: "Renderme AI",
-          text: "Edit photos with AI – join with my invite link",
+          text: "Edit photos with AI, join with my invite link",
           url: referralLink,
         });
       } catch { /* user cancelled */ }
