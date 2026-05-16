@@ -6,7 +6,7 @@ export const HeroSwoosh = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute top-0 right-0 w-[70%] md:w-[55%] lg:w-[48%] h-[60vh] md:h-[85vh] max-h-[900px] overflow-hidden -z-0"
+      className="pointer-events-none absolute -top-20 -right-20 w-[120%] md:w-[95%] lg:w-[80%] h-[110vh] md:h-[130vh] max-h-[1400px] overflow-visible -z-0"
     >
       <svg
         viewBox="0 0 800 900"
