@@ -157,7 +157,7 @@ const DesignerStudio = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Designer Studio — AI Flyers, Banners & Logos"
+        title="Designer Studio | AI Flyers, Banners & Logos"
         description="Generate professional flyers, social banners, business cards and logos in seconds with AI. Premium graphic design tool for creators."
         canonical="/designer"
         noindex
