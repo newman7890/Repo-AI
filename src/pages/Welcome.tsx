@@ -71,7 +71,7 @@ const Welcome = () => {
   const ctaLabel = isAuthed ? "Open app" : "Start editing";
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen text-foreground overflow-x-hidden">
       <SEO
         title="Renderme AI | AI Photo Editor, Face Swap & Graphic Design"
         description="AI photo editor, face swap, and graphic design studio. Edit photos, swap faces, and generate flyers, posters, logos, and thumbnails from a text prompt."
