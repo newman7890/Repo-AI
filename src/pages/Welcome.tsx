@@ -34,8 +34,24 @@ const features = [
     desc: "Change backgrounds, outfits, scenery, and more with a single prompt.",
   },
   { icon: Repeat, title: "Multi-Face Swap", desc: "Swap up to 4 faces onto a single photo with cinematic realism." },
+  {
+    icon: Palette,
+    title: "Designer Studio",
+    desc: "Generate flyers, posters, logos, IG posts, and YouTube thumbnails from a prompt.",
+  },
   { icon: Zap, title: "Hyper-Realistic", desc: "85mm lens quality, natural skin, no plastic CGI feel." },
   { icon: Shield, title: "Private & Secure", desc: "Your photos are processed securely and never shared." },
+];
+
+const designerCategories = [
+  { emoji: "📄", label: "Flyers" },
+  { emoji: "🖼️", label: "Posters" },
+  { emoji: "✨", label: "Logos" },
+  { emoji: "📸", label: "IG Posts" },
+  { emoji: "📱", label: "IG Stories" },
+  { emoji: "▶️", label: "YT Thumbnails" },
+  { emoji: "💼", label: "Business Cards" },
+  { emoji: "🎯", label: "Google Ads" },
 ];
 
 const Welcome = () => {
@@ -55,8 +71,8 @@ const Welcome = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SEO
-        title="Renderme AI — AI Photo Editor & Face Swap"
-        description="Transform your photos with AI. Change backgrounds, swap faces, restore old pictures, and create hyper-realistic edits from your phone."
+        title="Renderme AI — AI Photo Editor, Face Swap & Graphic Design"
+        description="AI photo editor, face swap, and graphic design studio. Edit photos, swap faces, and generate flyers, posters, logos, and thumbnails from a text prompt."
         canonical="/"
       />
       {/* Floating purple dots */}
@@ -192,6 +208,60 @@ const Welcome = () => {
                   <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{desc}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Designer Studio */}
+        <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm mb-4">
+                  <Palette className="w-3.5 h-3.5 text-accent" />
+                  <span className="text-accent font-medium">Designer Studio</span>
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 leading-[1.05]">
+                  Not just photos —
+                  <br />
+                  <span
+                    className="bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))",
+                    }}
+                  >
+                    full graphic design.
+                  </span>
+                </h2>
+                <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6">
+                  Generate flyers, posters, logos, social posts, YouTube thumbnails, business cards, and Google ads
+                  from a single prompt. Add your brand name, headline, and CTA — the AI handles layout, typography,
+                  and styling.
+                </p>
+                <Link to={isAuthed ? "/designer" : "/auth"}>
+                  <Button
+                    size="lg"
+                    className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl"
+                  >
+                    <Palette className="w-4 h-4 mr-2" />
+                    Open Designer Studio
+                  </Button>
+                </Link>
+              </div>
+              <div className="grid grid-cols-4 gap-3 md:gap-4">
+                {designerCategories.map((c) => (
+                  <div
+                    key={c.label}
+                    className="aspect-square bg-card/50 border border-border/60 rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 hover:border-accent/40 hover:bg-card/80 transition-colors"
+                  >
+                    <span className="text-2xl md:text-3xl">{c.emoji}</span>
+                    <span className="text-[10px] md:text-xs text-muted-foreground text-center leading-tight">
+                      {c.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>

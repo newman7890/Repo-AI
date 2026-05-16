@@ -1,6 +1,6 @@
 # Renderme AI
 
-> Renderme AI is a mobile-first AI photo editor and face-swap tool. Upload a photo, type what you want, and get a hyper-realistic edit in under 30 seconds. Change backgrounds, swap faces, restyle outfits, restore old photos, and more — straight from your phone.
+> Renderme AI is a mobile-first AI photo editor, face-swap tool, and graphic design studio. Upload a photo or type a prompt and get a hyper-realistic edit — or generate flyers, posters, logos, social posts, YouTube thumbnails, business cards, and Google ads — in under 30 seconds. Straight from your phone.
 
 Renderme AI runs as an installable progressive web app at https://renderme.site. Users get 3 free edits to start; premium unlocks unlimited generations, the Designer Studio, and faster models.
 
@@ -11,6 +11,7 @@ Renderme AI runs as an installable progressive web app at https://renderme.site.
 - [Sign in / Sign up](/auth): Email + Google authentication for new and returning users.
 - [Photo Editor](/app): Main editor — upload a photo, write a prompt, and generate AI edits.
 - [Face Swap](/face-swap): Dedicated workflow for swapping faces between two photos (up to 4 faces).
+- [Designer Studio](/designer): Generate flyers, posters, logos, IG posts/stories, FB covers, X posts, LinkedIn banners, YouTube thumbnails, Google ads, and business cards from a prompt.
 - [Privacy Policy](/privacy): How Renderme AI handles uploaded images and personal data.
 
 ## Optional
