@@ -19,6 +19,7 @@ import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
+import { HeroSwoosh } from "@/components/HeroSwoosh";
 import faceSwapIcon from "@/assets/face-swap-icon.png";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
@@ -247,14 +248,15 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <HeroSwoosh variant="ambient" />
       <SEO
         title="AI Photo Editor | Edit Your Photos"
         description="Edit photos with a single prompt. Change backgrounds, outfits, lighting and more with hyper-realistic AI."
         canonical="/app"
         noindex
       />
-      <header className="px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4 border-b border-border/40">
+      <header className="relative z-10 px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4 border-b border-border/40 bg-background/70 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-1.5 md:gap-3">
           <button
             type="button"
@@ -297,7 +299,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 pb-6 md:px-6 md:pb-10 flex flex-col gap-4 md:gap-6 max-w-6xl mx-auto w-full">
+      <main className="relative z-10 flex-1 px-4 pb-6 md:px-6 md:pb-10 flex flex-col gap-4 md:gap-6 max-w-6xl mx-auto w-full">
         {/* Blocked User Banner */}
         {credits?.blocked && (
           <Alert variant="destructive" className="animate-in fade-in slide-in-from-top-2 duration-500">
