@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
+import { FloatingSwooshes } from "@/components/FloatingSwooshes";
 import { HeroSwoosh } from "@/components/HeroSwoosh";
 
 // Below-the-fold sections — split out of the initial Welcome bundle
