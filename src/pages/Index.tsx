@@ -249,7 +249,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <HeroSwoosh variant="ambient" />
+      <FloatingSwooshes count={4} />
       <SEO
         title="AI Photo Editor | Edit Your Photos"
         description="Edit photos with a single prompt. Change backgrounds, outfits, lighting and more with hyper-realistic AI."
