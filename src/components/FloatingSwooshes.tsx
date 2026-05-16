@@ -2,52 +2,49 @@ import { useMemo } from "react";
 
 /**
  * Site-wide ambient swooshes — fixed full-viewport layer of slowly drifting
- * gradient ribbons. Sits behind all content (z-0), pointer-events disabled.
- * Pairs with <FloatingDots /> for a Stripe-inspired animated background.
+ * gradient ribbons. Sits behind content, pointer-events disabled.
+ * Uses stable placements so the design is always visible on mobile too.
  */
 interface FloatingSwooshesProps {
   count?: number;
 }
 
+const swooshPlacements = [
+  { size: "clamp(300px, 96vw, 760px)", top: -9, left: 6, rotate: 24, duration: 36, delay: -8, dx: 46, dy: 30, opacity: 0.62, flip: false },
+  { size: "clamp(280px, 90vw, 700px)", top: 26, left: 48, rotate: -18, duration: 42, delay: -18, dx: -54, dy: 38, opacity: 0.5, flip: true },
+  { size: "clamp(260px, 82vw, 640px)", top: 58, left: -18, rotate: 10, duration: 48, delay: -28, dx: 58, dy: -36, opacity: 0.46, flip: false },
+  { size: "clamp(220px, 70vw, 560px)", top: 74, left: 50, rotate: 34, duration: 44, delay: -12, dx: -42, dy: -44, opacity: 0.38, flip: true },
+  { size: "clamp(240px, 76vw, 620px)", top: 8, left: -28, rotate: -30, duration: 52, delay: -35, dx: 50, dy: 48, opacity: 0.42, flip: true },
+  { size: "clamp(280px, 86vw, 720px)", top: 42, left: 8, rotate: 52, duration: 58, delay: -22, dx: -36, dy: 54, opacity: 0.34, flip: false },
+];
+
 export const FloatingSwooshes = ({ count = 5 }: FloatingSwooshesProps) => {
   const swooshes = useMemo(
     () =>
-      Array.from({ length: count }, (_, i) => {
-        const size = 40 + Math.random() * 50; // 40-90vw
-        const top = Math.random() * 90 - 10;
-        const left = Math.random() * 90 - 10;
-        const rotate = Math.random() * 360;
-        const duration = 30 + Math.random() * 30; // 30-60s
-        const delay = Math.random() * -30;
-        const dx = (Math.random() - 0.5) * 200;
-        const dy = (Math.random() - 0.5) * 200;
-        const opacity = 0.25 + Math.random() * 0.35;
-        const flip = i % 2 === 0;
-        return { i, size, top, left, rotate, duration, delay, dx, dy, opacity, flip };
-      }),
+      Array.from({ length: count }, (_, i) => ({ i, ...swooshPlacements[i % swooshPlacements.length] })),
     [count]
   );
 
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
+      className="fixed inset-0 z-[1] overflow-hidden pointer-events-none mix-blend-screen opacity-90 dark:opacity-100"
     >
       {swooshes.map((s) => (
         <div
           key={s.i}
-          className="absolute"
+          className="absolute will-change-transform"
           style={{
             top: `${s.top}%`,
             left: `${s.left}%`,
-            width: `${s.size}vw`,
+            width: s.size,
             aspectRatio: "1 / 1",
             transform: `rotate(${s.rotate}deg)`,
             opacity: s.opacity,
             animation: `drift-dot ${s.duration}s ease-in-out ${s.delay}s infinite`,
             ['--dx' as string]: `${s.dx}px`,
             ['--dy' as string]: `${s.dy}px`,
-            filter: "blur(2px)",
+            filter: "blur(0.5px) saturate(1.35)",
           }}
         >
           <svg
@@ -59,14 +56,14 @@ export const FloatingSwooshes = ({ count = 5 }: FloatingSwooshesProps) => {
             <defs>
               <linearGradient id={`fs-a-${s.i}`} x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="hsl(var(--primary) / 0)" />
-                <stop offset="35%" stopColor="hsl(var(--primary) / 0.6)" />
-                <stop offset="70%" stopColor="hsl(var(--accent) / 0.9)" />
-                <stop offset="100%" stopColor="hsl(var(--primary) / 0.8)" />
+                <stop offset="35%" stopColor="hsl(var(--primary) / 0.85)" />
+                <stop offset="70%" stopColor="hsl(var(--accent) / 0.95)" />
+                <stop offset="100%" stopColor="hsl(var(--primary-glow) / 0.8)" />
               </linearGradient>
               <linearGradient id={`fs-b-${s.i}`} x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="hsl(var(--accent) / 0)" />
-                <stop offset="50%" stopColor="hsl(var(--accent) / 0.5)" />
-                <stop offset="100%" stopColor="hsl(var(--primary) / 0.7)" />
+                <stop offset="50%" stopColor="hsl(var(--accent) / 0.75)" />
+                <stop offset="100%" stopColor="hsl(var(--primary) / 0.85)" />
               </linearGradient>
             </defs>
             <g>
