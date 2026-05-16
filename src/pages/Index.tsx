@@ -248,7 +248,7 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
       <FloatingSwooshes count={4} />
       <SEO
         title="AI Photo Editor | Edit Your Photos"
