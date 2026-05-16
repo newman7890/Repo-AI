@@ -79,7 +79,7 @@ const Welcome = () => {
       />
       {/* Site-wide ambient swooshes + floating purple dots */}
       <FloatingSwooshes count={6} />
-      <FloatingDots count={200} />
+      <FloatingDots count={60} />
 
       {/* Background glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
