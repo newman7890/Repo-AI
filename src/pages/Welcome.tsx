@@ -71,7 +71,7 @@ const Welcome = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SEO
-        title="Renderme AI — AI Photo Editor, Face Swap & Graphic Design"
+        title="Renderme AI | AI Photo Editor, Face Swap & Graphic Design"
         description="AI photo editor, face swap, and graphic design studio. Edit photos, swap faces, and generate flyers, posters, logos, and thumbnails from a text prompt."
         canonical="/"
       />
@@ -94,7 +94,7 @@ const Welcome = () => {
             type="button"
             onClick={() => window.location.reload()}
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            aria-label="Renderme AI — refresh page"
+            aria-label="Renderme AI, refresh page"
             title="Tap to refresh"
           >
             <div
@@ -222,7 +222,7 @@ const Welcome = () => {
                   <span className="text-accent font-medium">Designer Studio</span>
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 leading-[1.05]">
-                  Not just photos —
+                  Not just photos,
                   <br />
                   <span
                     className="bg-clip-text text-transparent"
@@ -236,7 +236,7 @@ const Welcome = () => {
                 </h2>
                 <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6">
                   Generate flyers, posters, logos, social posts, YouTube thumbnails, business cards, and Google ads
-                  from a single prompt. Add your brand name, headline, and CTA — the AI handles layout, typography,
+                  from a single prompt. Add your brand name, headline, and CTA. The AI handles layout, typography,
                   and styling.
                 </p>
                 <Link to={isAuthed ? "/designer" : "/auth"}>
