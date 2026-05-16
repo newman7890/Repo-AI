@@ -34,8 +34,24 @@ const features = [
     desc: "Change backgrounds, outfits, scenery, and more with a single prompt.",
   },
   { icon: Repeat, title: "Multi-Face Swap", desc: "Swap up to 4 faces onto a single photo with cinematic realism." },
+  {
+    icon: Palette,
+    title: "Designer Studio",
+    desc: "Generate flyers, posters, logos, IG posts, and YouTube thumbnails from a prompt.",
+  },
   { icon: Zap, title: "Hyper-Realistic", desc: "85mm lens quality, natural skin, no plastic CGI feel." },
   { icon: Shield, title: "Private & Secure", desc: "Your photos are processed securely and never shared." },
+];
+
+const designerCategories = [
+  { emoji: "📄", label: "Flyers" },
+  { emoji: "🖼️", label: "Posters" },
+  { emoji: "✨", label: "Logos" },
+  { emoji: "📸", label: "IG Posts" },
+  { emoji: "📱", label: "IG Stories" },
+  { emoji: "▶️", label: "YT Thumbnails" },
+  { emoji: "💼", label: "Business Cards" },
+  { emoji: "🎯", label: "Google Ads" },
 ];
 
 const Welcome = () => {
