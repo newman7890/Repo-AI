@@ -54,6 +54,7 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SEO title="Reset Password" description="Set a new password for your Renderme AI account." canonical="/reset-password" noindex />
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2">
