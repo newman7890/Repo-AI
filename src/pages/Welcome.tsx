@@ -351,9 +351,9 @@ const Welcome = () => {
                   <h3 className="font-semibold text-base md:text-lg">Good prompts</h3>
                 </div>
                 <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                  <li>• "Change my outfit to a black tuxedo, keep my face the same, studio lighting."</li>
-                  <li>• "Place me in a snowy Tokyo street at night, cinematic 85mm shot."</li>
-                  <li>• "Professional LinkedIn headshot, navy blazer, soft office background."</li>
+                  <li>"Change my outfit to a black tuxedo, keep my face the same, studio lighting."</li>
+                  <li>"Place me in a snowy Tokyo street at night, cinematic 85mm shot."</li>
+                  <li>"Professional LinkedIn headshot, navy blazer, soft office background."</li>
                 </ul>
               </div>
               <div className="bg-gradient-to-br from-destructive/10 to-transparent border border-destructive/20 rounded-2xl p-5 md:p-6">
@@ -364,9 +364,9 @@ const Welcome = () => {
                   <h3 className="font-semibold text-base md:text-lg">Avoid these</h3>
                 </div>
                 <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                  <li>• Vague prompts: "make it better" or "cool photo"</li>
-                  <li>• Too many ideas at once, stick to one transformation</li>
-                  <li>• NSFW or adult content (not allowed)</li>
+                  <li>Vague prompts: "make it better" or "cool photo"</li>
+                  <li>Too many ideas at once, stick to one transformation</li>
+                  <li>NSFW or adult content (not allowed)</li>
                 </ul>
               </div>
             </div>
