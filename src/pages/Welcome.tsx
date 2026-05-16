@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { FloatingDots } from "@/components/FloatingDots";
+import { HeroSwoosh } from "@/components/HeroSwoosh";
 
 // Below-the-fold sections — split out of the initial Welcome bundle
 const InstallStepsCarousel = lazy(() =>
@@ -132,8 +133,9 @@ const Welcome = () => {
 
       <main>
         {/* Hero */}
-        <section className="px-4 md:px-8 pt-16 md:pt-28 pb-16 md:pb-24">
-          <div className="max-w-5xl mx-auto text-center space-y-6 md:space-y-8">
+        <section className="relative px-4 md:px-8 pt-16 md:pt-28 pb-16 md:pb-24 overflow-hidden">
+          <HeroSwoosh />
+          <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 md:space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span className="text-primary-glow font-medium">AI powered photo magic</span>
