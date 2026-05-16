@@ -71,8 +71,8 @@ const Welcome = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SEO
-        title="Renderme AI — AI Photo Editor & Face Swap"
-        description="Transform your photos with AI. Change backgrounds, swap faces, restore old pictures, and create hyper-realistic edits from your phone."
+        title="Renderme AI — AI Photo Editor, Face Swap & Graphic Design"
+        description="AI photo editor, face swap, and graphic design studio. Edit photos, swap faces, and generate flyers, posters, logos, and thumbnails from a text prompt."
         canonical="/"
       />
       {/* Floating purple dots */}
