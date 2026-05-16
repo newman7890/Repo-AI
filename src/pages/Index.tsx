@@ -19,7 +19,7 @@ import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
-import { HeroSwoosh } from "@/components/HeroSwoosh";
+import { FloatingSwooshes } from "@/components/FloatingSwooshes";
 import faceSwapIcon from "@/assets/face-swap-icon.png";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
@@ -249,7 +249,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <HeroSwoosh variant="ambient" />
+      <FloatingSwooshes count={4} />
       <SEO
         title="AI Photo Editor | Edit Your Photos"
         description="Edit photos with a single prompt. Change backgrounds, outfits, lighting and more with hyper-realistic AI."
