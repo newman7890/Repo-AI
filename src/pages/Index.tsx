@@ -19,7 +19,7 @@ import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
-import { HeroSwoosh } from "@/components/HeroSwoosh";
+import { FloatingSwooshes } from "@/components/FloatingSwooshes";
 import faceSwapIcon from "@/assets/face-swap-icon.png";
 
 import { useEditHistory } from "@/hooks/useEditHistory";
