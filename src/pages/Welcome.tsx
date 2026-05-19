@@ -100,12 +100,7 @@ const Welcome = () => {
             aria-label="Renderme AI, refresh page"
             title="Tap to refresh"
           >
-            <div
-              className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Wand2 className="w-4 h-4 text-white" />
-            </div>
+            <img src="/app-logo.png" alt="Renderme AI logo" width={36} height={36} className="w-8 h-8 md:w-9 md:h-9 object-contain" />
             <span className="font-bold text-base md:text-lg tracking-tight">Renderme AI</span>
           </button>
           <div className="flex items-center gap-2 md:gap-3">
@@ -439,12 +434,7 @@ const Welcome = () => {
       <footer className="px-4 md:px-8 py-8 md:py-10 border-t border-border/40">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs md:text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <div
-              className="w-6 h-6 rounded-md flex items-center justify-center"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Wand2 className="w-3 h-3 text-white" />
-            </div>
+            <img src="/app-logo.png" alt="Renderme AI logo" width={24} height={24} className="w-6 h-6 object-contain" />
             <span>© {new Date().getFullYear()} Renderme AI. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-4">
