@@ -41,6 +41,7 @@ const App = () => (
               <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/face-swap" element={<ProtectedRoute><FaceSwap /></ProtectedRoute>} />
               <Route path="/designer" element={<ProtectedRoute><DesignerStudio /></ProtectedRoute>} />
+              <Route path="/video-studio" element={<ProtectedRoute><VideoStudio /></ProtectedRoute>} />
               <Route path="/referrals" element={<AdminRoute><Referrals /></AdminRoute>} />
               <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
