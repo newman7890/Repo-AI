@@ -13,6 +13,7 @@ import AdminRoute from "./components/AdminRoute";
 const Index = lazy(() => import("./pages/Index"));
 const FaceSwap = lazy(() => import("./pages/FaceSwap"));
 const DesignerStudio = lazy(() => import("./pages/DesignerStudio"));
+const VideoStudio = lazy(() => import("./pages/VideoStudio"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
