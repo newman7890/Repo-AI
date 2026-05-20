@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Loader2, Wand2, Repeat, Zap, Palette } from "lucide-react";
+import { Sparkles, Loader2, Wand2, Repeat, Zap, Palette, Film } from "lucide-react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -279,6 +279,16 @@ const Index = () => {
             >
               <img src={faceSwapIcon} alt="" width={20} height={20} className="w-5 h-5 md:w-6 md:h-6 object-contain" />
               <span className="hidden sm:inline text-xs font-semibold">Face Swap</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/video-studio")}
+              className="rounded-lg h-8 md:h-9 gap-1.5 px-2 md:px-2.5 border-primary/40 hover:bg-primary/10"
+              title="Video Studio"
+            >
+              <Film className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+              <span className="hidden sm:inline text-xs font-semibold">Video</span>
             </Button>
             <Button
               variant="outline"
