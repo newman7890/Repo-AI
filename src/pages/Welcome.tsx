@@ -91,7 +91,7 @@ const Welcome = () => {
       </div>
 
       {/* Nav */}
-      <header className="px-4 md:px-8 py-4 md:py-6 border-b border-white/10 backdrop-blur-xl sticky top-0 z-50 bg-background/30 supports-[backdrop-filter]:bg-background/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      <header className="px-4 md:px-8 py-4 md:py-6 border-b border-white/10 backdrop-blur-2xl sticky top-0 z-50 bg-white/5 supports-[backdrop-filter]:bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
         <nav className="max-w-6xl mx-auto flex items-center justify-between">
           <button
             type="button"
