@@ -154,7 +154,7 @@ const Welcome = () => {
               Change backgrounds, swap faces, restyle outfits, and create cinematic portraits, all from a simple text
               prompt. No editing skills required.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-start justify-start gap-3 pt-2">
               <Link to={ctaTarget}>
                 <Button
                   size="lg"
