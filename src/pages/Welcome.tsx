@@ -77,9 +77,8 @@ const Welcome = () => {
         description="AI photo editor, face swap, and graphic design studio. Edit photos, swap faces, and generate flyers, posters, logos, and thumbnails from a text prompt."
         canonical="/"
       />
-      {/* Site-wide ambient swooshes + floating purple dots */}
+      {/* Site-wide ambient swooshes */}
       <FloatingSwooshes count={6} />
-      <FloatingDots count={60} />
 
       {/* Background glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
