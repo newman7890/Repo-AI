@@ -150,7 +150,7 @@ const Welcome = () => {
                 just words.
               </span>
             </h1>
-            <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
               Change backgrounds, swap faces, restyle outfits, and create cinematic portraits, all from a simple text
               prompt. No editing skills required.
             </p>
