@@ -214,9 +214,9 @@ const AdminDashboard = () => {
             {userStats.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-6">No usage data yet. Usage will appear here after users make AI requests.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-80 overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead>
+                  <thead className="sticky top-0 bg-card">
                     <tr className="border-b border-border text-muted-foreground text-xs">
                       <th className="text-left py-2 pr-4">User ID</th>
                       <th className="text-center py-2 px-2">Edits</th>
