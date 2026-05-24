@@ -131,7 +131,7 @@ const Welcome = () => {
         {/* Hero */}
         <section className="relative z-20 px-4 md:px-8 pt-16 md:pt-28 pb-16 md:pb-24 overflow-hidden">
           <HeroSwoosh />
-          <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 md:space-y-8">
+          <div className="relative z-10 max-w-5xl mx-auto text-left space-y-6 md:space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span className="text-primary-glow font-medium">AI powered photo magic</span>
@@ -150,11 +150,11 @@ const Welcome = () => {
                 just words.
               </span>
             </h1>
-            <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
               Change backgrounds, swap faces, restyle outfits, and create cinematic portraits, all from a simple text
               prompt. No editing skills required.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-start justify-start gap-3 pt-2">
               <Link to={ctaTarget}>
                 <Button
                   size="lg"
@@ -175,7 +175,7 @@ const Welcome = () => {
                 </Button>
               </a>
             </div>
-            <div className="mx-auto max-w-xl mt-2 inline-flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-left">
+            <div className="max-w-xl mt-2 inline-flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-left">
               <Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" />
               <p className="text-xs md:text-sm text-foreground/90 leading-relaxed">
                 <span className="font-semibold text-accent">Heads up:</span> Free tokens and trial edits are temporarily
