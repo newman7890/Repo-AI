@@ -48,46 +48,52 @@ const AdminNotifications = () => {
 
     setPushOn(isPushEnabled());
 
-    const channel = supabase
-      .channel("admin_notifications_realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "admin_notifications" },
-        (payload) => {
-          const n = payload.new as AdminNotification;
-          setNotifications((prev) => [n, ...prev].slice(0, 50));
+    // Poll for new notifications instead of using Realtime, since admin_notifications
+    // is no longer in the realtime publication (to prevent broadcasting sensitive
+    // user_id/metadata at the replication level).
+    const seenIds = new Set<string>();
+    let firstPoll = true;
 
-          if (!initializedRef.current) return;
+    const poll = async () => {
+      const { data, error } = await supabase
+        .from("admin_notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error || !data) return;
 
-          const isPayment = n.type === "payment" || /payment|paid|premium/i.test(n.title);
-          if (isPayment) {
-            toast.success(`💰 ${n.title}`, { description: n.message, duration: 8000 });
-            playCashRegister();
-          } else {
-            toast(n.title, { description: n.message });
-          }
+      const rows = data as AdminNotification[];
+      setNotifications(rows);
 
-          showAdminNotification(n.title, n.message, `admin-${n.id}`);
+      if (firstPoll) {
+        rows.forEach((n) => seenIds.add(n.id));
+        firstPoll = false;
+        return;
+      }
+
+      for (const n of rows) {
+        if (seenIds.has(n.id)) continue;
+        seenIds.add(n.id);
+
+        const isPayment = n.type === "payment" || /payment|paid|premium/i.test(n.title);
+        if (isPayment) {
+          toast.success(`💰 ${n.title}`, { description: n.message, duration: 8000 });
+          playCashRegister();
+        } else {
+          toast(n.title, { description: n.message });
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "admin_notifications" },
-        (payload) => {
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === (payload.new as AdminNotification).id ? (payload.new as AdminNotification) : n))
-          );
-        }
-      )
-      .subscribe();
+        showAdminNotification(n.title, n.message, `admin-${n.id}`);
+      }
+    };
 
+    const interval = setInterval(poll, 15000);
     const t = setTimeout(() => {
       initializedRef.current = true;
     }, 1500);
 
     return () => {
       clearTimeout(t);
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
 
