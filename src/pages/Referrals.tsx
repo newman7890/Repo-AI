@@ -32,8 +32,8 @@ const Referrals = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("referrals")
+      const { data } = await (supabase as any)
+        .from("my_referrals")
         .select("id, reward_amount, status, plan_id, created_at")
         .order("created_at", { ascending: false })
         .limit(50);
