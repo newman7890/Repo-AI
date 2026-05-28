@@ -531,7 +531,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      my_referrals: {
+        Row: {
+          approved_at: string | null
+          created_at: string | null
+          id: string | null
+          plan_id: string | null
+          referrer_id: string | null
+          reward_amount: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          plan_id?: string | null
+          referrer_id?: string | null
+          reward_amount?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          plan_id?: string | null
+          referrer_id?: string | null
+          reward_amount?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_pending_reward: {
