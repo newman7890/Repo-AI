@@ -149,8 +149,13 @@ const FaceSwap = () => {
   const [extraInstructions, setExtraInstructions] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [cropTarget, setCropTarget] = useState<{ slotId: string; image: string } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const editHistory = useEditHistory();
+  const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
+  const currentEdit = editHistory.current;
   const navigate = useNavigate();
   const editHistory = useEditHistory();
   const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
