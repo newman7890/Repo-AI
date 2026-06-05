@@ -56,9 +56,10 @@ interface ImageSlotProps {
   label: string;
   description: string;
   step: number;
+  onCrop?: () => void;
 }
 
-const ImageSlot = ({ image, onSelect, onClear, label, description, step }: ImageSlotProps) => {
+const ImageSlot = ({ image, onSelect, onClear, label, description, step, onCrop }: ImageSlotProps) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +86,15 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
         >
           <X className="w-3.5 h-3.5" />
         </button>
+        {onCrop && (
+          <button
+            onClick={onCrop}
+            aria-label={`Crop ${label}`}
+            className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-6 h-6 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            <Crop className="w-3.5 h-3.5" />
+          </button>
+        )}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
           <p className="text-white text-[10px] font-medium">{label}</p>
         </div>
