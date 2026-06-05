@@ -14,6 +14,7 @@ const Index = lazy(() => import("./pages/Index"));
 const FaceSwap = lazy(() => import("./pages/FaceSwap"));
 const DesignerStudio = lazy(() => import("./pages/DesignerStudio"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const FaceTransplant = lazy(() => import("./pages/FaceTransplant"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/referrals" element={<AdminRoute><Referrals /></AdminRoute>} />
               <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/face-transplant" element={<AdminRoute><FaceTransplant /></AdminRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

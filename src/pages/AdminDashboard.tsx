@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, BarChart3, Users, Zap, Clock } from "lucide-react";
+import { ArrowLeft, BarChart3, Users, Zap, Clock, ScanFace } from "lucide-react";
 import AdminUserManagement from "@/components/AdminUserManagement";
 import AdminNotifications from "@/components/AdminNotifications";
 import AdminShowcaseManager from "@/components/AdminShowcaseManager";
@@ -152,6 +152,11 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <h1 className="text-lg md:text-xl font-bold text-foreground font-display">Usage Dashboard</h1>
+          </div>
+          <div className="ml-auto">
+            <Button size="sm" variant="secondary" onClick={() => navigate("/admin/face-transplant")}>
+              <ScanFace className="w-4 h-4 mr-1.5" /> Face Transplant
+            </Button>
           </div>
         </div>
       </header>
