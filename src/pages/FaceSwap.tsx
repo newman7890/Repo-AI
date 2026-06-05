@@ -409,10 +409,11 @@ const FaceSwap = () => {
                     <div key={slot.id} className="relative">
                       <ImageSlot
                         image={slot.image}
-                        onSelect={(img) => updateFaceSlot(slot.id, img)}
+                        onSelect={(img) => handleFaceSelected(slot.id, img)}
                         onClear={() => updateFaceSlot(slot.id, null)}
+                        onCrop={() => handleRecrop(slot.id)}
                         label={`Face ${idx + 1}`}
-                        description="Face to swap in"
+                        description="Crop just the face"
                         step={idx + 2}
                       />
                       {faceSlots.length > 1 && !slot.image && (
