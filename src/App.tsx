@@ -14,6 +14,7 @@ const Index = lazy(() => import("./pages/Index"));
 const FaceSwap = lazy(() => import("./pages/FaceSwap"));
 const DesignerStudio = lazy(() => import("./pages/DesignerStudio"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const FaceTransplant = lazy(() => import("./pages/FaceTransplant"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
