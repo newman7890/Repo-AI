@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
-import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2, AlertCircle, Crop } from "lucide-react";
 import faceSwapIcon from "@/assets/face-swap-icon.png";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
+import FaceCropDialog from "@/components/FaceCropDialog";
 
 type Step = "source" | "faces" | "review";
 
@@ -55,9 +56,10 @@ interface ImageSlotProps {
   label: string;
   description: string;
   step: number;
+  onCrop?: () => void;
 }
 
-const ImageSlot = ({ image, onSelect, onClear, label, description, step }: ImageSlotProps) => {
+const ImageSlot = ({ image, onSelect, onClear, label, description, step, onCrop }: ImageSlotProps) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -84,6 +86,15 @@ const ImageSlot = ({ image, onSelect, onClear, label, description, step }: Image
         >
           <X className="w-3.5 h-3.5" />
         </button>
+        {onCrop && (
+          <button
+            onClick={onCrop}
+            aria-label={`Crop ${label}`}
+            className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-foreground rounded-full w-6 h-6 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            <Crop className="w-3.5 h-3.5" />
+          </button>
+        )}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
           <p className="text-white text-[10px] font-medium">{label}</p>
         </div>
@@ -138,6 +149,7 @@ const FaceSwap = () => {
   const [extraInstructions, setExtraInstructions] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [cropTarget, setCropTarget] = useState<{ slotId: string; image: string } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -161,6 +173,28 @@ const FaceSwap = () => {
 
   const updateFaceSlot = (id: string, image: string | null) => {
     setFaceSlots((prev) => prev.map((s) => (s.id === id ? { ...s, image } : s)));
+  };
+
+  const handleFaceSelected = (id: string, image: string) => {
+    // Stash image and open crop dialog instead of committing immediately
+    setCropTarget({ slotId: id, image });
+  };
+
+  const handleCropConfirm = (cropped: string) => {
+    if (!cropTarget) return;
+    updateFaceSlot(cropTarget.slotId, cropped);
+    setCropTarget(null);
+  };
+
+  const handleCropSkip = () => {
+    if (!cropTarget) return;
+    updateFaceSlot(cropTarget.slotId, cropTarget.image);
+    setCropTarget(null);
+  };
+
+  const handleRecrop = (id: string) => {
+    const slot = faceSlots.find((s) => s.id === id);
+    if (slot?.image) setCropTarget({ slotId: id, image: slot.image });
   };
 
   const handleSwap = async () => {
@@ -375,10 +409,11 @@ const FaceSwap = () => {
                     <div key={slot.id} className="relative">
                       <ImageSlot
                         image={slot.image}
-                        onSelect={(img) => updateFaceSlot(slot.id, img)}
+                        onSelect={(img) => handleFaceSelected(slot.id, img)}
                         onClear={() => updateFaceSlot(slot.id, null)}
+                        onCrop={() => handleRecrop(slot.id)}
                         label={`Face ${idx + 1}`}
-                        description="Face to swap in"
+                        description="Crop just the face"
                         step={idx + 2}
                       />
                       {faceSlots.length > 1 && !slot.image && (
@@ -456,6 +491,12 @@ const FaceSwap = () => {
         )}
       </main>
       <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
+      <FaceCropDialog
+        open={!!cropTarget}
+        image={cropTarget?.image ?? null}
+        onCancel={handleCropSkip}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   );
 };
