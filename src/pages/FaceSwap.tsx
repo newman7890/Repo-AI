@@ -175,6 +175,28 @@ const FaceSwap = () => {
     setFaceSlots((prev) => prev.map((s) => (s.id === id ? { ...s, image } : s)));
   };
 
+  const handleFaceSelected = (id: string, image: string) => {
+    // Stash image and open crop dialog instead of committing immediately
+    setCropTarget({ slotId: id, image });
+  };
+
+  const handleCropConfirm = (cropped: string) => {
+    if (!cropTarget) return;
+    updateFaceSlot(cropTarget.slotId, cropped);
+    setCropTarget(null);
+  };
+
+  const handleCropSkip = () => {
+    if (!cropTarget) return;
+    updateFaceSlot(cropTarget.slotId, cropTarget.image);
+    setCropTarget(null);
+  };
+
+  const handleRecrop = (id: string) => {
+    const slot = faceSlots.find((s) => s.id === id);
+    if (slot?.image) setCropTarget({ slotId: id, image: slot.image });
+  };
+
   const handleSwap = async () => {
     if (credits?.blocked) {
       toast({ title: "Account Blocked", description: "Your account has been blocked. Please contact support.", variant: "destructive" });
