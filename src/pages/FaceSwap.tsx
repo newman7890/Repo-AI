@@ -491,6 +491,12 @@ const FaceSwap = () => {
         )}
       </main>
       <PaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
+      <FaceCropDialog
+        open={!!cropTarget}
+        image={cropTarget?.image ?? null}
+        onCancel={handleCropSkip}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   );
 };
