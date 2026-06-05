@@ -44,6 +44,7 @@ const App = () => (
               <Route path="/referrals" element={<AdminRoute><Referrals /></AdminRoute>} />
               <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/face-transplant" element={<AdminRoute><FaceTransplant /></AdminRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
