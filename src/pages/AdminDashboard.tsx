@@ -153,6 +153,11 @@ const AdminDashboard = () => {
             <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             <h1 className="text-lg md:text-xl font-bold text-foreground font-display">Usage Dashboard</h1>
           </div>
+          <div className="ml-auto">
+            <Button size="sm" variant="secondary" onClick={() => navigate("/admin/face-transplant")}>
+              <ScanFace className="w-4 h-4 mr-1.5" /> Face Transplant
+            </Button>
+          </div>
         </div>
       </header>
 
