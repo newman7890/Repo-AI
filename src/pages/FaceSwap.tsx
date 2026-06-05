@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { getAuthHeaders } from "@/lib/auth-headers";
 import { toast } from "sonner";
-import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Repeat, Upload, Camera, ArrowLeft, Sparkles, X, ArrowRight, Plus, Trash2, AlertCircle, Crop } from "lucide-react";
 import faceSwapIcon from "@/assets/face-swap-icon.png";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import PaywallModal from "@/components/PaywallModal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import UserMenu from "@/components/UserMenu";
 import { SEO } from "@/components/SEO";
+import FaceCropDialog from "@/components/FaceCropDialog";
 
 type Step = "source" | "faces" | "review";
 
