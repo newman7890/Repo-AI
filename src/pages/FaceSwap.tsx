@@ -156,10 +156,6 @@ const FaceSwap = () => {
   const editHistory = useEditHistory();
   const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
   const currentEdit = editHistory.current;
-  const navigate = useNavigate();
-  const editHistory = useEditHistory();
-  const { credits, loading: creditsLoading, refresh: refreshCredits } = useUserCredits();
-  const currentEdit = editHistory.current;
 
   const filledFaces = faceSlots.filter((s) => s.image !== null);
   const allFacesFilled = faceSlots.every((s) => s.image !== null);
