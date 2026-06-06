@@ -107,8 +107,12 @@ const FaceTransplant = () => {
         headers,
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const img = (data as any)?.resultImage;
+      const d = data as any;
+      if (d?.fallback || (d?.error && !d?.resultImage)) {
+        toast.error(d?.error || "Could not generate image");
+        return;
+      }
+      const img = d?.resultImage;
       if (!img) throw new Error("No image returned");
       setResult(img);
       toast.success("Face transplanted");
