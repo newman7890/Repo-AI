@@ -128,54 +128,88 @@ serve(async (req) => {
       });
     }
 
-    const model = "google/gemini-3-pro-image-preview";
     const prompt = buildTransplantPrompt((notes || "").trim());
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: sourceImage } },
-            { type: "image_url", image_url: { url: targetImage } },
-          ],
-        }],
-        modalities: ["image", "text"],
-      }),
-    });
+    // Try a tiered list of image models; some prompts/images are rejected by one
+    // model but accepted by another. First successful image wins.
+    const candidateModels = [
+      "google/gemini-3-pro-image-preview",
+      "google/gemini-3.1-flash-image-preview",
+      "google/gemini-2.5-flash-image",
+    ];
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText.slice(0, 200));
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "AI service is busy. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Cloud workspace." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "Failed to transplant face. Please try again." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    let generatedImage: string | null = null;
+    let usedModel = candidateModels[0];
+    let lastStatus = 0;
+    let lastErr = "";
+
+    for (const model of candidateModels) {
+      usedModel = model;
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: sourceImage } },
+              { type: "image_url", image_url: { url: targetImage } },
+            ],
+          }],
+          modalities: ["image", "text"],
+        }),
       });
+
+      if (!response.ok) {
+        lastStatus = response.status;
+        lastErr = (await response.text().catch(() => "")).slice(0, 300);
+        console.error(`AI gateway error (${model}):`, response.status, lastErr);
+        // 402/429 are terminal — bail immediately.
+        if (response.status === 402 || response.status === 429) break;
+        continue;
+      }
+
+      const data = await response.json().catch(() => null) as any;
+      // Try several known shapes for the returned image.
+      const img =
+        data?.choices?.[0]?.message?.images?.[0]?.image_url?.url ??
+        data?.choices?.[0]?.message?.images?.[0]?.url ??
+        (Array.isArray(data?.choices?.[0]?.message?.content)
+          ? data.choices[0].message.content.find((c: any) => c?.type === "image_url")?.image_url?.url
+          : null);
+
+      if (img) {
+        generatedImage = img;
+        break;
+      }
+      console.warn(`Model ${model} returned no image. Trying next.`);
     }
 
-    const data = await response.json();
-    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     if (!generatedImage) {
-      return new Response(JSON.stringify({ error: "No image was generated. Try different images." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (lastStatus === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Cloud workspace.", fallback: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (lastStatus === 429) {
+        return new Response(JSON.stringify({ error: "AI service is busy. Please try again shortly.", fallback: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({
+        error: "No image was generated. The AI may have rejected the inputs (faces not detected, content policy, or unsupported image). Try clearer, front-facing photos.",
+        fallback: true,
+      }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const model = usedModel;
 
     try {
       await supabaseAdmin.from("ai_usage_logs").insert({
