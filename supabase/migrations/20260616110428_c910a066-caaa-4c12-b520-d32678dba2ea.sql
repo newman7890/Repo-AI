@@ -1,0 +1,1 @@
+CREATE POLICY "Users can view their own referrals" ON public.referrals FOR SELECT TO authenticated USING (referrer_id = auth.uid() OR referred_user_id = auth.uid());
