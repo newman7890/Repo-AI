@@ -31,6 +31,9 @@ export async function trackSliderEvent(
   fired.add(key);
 
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
     await supabase.from("slider_events").insert({
       example_id: exampleId,
       event_type: eventType,

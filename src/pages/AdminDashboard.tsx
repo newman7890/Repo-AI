@@ -63,13 +63,9 @@ const AdminDashboard = () => {
       return;
     }
 
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin");
+    const { data: isCurrentUserAdmin, error: adminCheckError } = await supabase.rpc("is_current_user_admin");
 
-    if (!roles || roles.length === 0) {
+    if (adminCheckError || isCurrentUserAdmin !== true) {
       setIsAdmin(false);
       setLoading(false);
       return;

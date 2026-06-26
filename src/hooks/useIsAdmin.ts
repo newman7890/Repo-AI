@@ -10,13 +10,9 @@ export function useIsAdmin() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin");
+      const { data } = await supabase.rpc("is_current_user_admin");
 
-      setIsAdmin(!!(data && data.length > 0));
+      setIsAdmin(data === true);
       setLoading(false);
     };
     check();

@@ -599,6 +599,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_current_user_admin: { Args: never; Returns: boolean }
       mark_email_verified: { Args: never; Returns: Json }
       mark_phone_verified: { Args: { p_phone: string }; Returns: Json }
       mark_withdrawal_failed: {
