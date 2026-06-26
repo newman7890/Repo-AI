@@ -21,12 +21,8 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
       }
       // Defer the role check so onAuthStateChange doesn't deadlock
       setTimeout(async () => {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", s.user.id)
-          .eq("role", "admin");
-        setIsAdmin(!error && !!(data && data.length > 0));
+        const { data, error } = await supabase.rpc("is_current_user_admin");
+        setIsAdmin(!error && data === true);
       }, 0);
     });
 
