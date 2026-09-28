@@ -5,8 +5,11 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
+export default defineConfig(({ mode }) => {
+  const base = process.env.VITE_BASE_PATH || (process.env.GITHUB_PAGES === "true" ? "/Repo-AI/" : "/");
+  return {
+    base,
+    server: {
     host: "::",
     port: 8080,
     hmr: {
@@ -71,4 +74,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-}));
+};
+});
+
