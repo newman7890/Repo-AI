@@ -73,7 +73,7 @@ const Welcome = () => {
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden">
       <SEO
-        title="Renderme AI | AI Photo Editor, Face Swap & Graphic Design"
+        title="Repo AI | AI Photo Editor, Face Swap & Graphic Design"
         description="AI photo editor, face swap, and graphic design studio. Edit photos, swap faces, and generate flyers, posters, logos, and thumbnails from a text prompt."
         canonical="/"
       />
@@ -90,34 +90,34 @@ const Welcome = () => {
       </div>
 
       {/* Nav */}
-      <header className="px-4 md:px-8 py-2 md:py-2.5 border-b border-white/10 backdrop-blur-2xl sticky top-0 z-50 bg-white/5 supports-[backdrop-filter]:bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+      <header className="px-6 md:px-12 py-3.5 md:py-4 border-b border-white/10 backdrop-blur-2xl sticky top-0 z-50 bg-background/75 supports-[backdrop-filter]:bg-background/60 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
         <nav className="max-w-6xl mx-auto flex items-center justify-between">
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            aria-label="Renderme AI, refresh page"
+            className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+            aria-label="Repo AI, refresh page"
             title="Tap to refresh"
           >
-            <img src="/app-logo.png" alt="Renderme AI logo" width={36} height={36} className="w-8 h-8 md:w-9 md:h-9 object-contain" />
-            <span className="font-bold text-base md:text-lg tracking-tight">Renderme AI</span>
+            <img src="/app-logo.png" alt="Repo AI logo" width={36} height={36} className="w-8 h-8 md:w-9 md:h-9 object-contain" />
+            <span className="font-bold text-lg md:text-xl tracking-tight">Repo AI</span>
           </button>
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-3 md:gap-4">
             {isAuthed ? (
               <Link to="/app">
-                <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90">
+                <Button size="sm" className="px-5 text-xs md:text-sm bg-primary hover:bg-primary/90 rounded-xl">
                   Open app
                 </Button>
               </Link>
             ) : (
               <>
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="text-xs md:text-sm">
+                  <Button variant="ghost" size="sm" className="text-xs md:text-sm hover:bg-white/5 rounded-xl">
                     Sign in
                   </Button>
                 </Link>
                 <Link to="/auth">
-                  <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90">
+                  <Button size="sm" className="px-5 text-xs md:text-sm bg-primary hover:bg-primary/90 rounded-xl">
                     Get started
                   </Button>
                 </Link>
@@ -127,16 +127,12 @@ const Welcome = () => {
         </nav>
       </header>
 
-      <main>
+      <main className="space-y-4 md:space-y-8">
         {/* Hero */}
-        <section className="relative z-20 px-4 md:px-8 pt-16 md:pt-28 pb-16 md:pb-24 overflow-hidden">
+        <section className="relative z-20 px-6 md:px-12 pt-20 md:pt-32 pb-20 md:pb-32 overflow-hidden">
           <HeroSwoosh />
-          <div className="relative z-10 max-w-5xl mx-auto text-left space-y-6 md:space-y-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-primary-glow font-medium">AI powered photo magic</span>
-            </div>
-            <h1 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05] animate-text-float">
+          <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center gap-6 md:gap-8">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.15] md:leading-[1.1] animate-text-float">
               Edit any photo
               <br />
               with{" "}
@@ -150,17 +146,17 @@ const Welcome = () => {
                 just words.
               </span>
             </h1>
-            <p className="text-base md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+            <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Change backgrounds, swap faces, restyle outfits, and create cinematic portraits, all from a simple text
               prompt. No editing skills required.
             </p>
-            <div className="flex flex-col sm:flex-row items-start justify-start gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2 w-full">
               <Link to={ctaTarget}>
                 <Button
                   size="lg"
-                  className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl"
+                  className="h-13 md:h-14 px-8 text-base md:text-lg bg-primary hover:bg-primary/90 rounded-2xl shadow-lg hover:shadow-primary/20 transition-all"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Sparkles className="w-5 h-5 mr-2" />
                   {ctaLabel}
                 </Button>
               </Link>
@@ -168,14 +164,14 @@ const Welcome = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base rounded-2xl"
+                  className="h-13 md:h-14 px-8 text-base md:text-lg rounded-2xl border-border/80 hover:bg-white/5 transition-all"
                 >
-                  <Smartphone className="w-4 h-4 mr-2" />
-                  Install on your phone
+                  <Smartphone className="w-5 h-5 mr-2" />
+                  How to install on your phone
                 </Button>
               </a>
             </div>
-            <div className="max-w-xl mt-2 inline-flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-left">
+            <div className="max-w-xl mx-auto mt-4 inline-flex items-start gap-3 rounded-2xl border border-accent/30 bg-accent/10 p-4 md:p-5 text-left">
               <Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" />
               <p className="text-xs md:text-sm text-foreground/90 leading-relaxed">
                 <span className="font-semibold text-accent">Heads up:</span> Free tokens and trial edits are temporarily
@@ -187,23 +183,23 @@ const Welcome = () => {
         </section>
 
         {/* Features grid */}
-        <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+        <section className="px-6 md:px-12 py-20 md:py-32 border-t border-border/40">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12 md:mb-16">
+            <div className="text-center mb-16 md:mb-20">
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Everything you need</h2>
-              <p className="text-base md:text-lg text-muted-foreground">A complete creative studio in your pocket.</p>
+              <p className="text-base md:text-xl text-muted-foreground">A complete creative studio in your pocket.</p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {features.map(({ icon: Icon, title, desc }) => (
                 <div
                   key={title}
-                  className="bg-card/50 border border-border/60 rounded-2xl p-5 md:p-6 hover:border-primary/40 transition-colors"
+                  className="bg-card/40 border border-border/60 rounded-3xl p-6 md:p-8 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 shadow-sm"
                 >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                    <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-base md:text-lg mb-2">{title}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                  <h3 className="font-semibold text-lg md:text-xl mb-3">{title}</h3>
+                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{desc}</p>
                 </div>
               ))}
             </div>
@@ -211,15 +207,15 @@ const Welcome = () => {
         </section>
 
         {/* Designer Studio */}
-        <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+        <section className="px-6 md:px-12 py-20 md:py-32 border-t border-border/40">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm mb-4">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm">
                   <Palette className="w-3.5 h-3.5 text-accent" />
                   <span className="text-accent font-medium">Designer Studio</span>
                 </div>
-                <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 leading-[1.05]">
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.15]">
                   Not just photos,
                   <br />
                   <span
@@ -232,29 +228,31 @@ const Welcome = () => {
                     full graphic design.
                   </span>
                 </h2>
-                <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6">
+                <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
                   Generate flyers, posters, logos, social posts, YouTube thumbnails, business cards, and Google ads
                   from a single prompt. Add your brand name, headline, and CTA. The AI handles layout, typography,
                   and styling.
                 </p>
-                <Link to={isAuthed ? "/designer" : "/auth"}>
-                  <Button
-                    size="lg"
-                    className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl"
-                  >
-                    <Palette className="w-4 h-4 mr-2" />
-                    Open Designer Studio
-                  </Button>
-                </Link>
+                <div className="pt-2">
+                  <Link to={isAuthed ? "/designer" : "/auth"}>
+                    <Button
+                      size="lg"
+                      className="h-13 md:h-14 px-8 text-base bg-primary hover:bg-primary/90 rounded-2xl shadow-lg hover:shadow-primary/20 transition-all"
+                    >
+                      <Palette className="w-5 h-5 mr-2" />
+                      Open Designer Studio
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <div className="grid grid-cols-4 gap-3 md:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {designerCategories.map((c) => (
                   <div
                     key={c.label}
-                    className="aspect-square bg-card/50 border border-border/60 rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 hover:border-accent/40 hover:bg-card/80 transition-colors"
+                    className="aspect-[4/3] bg-card/40 border border-border/60 rounded-2xl flex flex-col items-center justify-center gap-2 p-3 hover:border-accent/40 hover:bg-card/70 transition-all hover:-translate-y-0.5 shadow-sm"
                   >
-                    <span className="text-2xl md:text-3xl">{c.emoji}</span>
-                    <span className="text-[10px] md:text-xs text-muted-foreground text-center leading-tight">
+                    <span className="text-3xl">{c.emoji}</span>
+                    <span className="text-xs text-muted-foreground font-medium text-center leading-tight">
                       {c.label}
                     </span>
                   </div>
@@ -265,19 +263,19 @@ const Welcome = () => {
         </section>
 
         {/* Tutorial video */}
-        <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+        <section className="px-6 md:px-12 py-20 md:py-32 border-t border-border/40">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm mb-4">
+            <div className="text-center mb-12 md:mb-16 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm">
                 <PlayCircle className="w-3.5 h-3.5 text-primary" />
                 <span className="text-primary-glow font-medium">Watch how it works</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">See it in action</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">See it in action</h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 Upload a photo, type what you want, and let the AI do the rest in under 30 seconds.
               </p>
             </div>
-            <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-card/50 shadow-2xl min-h-[200px]">
+            <div className="relative rounded-3xl overflow-hidden border border-border/60 bg-card/40 shadow-2xl min-h-[220px]">
               <Suspense fallback={<div className="w-full aspect-video bg-muted/30" />}>
                 <LazyVideo
                   src="/videos/tutorial.mp4"
@@ -294,21 +292,21 @@ const Welcome = () => {
         </Suspense>
 
         {/* How to prompt the AI */}
-        <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+        <section className="px-6 md:px-12 py-20 md:py-32 border-t border-border/40">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12 md:mb-16">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm mb-4">
+            <div className="text-center mb-16 md:mb-20 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm">
                 <Lightbulb className="w-3.5 h-3.5 text-accent" />
                 <span className="text-accent font-medium">Prompt guide</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">How to prompt the AI</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">How to prompt the AI</h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 The better your prompt, the better your photo. Follow these simple rules for cinematic results every
                 time.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-4 md:gap-6 mb-10 md:mb-14">
+            <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16">
               {[
                 {
                   icon: Camera,
@@ -329,57 +327,59 @@ const Welcome = () => {
                   example: "“Keep my face and hair exactly the same.”",
                 },
               ].map(({ icon: Icon, title, desc, example }) => (
-                <div key={title} className="bg-card/50 border border-border/60 rounded-2xl p-5 md:p-6">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-accent" />
+                <div key={title} className="bg-card/40 border border-border/60 rounded-3xl p-6 md:p-8 space-y-4 hover:border-accent/40 transition-colors shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-accent" />
                   </div>
-                  <h3 className="font-semibold text-base md:text-lg mb-2">{title}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed mb-3">{desc}</p>
-                  <p className="text-xs md:text-sm italic text-foreground/80 border-l-2 border-primary/40 pl-3">
+                  <h3 className="font-semibold text-lg md:text-xl">{title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                  <p className="text-xs md:text-sm italic text-foreground/80 border-l-2 border-primary/40 pl-3 pt-1">
                     {example}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-              <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-2xl p-5 md:p-6">
-                <div className="flex items-center gap-2 mb-3">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+              <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/25 rounded-3xl p-6 md:p-8 space-y-4 shadow-sm">
+                <div className="flex items-center gap-2.5">
                   <Check className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-base md:text-lg">Good prompts</h3>
+                  <h3 className="font-semibold text-lg md:text-xl">Good prompts</h3>
                 </div>
-                <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                  <li>"Change my outfit to a black tuxedo, keep my face the same, studio lighting."</li>
-                  <li>"Place me in a snowy Tokyo street at night, cinematic 85mm shot."</li>
-                  <li>"Professional LinkedIn headshot, navy blazer, soft office background."</li>
+                <ul className="space-y-3 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2"><span>•</span><span>"Change my outfit to a black tuxedo, keep my face the same, studio lighting."</span></li>
+                  <li className="flex items-start gap-2"><span>•</span><span>"Place me in a snowy Tokyo street at night, cinematic 85mm shot."</span></li>
+                  <li className="flex items-start gap-2"><span>•</span><span>"Professional LinkedIn headshot, navy blazer, soft office background."</span></li>
                 </ul>
               </div>
-              <div className="bg-gradient-to-br from-destructive/10 to-transparent border border-destructive/20 rounded-2xl p-5 md:p-6">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="bg-gradient-to-br from-destructive/10 to-transparent border border-destructive/25 rounded-3xl p-6 md:p-8 space-y-4 shadow-sm">
+                <div className="flex items-center gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-xs font-bold">
                     ✕
                   </span>
-                  <h3 className="font-semibold text-base md:text-lg">Avoid these</h3>
+                  <h3 className="font-semibold text-lg md:text-xl">Avoid these</h3>
                 </div>
-                <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                  <li>Vague prompts: "make it better" or "cool photo"</li>
-                  <li>Too many ideas at once, stick to one transformation</li>
-                  <li>NSFW or adult content (not allowed)</li>
+                <ul className="space-y-3 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2"><span>•</span><span>Vague prompts: "make it better" or "cool photo"</span></li>
+                  <li className="flex items-start gap-2"><span>•</span><span>Too many ideas at once, stick to one transformation</span></li>
+                  <li className="flex items-start gap-2"><span>•</span><span>NSFW or adult content (not allowed)</span></li>
                 </ul>
               </div>
             </div>
           </div>
         </section>
-        <section id="install" className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
+
+        {/* Install Section */}
+        <section id="install" className="px-6 md:px-12 py-20 md:py-32 border-t border-border/40">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10 md:mb-14">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm mb-4">
+            <div className="text-center mb-12 md:mb-16 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs md:text-sm">
                 <Smartphone className="w-3.5 h-3.5 text-accent" />
                 <span className="text-accent font-medium">Install as an app</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Get it on your home screen</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Get it on your home screen</h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Renderme AI works like a native app, no app store needed. Watch the 30 second guide below.
+                Repo AI works like a native app, no app store needed. Watch the 30 second guide below.
               </p>
             </div>
 
@@ -391,13 +391,15 @@ const Welcome = () => {
         </section>
 
         {/* Pricing/CTA */}
-        <section className="px-4 md:px-8 py-16 md:py-24 border-t border-border/40">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Simple pricing</h2>
-            <p className="text-base md:text-lg text-foreground/80 mb-10">
-              Pay only for what you use. No subscriptions.
-            </p>
-            <div className="bg-card/50 border border-border/60 rounded-2xl md:rounded-3xl p-6 md:p-10 text-left space-y-4">
+        <section className="px-6 md:px-12 py-20 md:py-32 border-t border-border/40">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Simple pricing</h2>
+              <p className="text-base md:text-lg text-foreground/80">
+                Pay only for what you use. No subscriptions.
+              </p>
+            </div>
+            <div className="bg-card/40 border border-border/60 rounded-3xl p-6 md:p-10 text-left space-y-5 shadow-sm">
               {[
                 { label: "Fast edit", cost: "1 token" },
                 { label: "High quality", cost: "2 tokens" },
@@ -406,37 +408,39 @@ const Welcome = () => {
               ].map((row) => (
                 <div
                   key={row.label}
-                  className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0"
+                  className="flex items-center justify-between border-b border-border/40 pb-4 last:border-0 last:pb-0"
                 >
                   <div className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-primary" />
                     <span className="text-sm md:text-base font-medium">{row.label}</span>
                   </div>
-                  <span className="text-sm md:text-base text-muted-foreground font-mono">{row.cost}</span>
+                  <span className="text-sm md:text-base text-muted-foreground font-mono font-semibold">{row.cost}</span>
                 </div>
               ))}
             </div>
-            <Link to={ctaTarget} className="inline-block mt-10">
-              <Button
-                size="lg"
-                className="h-12 md:h-14 px-8 text-sm md:text-base bg-primary hover:bg-primary/90 rounded-2xl"
-              >
-                {isAuthed ? "Open app" : "Get started"}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+            <div className="pt-4">
+              <Link to={ctaTarget}>
+                <Button
+                  size="lg"
+                  className="h-13 md:h-14 px-10 text-base md:text-lg bg-primary hover:bg-primary/90 rounded-2xl shadow-lg hover:shadow-primary/20 transition-all"
+                >
+                  {isAuthed ? "Open app" : "Get started"}
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="px-4 md:px-8 py-8 md:py-10 border-t border-border/40">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs md:text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <img src="/app-logo.png" alt="Renderme AI logo" width={24} height={24} className="w-6 h-6 object-contain" />
-            <span>© {new Date().getFullYear()} Renderme AI. All rights reserved.</span>
+      <footer className="px-6 md:px-12 py-12 md:py-16 border-t border-border/40 bg-background/50">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3">
+            <img src="/app-logo.png" alt="Repo AI logo" width={28} height={28} className="w-7 h-7 object-contain" />
+            <span>© {new Date().getFullYear()} Repo AI. All rights reserved.</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-6">
             <Link to="/privacy" className="hover:text-foreground transition-colors">
               Privacy Policy
             </Link>

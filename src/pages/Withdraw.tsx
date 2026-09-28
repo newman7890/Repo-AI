@@ -80,10 +80,10 @@ const Withdraw = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Withdraw Earnings" description="Withdraw your Renderme AI referral rewards securely via Mobile Money or bank transfer in just a few taps." canonical="/withdraw" noindex />
+      <SEO title="Withdraw Earnings" description="Withdraw your Repo AI referral rewards securely via Mobile Money or bank transfer in just a few taps." canonical="/withdraw" noindex />
       <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" aria-label="Back to referrals" onClick={() => navigate("/referrals")} className="h-8 w-8">
+          <Button variant="ghost" size="icon" aria-label="Back to app" onClick={() => navigate("/app")} className="h-8 w-8">
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-lg font-semibold">Withdraw to MoMo</h1>

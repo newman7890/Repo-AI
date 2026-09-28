@@ -25,8 +25,8 @@ export default defineConfig(({ mode }) => ({
         enabled: false,
       },
       manifest: {
-        name: "Renderme AI – AI Photo Editor",
-        short_name: "Renderme AI",
+        name: "Repo AI – AI Photo Editor",
+        short_name: "Repo AI",
         description: "Transform your photos with AI. Change backgrounds, enhance colors, add effects, and more.",
         theme_color: "#7c3aed",
         background_color: "#0a0a0a",

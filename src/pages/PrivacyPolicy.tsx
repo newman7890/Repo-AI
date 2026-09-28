@@ -8,13 +8,13 @@ const PrivacyPolicy = () => {
     <div className="min-h-screen bg-background text-foreground">
       <SEO
         title="Privacy Policy"
-        description="How Renderme AI collects, uses, and protects your photos and personal data."
+        description="How Repo AI collects, uses, and protects your photos and personal data."
         canonical="/privacy"
       />
       <header className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-md z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            Renderme AI
+            Repo AI
           </Link>
           <Button asChild variant="ghost" size="sm">
             <Link to="/">
@@ -33,7 +33,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-3">1. Introduction</h2>
             <p>
-              Welcome to Renderme AI ("we", "our", "us"). We respect your privacy and are committed to protecting your
+              Welcome to Repo AI ("we", "our", "us"). We respect your privacy and are committed to protecting your
               personal data. This privacy policy explains how we collect, use, and safeguard your information when you
               use our website and AI photo editing services.
             </p>
@@ -108,7 +108,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-3">8. Children's Privacy</h2>
             <p>
-              Renderme AI is not intended for users under the age of 13. We do not knowingly collect data from children.
+              Repo AI is not intended for users under the age of 13. We do not knowingly collect data from children.
             </p>
           </section>
 
@@ -134,7 +134,7 @@ const PrivacyPolicy = () => {
 
       <footer className="border-t border-border mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Renderme AI. All rights reserved.
+          © {new Date().getFullYear()} Repo AI. All rights reserved.
         </div>
       </footer>
     </div>

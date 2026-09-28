@@ -42,7 +42,7 @@ const Referrals = () => {
   }, []);
 
   const referralLink = wallet?.referral_code
-    ? `https://renderme.site/auth?ref=${wallet.referral_code}`
+    ? `${window.location.origin}/auth?ref=${wallet.referral_code}`
     : "";
 
   const copyLink = async () => {
@@ -52,7 +52,7 @@ const Referrals = () => {
   };
 
   const shareWhatsapp = () => {
-    const msg = `Hey! Try Renderme AI, AI photo editing & face swap. Sign up with my link and get started: ${referralLink}`;
+    const msg = `Hey! Try Repo AI, AI photo editing & face swap. Sign up with my link and get started: ${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -60,7 +60,7 @@ const Referrals = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Renderme AI",
+          title: "Repo AI",
           text: "Edit photos with AI, join with my invite link",
           url: referralLink,
         });
@@ -72,7 +72,7 @@ const Referrals = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Referrals & Rewards" description="Invite friends to Renderme AI and earn cash rewards." canonical="/referrals" noindex />
+      <SEO title="Referrals & Rewards" description="Invite friends to Repo AI and earn cash rewards." canonical="/referrals" noindex />
       <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/app")} className="h-8 w-8">

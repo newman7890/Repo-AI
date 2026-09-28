@@ -57,7 +57,7 @@ const InstalledHomeScreen = ({ accent }: { accent: string }) => (
       className="aspect-square rounded-xl flex items-center justify-center animate-scale-in shadow-lg"
       style={{ background: "var(--gradient-primary)", boxShadow: `0 8px 20px -5px ${accent}` }}
     >
-      <span className="text-white text-[8px] font-bold">RM</span>
+      <span className="text-white text-[8px] font-bold">RA</span>
     </div>
   </div>
 );
@@ -83,11 +83,11 @@ const InstallPrompt = () => (
   <div className="bg-card border border-border rounded-xl p-3 shadow-xl animate-scale-in">
     <div className="flex items-center gap-2 mb-2">
       <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-        <span className="text-white text-[8px] font-bold">RM</span>
+        <span className="text-white text-[8px] font-bold">RA</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-semibold truncate">Install Renderme AI?</p>
-        <p className="text-[8px] text-muted-foreground">renderme.site</p>
+        <p className="text-[10px] font-semibold truncate">Install Repo AI?</p>
+        <p className="text-[8px] text-muted-foreground">repo-ai.app</p>
       </div>
     </div>
     <div className="flex gap-1.5">
@@ -102,16 +102,16 @@ const STEPS: Step[] = [
     platform: "iOS",
     platformIcon: Smartphone,
     title: "Open in Safari",
-    desc: "Visit renderme.site in the Safari browser on your iPhone.",
+    desc: "Open the website in the Safari browser on your iPhone.",
     illustration: (
       <PhoneFrame accent="hsl(var(--primary) / 0.4)">
-        <BrowserBar icon={Share} label="renderme.site" />
+        <BrowserBar icon={Share} label="repo-ai" />
         <div className="flex-1 rounded-lg bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
           <div className="text-center">
             <div className="w-10 h-10 mx-auto rounded-xl mb-2 flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-              <span className="text-white text-xs font-bold">RM</span>
+              <span className="text-white text-xs font-bold">RA</span>
             </div>
-            <p className="text-[10px] font-semibold">Renderme AI</p>
+            <p className="text-[10px] font-semibold">Repo AI</p>
           </div>
         </div>
       </PhoneFrame>
@@ -124,7 +124,7 @@ const STEPS: Step[] = [
     desc: "Tap the Share icon in Safari's bottom toolbar.",
     illustration: (
       <PhoneFrame accent="hsl(var(--primary) / 0.4)">
-        <BrowserBar icon={Share} label="renderme.site" />
+        <BrowserBar icon={Share} label="repo-ai" />
         <div className="flex-1 rounded-lg bg-muted/30" />
         <div className="flex items-center justify-around bg-muted/60 rounded-lg py-2">
           <div className="w-4 h-4 rounded bg-muted-foreground/30" />
@@ -145,7 +145,7 @@ const STEPS: Step[] = [
     desc: "Scroll the share menu and choose 'Add to Home Screen'.",
     illustration: (
       <PhoneFrame accent="hsl(var(--primary) / 0.4)">
-        <BrowserBar icon={Share} label="renderme.site" />
+        <BrowserBar icon={Share} label="repo-ai" />
         <div className="flex-1 flex items-end">
           <SharePopover />
         </div>
@@ -156,7 +156,7 @@ const STEPS: Step[] = [
     platform: "iOS",
     platformIcon: Smartphone,
     title: "You're done!",
-    desc: "Renderme AI is now on your home screen. Open it like a native app.",
+    desc: "Repo AI is now on your home screen. Open it like a native app.",
     illustration: (
       <PhoneFrame accent="hsl(var(--primary) / 0.5)">
         <InstalledHomeScreen accent="hsl(var(--primary) / 0.5)" />
@@ -170,16 +170,16 @@ const STEPS: Step[] = [
     platform: "Android",
     platformIcon: Chrome,
     title: "Open in Chrome",
-    desc: "Visit renderme.site in Chrome on your Android device.",
+    desc: "Open the website in Chrome on your Android device.",
     illustration: (
       <PhoneFrame accent="hsl(var(--accent) / 0.4)">
-        <BrowserBar icon={MoreVertical} label="renderme.site" />
+        <BrowserBar icon={MoreVertical} label="repo-ai" />
         <div className="flex-1 rounded-lg bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
           <div className="text-center">
             <div className="w-10 h-10 mx-auto rounded-xl mb-2 flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-              <span className="text-white text-xs font-bold">RM</span>
+              <span className="text-white text-xs font-bold">RA</span>
             </div>
-            <p className="text-[10px] font-semibold">Renderme AI</p>
+            <p className="text-[10px] font-semibold">Repo AI</p>
           </div>
         </div>
       </PhoneFrame>
@@ -208,10 +208,10 @@ const STEPS: Step[] = [
     platform: "Android",
     platformIcon: Chrome,
     title: "Choose 'Install app'",
-    desc: "Confirm in the install prompt to add Renderme to your home screen.",
+    desc: "Confirm in the install prompt to add Repo AI to your home screen.",
     illustration: (
       <PhoneFrame accent="hsl(var(--accent) / 0.4)">
-        <BrowserBar icon={MoreVertical} label="renderme.site" />
+        <BrowserBar icon={MoreVertical} label="repo-ai" />
         <div className="flex-1 flex items-center">
           <InstallPrompt />
         </div>
@@ -222,7 +222,7 @@ const STEPS: Step[] = [
     platform: "Android",
     platformIcon: Chrome,
     title: "Installed!",
-    desc: "Renderme AI is now on your home screen. Open it like a native app.",
+    desc: "Repo AI is now on your home screen. Open it like a native app.",
     illustration: (
       <PhoneFrame accent="hsl(var(--accent) / 0.5)">
         <InstalledHomeScreen accent="hsl(var(--accent) / 0.5)" />

@@ -276,7 +276,7 @@ const FaceSwap = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
         title="AI Face Swap | Swap Up to 4 Faces"
-        description="Swap up to 4 faces onto any photo with cinematic, hyper-realistic AI. Powered by Renderme AI."
+        description="Swap up to 4 faces onto any photo with cinematic, hyper-realistic AI. Powered by Repo AI."
         canonical="/face-swap"
         noindex
       />
@@ -297,7 +297,7 @@ const FaceSwap = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2">
-            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
+            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => setShowPaywall(true)} />
             <UserMenu />
           </div>
         </div>

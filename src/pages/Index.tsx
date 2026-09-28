@@ -265,11 +265,11 @@ const Index = () => {
             aria-label="Refresh app"
             title="Tap to refresh"
           >
-            <img src="/app-logo.png" alt="Renderme AI logo" width={36} height={36} className="w-7 h-7 md:w-9 md:h-9 object-contain shrink-0" />
-            <h1 className="text-xs md:text-base font-bold tracking-tight truncate">Renderme AI | Edit your photos</h1>
+            <img src="/app-logo.png" alt="Repo AI logo" width={36} height={36} className="w-7 h-7 md:w-9 md:h-9 object-contain shrink-0" />
+            <h1 className="text-xs md:text-base font-bold tracking-tight truncate">Repo AI | Edit your photos</h1>
           </button>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
-            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => !credits?.trial_uses_remaining && !credits?.tokens && setShowPaywall(true)} />
+            <CreditsBadge credits={credits} loading={creditsLoading} onClick={() => setShowPaywall(true)} />
             <Button
               variant="outline"
               size="sm"

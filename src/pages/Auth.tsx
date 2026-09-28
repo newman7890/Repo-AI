@@ -66,7 +66,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: "https://renderme.site/app",
+            emailRedirectTo: `${window.location.origin}/app`,
             data: storedRef ? { ref_code: storedRef } : undefined,
           },
         });
@@ -83,24 +83,24 @@ const Auth = () => {
   const handleForgotPassword = async () => {
     if (!email) { toast.error("Enter your email first"); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://renderme.site/reset-password",
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) toast.error(error.message); else toast.success("Password reset email sent!");
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-8">
-      <SEO title="Sign in or Sign up" description="Sign in to Renderme AI to edit photos with AI, swap faces, and create stunning images." canonical="/auth" noindex />
+      <SEO title="Sign in or Sign up" description="Sign in to Repo AI to edit photos with AI, swap faces, and create stunning images." canonical="/auth" noindex />
       <div className="w-full max-w-md md:max-w-lg space-y-6 md:space-y-8 bg-card/40 md:border md:border-border/40 md:rounded-3xl md:p-10 md:shadow-2xl backdrop-blur-sm">
         <div className="text-center space-y-2 md:space-y-3">
           <div className="inline-flex items-center gap-2 md:gap-3">
-            <img src="/app-logo.png" alt="Renderme AI logo" width={48} height={48} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
+            <img src="/app-logo.png" alt="Repo AI logo" width={48} height={48} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
             <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-['Space_Grotesk']">
-              Renderme AI
+              Repo AI
             </span>
           </div>
           <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
-            {isLogin ? "Sign in to Renderme AI" : "Create your Renderme AI account"}
+            {isLogin ? "Sign in to Repo AI" : "Create your Repo AI account"}
           </h1>
           <p className="text-muted-foreground text-sm md:text-base">
             {isLogin ? "Sign in to continue" : "Start with 3 free AI photo edits"}

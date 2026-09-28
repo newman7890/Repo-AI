@@ -139,7 +139,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SEO title="Admin Dashboard" description="Internal Renderme AI admin dashboard." canonical="/admin" noindex />
+      <SEO title="Admin Dashboard" description="Internal Repo AI admin dashboard." canonical="/admin" noindex />
       <header className="px-4 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4 border-b border-border">
         <div className="max-w-6xl mx-auto w-full flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/app")}>

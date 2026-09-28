@@ -218,16 +218,21 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "Service configuration error" }), {
+    const API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
+    if (!API_KEY) {
+      return new Response(JSON.stringify({ error: "Service configuration error: API key not set." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const model = quality === "ultra"
-      ? "google/gemini-3-pro-image-preview"
-      : "google/gemini-3.1-flash-image-preview";
+    const isDirectGemini = !!Deno.env.get("GEMINI_API_KEY");
+    const aiEndpoint = isDirectGemini
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+    const model = isDirectGemini
+      ? "gemini-2.0-flash"
+      : (quality === "ultra" ? "google/gemini-3-pro-image-preview" : "google/gemini-3.1-flash-image-preview");
 
     const prompt = buildPrompt(category, style, fields, !!referenceImage);
     const contentParts: any[] = [{ type: "text", text: prompt }];
@@ -243,9 +248,9 @@ serve(async (req) => {
       } catch (e) { console.error("refund failed:", e); }
     };
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(aiEndpoint, {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model,
         messages: [{ role: "user", content: contentParts }],
@@ -273,7 +278,35 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    let generatedImage: string | null =
+      data.choices?.[0]?.message?.images?.[0]?.image_url?.url ||
+      data.choices?.[0]?.message?.image_url?.url ||
+      null;
+
+    if (!generatedImage && typeof data.choices?.[0]?.message?.content === "string") {
+      const content = data.choices[0].message.content;
+      if (content.startsWith("data:image")) {
+        generatedImage = content;
+      } else {
+        const match = content.match(/data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+/);
+        if (match) {
+          generatedImage = match[0];
+        } else {
+          const urlMatch = content.match(/https?:\/\/[^\s'")]+/);
+          if (urlMatch) generatedImage = urlMatch[0];
+        }
+      }
+    }
+
+    if (!generatedImage && data.candidates?.[0]?.content?.parts) {
+      for (const part of data.candidates[0].content.parts) {
+        if (part.inlineData?.data) {
+          generatedImage = `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+          break;
+        }
+      }
+    }
+
     if (!generatedImage) {
       await refundCredits();
       return new Response(JSON.stringify({ error: "No design was generated. Try a different prompt." }), {

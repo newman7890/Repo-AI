@@ -108,9 +108,9 @@ const AdminNotifications = () => {
     if (result === "granted") {
       setPushOn(true);
       toast.success("Phone alerts enabled", {
-        description: "Install Renderme AI to your home screen to get alerts even when the browser is closed.",
+        description: "Install Repo AI to your home screen to get alerts even when the browser is closed.",
       });
-      showAdminNotification("Renderme AI", "You're set, payment alerts will appear here.", "admin-test");
+      showAdminNotification("Repo AI", "You're set, payment alerts will appear here.", "admin-test");
     } else if (result === "denied") {
       toast.error("Permission denied", { description: "Enable notifications for this site in your browser settings." });
     } else if (result === "unsupported") {

@@ -121,22 +121,29 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "Service configuration error." }), {
+    const API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
+    if (!API_KEY) {
+      return new Response(JSON.stringify({ error: "Service configuration error: API key not set." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const isDirectGemini = !!Deno.env.get("GEMINI_API_KEY");
+    const aiEndpoint = isDirectGemini
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
 
     const prompt = buildTransplantPrompt((notes || "").trim());
 
     // Try a tiered list of image models; some prompts/images are rejected by one
     // model but accepted by another. First successful image wins.
-    const candidateModels = [
-      "google/gemini-3-pro-image-preview",
-      "google/gemini-3.1-flash-image-preview",
-      "google/gemini-2.5-flash-image",
-    ];
+    const candidateModels = isDirectGemini
+      ? ["gemini-2.0-flash"]
+      : [
+          "google/gemini-3-pro-image-preview",
+          "google/gemini-3.1-flash-image-preview",
+          "google/gemini-2.5-flash-image",
+        ];
 
     let generatedImage: string | null = null;
     let usedModel = candidateModels[0];
@@ -145,10 +152,10 @@ serve(async (req) => {
 
     for (const model of candidateModels) {
       usedModel = model;
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch(aiEndpoint, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -176,12 +183,36 @@ serve(async (req) => {
 
       const data = await response.json().catch(() => null) as any;
       // Try several known shapes for the returned image.
-      const img =
+      let img =
         data?.choices?.[0]?.message?.images?.[0]?.image_url?.url ??
         data?.choices?.[0]?.message?.images?.[0]?.url ??
+        data?.choices?.[0]?.message?.image_url?.url ??
         (Array.isArray(data?.choices?.[0]?.message?.content)
           ? data.choices[0].message.content.find((c: any) => c?.type === "image_url")?.image_url?.url
           : null);
+
+      if (!img && typeof data?.choices?.[0]?.message?.content === "string") {
+        const content = data.choices[0].message.content;
+        if (content.startsWith("data:image")) {
+          img = content;
+        } else {
+          const match = content.match(/data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+/);
+          if (match) img = match[0];
+          else {
+            const urlMatch = content.match(/https?:\/\/[^\s'")]+/);
+            if (urlMatch) img = urlMatch[0];
+          }
+        }
+      }
+
+      if (!img && data?.candidates?.[0]?.content?.parts) {
+        for (const part of data.candidates[0].content.parts) {
+          if (part.inlineData?.data) {
+            img = `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+            break;
+          }
+        }
+      }
 
       if (img) {
         generatedImage = img;

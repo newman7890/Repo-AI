@@ -213,13 +213,18 @@ serve(async (req) => {
       }
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      return new Response(JSON.stringify({ error: "Service configuration error. Please try again later." }), {
+    const API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
+    if (!API_KEY) {
+      console.error("Neither GEMINI_API_KEY nor LOVABLE_API_KEY is configured");
+      return new Response(JSON.stringify({ error: "Service configuration error: API key not set." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const isDirectGemini = !!Deno.env.get("GEMINI_API_KEY");
+    const aiEndpoint = isDirectGemini
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
 
     // --- Check & Deduct Credits ---
     const tokenCost = getTokenCost(mode, quality);
@@ -257,7 +262,7 @@ serve(async (req) => {
 
     const hasReferenceImage = !!referenceImage;
     const prompt = buildPrompt(mode, description || "", hasReferenceImage);
-    const model = getModelForQuality(quality);
+    const model = isDirectGemini ? "gemini-2.0-flash" : getModelForQuality(quality);
 
     console.log(`Processing: user=${userId.slice(0,8)}… model=${model} mode=${mode} quality=${quality} cost=${tokenCost}`);
 
@@ -276,10 +281,10 @@ serve(async (req) => {
       }
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(aiEndpoint, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -319,7 +324,34 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    let generatedImage: string | null =
+      data.choices?.[0]?.message?.images?.[0]?.image_url?.url ||
+      data.choices?.[0]?.message?.image_url?.url ||
+      null;
+
+    if (!generatedImage && typeof data.choices?.[0]?.message?.content === "string") {
+      const content = data.choices[0].message.content;
+      if (content.startsWith("data:image")) {
+        generatedImage = content;
+      } else {
+        const match = content.match(/data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+/);
+        if (match) {
+          generatedImage = match[0];
+        } else {
+          const urlMatch = content.match(/https?:\/\/[^\s'")]+/);
+          if (urlMatch) generatedImage = urlMatch[0];
+        }
+      }
+    }
+
+    if (!generatedImage && data.candidates?.[0]?.content?.parts) {
+      for (const part of data.candidates[0].content.parts) {
+        if (part.inlineData?.data) {
+          generatedImage = `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+          break;
+        }
+      }
+    }
 
     if (!generatedImage) {
       try {

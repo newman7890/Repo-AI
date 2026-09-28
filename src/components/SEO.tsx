@@ -22,7 +22,7 @@ export const SEO = ({
   noindex = false,
 }: SEOProps) => {
   const url = canonical ? (canonical.startsWith("http") ? canonical : `${SITE}${canonical}`) : SITE;
-  const fullTitle = title.includes("Renderme") ? title : `${title} | Renderme AI`;
+  const fullTitle = title.includes("Repo AI") ? title : `${title} | Repo AI`;
 
   return (
     <Helmet>

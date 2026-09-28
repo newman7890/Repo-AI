@@ -76,12 +76,18 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "Service configuration error." }), {
+    const API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
+    if (!API_KEY) {
+      return new Response(JSON.stringify({ error: "Service configuration error: API key not set." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const isDirectGemini = !!Deno.env.get("GEMINI_API_KEY");
+    const aiEndpoint = isDirectGemini
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const aiModel = isDirectGemini ? "gemini-2.0-flash" : "google/gemini-2.5-flash";
 
     // Deduct 2 tokens
     const { data: creditResult, error: creditError } = await supabaseAdmin.rpc("check_and_deduct_credits", {
@@ -110,7 +116,7 @@ serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are an expert prompt engineer for a photorealistic AI image editor (Renderme AI).
+    const systemPrompt = `You are an expert prompt engineer for a photorealistic AI image editor (Repo AI).
 Your job is to take a user's short or vague edit instruction and rewrite it into a detailed, vivid, photorealistic prompt.
 
 Rules:
@@ -122,14 +128,14 @@ Rules:
 - Keep it under 100 words. Focused and concrete.
 - The current edit mode is: ${mode} — tailor the enhancement to that mode.`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch(aiEndpoint, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: aiModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Enhance this edit instruction: "${description.trim()}"` },
