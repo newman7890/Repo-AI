@@ -165,27 +165,56 @@ serve(async (req) => {
     let lastStatus = 0;
     let lastErr = "";
 
+    function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
+      const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) return { mimeType: match[1], data: match[2] };
+      return { mimeType: "image/jpeg", data: dataUrl };
+    }
+
     for (const model of candidateModels) {
       usedModel = model;
-      const response = await fetch(aiEndpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: sourceImage } },
-              { type: "image_url", image_url: { url: targetImage } },
-            ],
-          }],
-          modalities: ["image", "text"],
-        }),
-      });
+      let response: Response;
+
+      if (isDirectGemini) {
+        const sourceParsed = parseDataUrl(sourceImage);
+        const targetParsed = parseDataUrl(targetImage);
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`;
+        response = await fetch(geminiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              role: "user",
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType: sourceParsed.mimeType, data: sourceParsed.data } },
+                { inlineData: { mimeType: targetParsed.mimeType, data: targetParsed.data } },
+              ],
+            }],
+            generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+          }),
+        });
+      } else {
+        response = await fetch(aiEndpoint, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                { type: "image_url", image_url: { url: sourceImage } },
+                { type: "image_url", image_url: { url: targetImage } },
+              ],
+            }],
+            modalities: ["image", "text"],
+          }),
+        });
+      }
 
       if (!response.ok) {
         lastStatus = response.status;

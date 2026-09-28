@@ -254,8 +254,12 @@ serve(async (req) => {
       : (quality === "ultra" ? "google/gemini-3-pro-image-preview" : "google/gemini-3.1-flash-image-preview");
 
     const prompt = buildPrompt(category, style, fields, !!referenceImage);
-    const contentParts: any[] = [{ type: "text", text: prompt }];
-    if (referenceImage) contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
+
+    function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
+      const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) return { mimeType: match[1], data: match[2] };
+      return { mimeType: "image/jpeg", data: dataUrl };
+    }
 
     const refundCredits = async () => {
       try {
@@ -267,15 +271,39 @@ serve(async (req) => {
       } catch (e) { console.error("refund failed:", e); }
     };
 
-    const response = await fetch(aiEndpoint, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: contentParts }],
-        modalities: ["image", "text"],
-      }),
-    });
+    let response: Response;
+    if (isDirectGemini) {
+      const geminiParts: any[] = [{ text: prompt }];
+      if (referenceImage) {
+        const refParsed = parseDataUrl(referenceImage);
+        geminiParts.push({ inlineData: { mimeType: refParsed.mimeType, data: refParsed.data } });
+      }
+
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`;
+      response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: geminiParts }],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"],
+          },
+        }),
+      });
+    } else {
+      const contentParts: any[] = [{ type: "text", text: prompt }];
+      if (referenceImage) contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
+
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: contentParts }],
+          modalities: ["image", "text"],
+        }),
+      });
+    }
 
     if (!response.ok) {
       await refundCredits();

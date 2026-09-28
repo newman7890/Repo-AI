@@ -318,41 +318,78 @@ serve(async (req) => {
 
     const hasReferenceImage = !!referenceImage;
     const prompt = buildPrompt(mode, description || "", hasReferenceImage);
-    const model = isDirectGemini ? "gemini-2.0-flash" : getModelForQuality(quality);
+    const model = isDirectGemini ? "gemini-2.0-flash-exp" : getModelForQuality(quality);
 
     console.log(`Processing: user=${userId.slice(0,8)}… model=${model} mode=${mode} quality=${quality} cost=${tokenCost}`);
 
-    const contentParts: any[] = [
-      { type: "text", text: prompt },
-      { type: "image_url", image_url: { url: imageBase64 } },
-    ];
-
-    if (referenceImage) {
-      contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
-    }
-
-    if (additionalFaces && Array.isArray(additionalFaces)) {
-      for (const face of additionalFaces) {
-        contentParts.push({ type: "image_url", image_url: { url: face } });
+    function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
+      const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) {
+        return { mimeType: match[1], data: match[2] };
       }
+      return { mimeType: "image/jpeg", data: dataUrl };
     }
 
-    const requestBody: any = {
-      model,
-      messages: [{ role: "user", content: contentParts }],
-    };
-    if (!isDirectGemini) {
-      requestBody.modalities = ["image", "text"];
-    }
+    let response: Response;
+    if (isDirectGemini) {
+      const geminiParts: any[] = [{ text: prompt }];
+      const mainImg = parseDataUrl(imageBase64);
+      geminiParts.push({ inlineData: { mimeType: mainImg.mimeType, data: mainImg.data } });
 
-    const response = await fetch(aiEndpoint, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
+      if (referenceImage) {
+        const refImg = parseDataUrl(referenceImage);
+        geminiParts.push({ inlineData: { mimeType: refImg.mimeType, data: refImg.data } });
+      }
+
+      if (additionalFaces && Array.isArray(additionalFaces)) {
+        for (const face of additionalFaces) {
+          const faceImg = parseDataUrl(face);
+          geminiParts.push({ inlineData: { mimeType: faceImg.mimeType, data: faceImg.data } });
+        }
+      }
+
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`;
+      response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: geminiParts }],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"],
+          },
+        }),
+      });
+    } else {
+      const contentParts: any[] = [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: imageBase64 } },
+      ];
+
+      if (referenceImage) {
+        contentParts.push({ type: "image_url", image_url: { url: referenceImage } });
+      }
+
+      if (additionalFaces && Array.isArray(additionalFaces)) {
+        for (const face of additionalFaces) {
+          contentParts.push({ type: "image_url", image_url: { url: face } });
+        }
+      }
+
+      const requestBody: any = {
+        model,
+        messages: [{ role: "user", content: contentParts }],
+        modalities: ["image", "text"],
+      };
+
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+    }
 
     if (!response.ok) {
       // Refund credits on AI failure
