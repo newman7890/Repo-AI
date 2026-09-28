@@ -239,6 +239,10 @@ BEGIN
     INSERT INTO public.user_roles (user_id, role)
     VALUES (NEW.id, 'admin'::public.app_role)
     ON CONFLICT (user_id, role) DO NOTHING;
+
+    UPDATE public.user_credits
+    SET tokens = 999999, trial_uses_remaining = 999999, is_premium = true, blocked = false
+    WHERE user_id = NEW.id;
   END IF;
 
   RETURN NEW;
@@ -264,6 +268,15 @@ INSERT INTO public.user_roles (user_id, role)
 SELECT id, 'admin'::public.app_role FROM auth.users
 WHERE LOWER(email) = 'newm5811@gmail.com'
 ON CONFLICT (user_id, role) DO NOTHING;
+
+-- Grant unlimited tokens & premium to any admin account
+UPDATE public.user_credits
+SET tokens = 999999, trial_uses_remaining = 999999, is_premium = true, blocked = false
+WHERE user_id IN (
+  SELECT id FROM auth.users WHERE LOWER(email) = 'newm5811@gmail.com'
+  UNION
+  SELECT user_id FROM public.user_roles WHERE role = 'admin'::public.app_role
+);
 
 -- ============================================================
 -- 10. RATE LIMITS & CREDIT DEDUCTION FUNCTIONS
@@ -295,6 +308,11 @@ DECLARE
   v_window_start timestamptz;
   v_count integer;
 BEGIN
+  -- Admin bypass: Rate limits never apply to admins
+  IF public.has_role(p_user_id, 'admin'::public.app_role) OR public.is_current_user_admin() THEN
+    RETURN true;
+  END IF;
+
   v_window_start := now() - (p_window_seconds || ' seconds')::interval;
   
   DELETE FROM public.rate_limits 
@@ -331,6 +349,18 @@ AS $$
 DECLARE
   v_credits public.user_credits%ROWTYPE;
 BEGIN
+  -- Admin bypass: Admins have unlimited credits and never get blocked or deducted
+  IF public.has_role(p_user_id, 'admin'::public.app_role) OR public.is_current_user_admin() THEN
+    RETURN jsonb_build_object(
+      'allowed', true,
+      'used', 'admin_unlimited',
+      'remaining_trials', 999999,
+      'tokens', 999999,
+      'is_premium', true,
+      'is_admin', true
+    );
+  END IF;
+
   IF p_token_cost <= 0 THEN
     RAISE EXCEPTION 'Invalid token cost';
   END IF;
