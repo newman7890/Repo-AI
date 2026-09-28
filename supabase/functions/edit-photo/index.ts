@@ -247,16 +247,53 @@ serve(async (req) => {
 
     // --- Check & Deduct Credits ---
     const tokenCost = getTokenCost(mode, quality);
-    const { data: creditResult, error: creditError } = await supabaseAdmin.rpc("check_and_deduct_credits", {
-      p_user_id: userId,
-      p_token_cost: tokenCost,
-    });
+    let creditResult: any = null;
 
-    if (creditError) {
-      console.error("Credit check error:", creditError);
-      return new Response(JSON.stringify({ error: "Failed to check credits. Please try again." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    try {
+      const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc("check_and_deduct_credits", {
+        p_user_id: userId,
+        p_token_cost: tokenCost,
       });
+      if (!rpcError && rpcResult) {
+        creditResult = rpcResult;
+      }
+    } catch (e) {
+      console.warn("RPC check_and_deduct_credits error:", e);
+    }
+
+    if (!creditResult) {
+      // Direct table fallback
+      const { data: creditsRow } = await supabaseAdmin
+        .from("user_credits")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!creditsRow) {
+        // Create initial record
+        await supabaseAdmin.from("user_credits").insert({
+          user_id: userId,
+          tokens: 10,
+          trial_uses_remaining: 0,
+        });
+        creditResult = { allowed: true, used: "tokens", tokens: 10 - tokenCost };
+      } else if (creditsRow.blocked) {
+        creditResult = { allowed: false, blocked: true, tokens: creditsRow.tokens };
+      } else if ((creditsRow.trial_uses_remaining ?? 0) > 0) {
+        await supabaseAdmin
+          .from("user_credits")
+          .update({ trial_uses_remaining: creditsRow.trial_uses_remaining - 1, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
+        creditResult = { allowed: true, used: "trial", remaining_trials: creditsRow.trial_uses_remaining - 1, tokens: creditsRow.tokens };
+      } else if ((creditsRow.tokens ?? 0) >= tokenCost) {
+        await supabaseAdmin
+          .from("user_credits")
+          .update({ tokens: creditsRow.tokens - tokenCost, updated_at: new Date().toISOString() })
+          .eq("user_id", userId);
+        creditResult = { allowed: true, used: "tokens", tokens: creditsRow.tokens - tokenCost };
+      } else {
+        creditResult = { allowed: false, tokens: creditsRow.tokens || 0, is_premium: creditsRow.is_premium };
+      }
     }
 
     if (!creditResult?.allowed) {
