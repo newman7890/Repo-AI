@@ -58,18 +58,22 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Rate limit: 15 enhancements per minute
-    const { data: rateLimitOk } = await supabaseAdmin.rpc("check_rate_limit", {
-      p_user_id: userId,
-      p_endpoint: "enhance-prompt",
-      p_max_requests: 15,
-      p_window_seconds: 60,
-    });
-
-    if (!rateLimitOk) {
-      return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Rate limit: 60 enhancements per minute
+    try {
+      const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin.rpc("check_rate_limit", {
+        p_user_id: userId,
+        p_endpoint: "enhance-prompt",
+        p_max_requests: 60,
+        p_window_seconds: 60,
       });
+
+      if (!rateLimitError && rateLimitOk === false) {
+        return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch (rlErr) {
+      console.warn("Rate limit check bypassed:", rlErr);
     }
 
     const body = await req.json();

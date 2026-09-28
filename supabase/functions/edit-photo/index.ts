@@ -150,23 +150,22 @@ serve(async (req) => {
       });
     }
 
-    // --- Rate limiting: max 20 edits per minute ---
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    const { data: rateLimitOk } = await supabaseAdmin.rpc("check_rate_limit", {
-      p_user_id: userId,
-      p_endpoint: "edit-photo",
-      p_max_requests: 20,
-      p_window_seconds: 60,
-    });
-
-    if (!rateLimitOk) {
-      return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // --- Rate limiting: max 60 edits per minute ---
+    try {
+      const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin.rpc("check_rate_limit", {
+        p_user_id: userId,
+        p_endpoint: "edit-photo",
+        p_max_requests: 60,
+        p_window_seconds: 60,
       });
+
+      if (!rateLimitError && rateLimitOk === false) {
+        return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch (rlErr) {
+      console.warn("Rate limit check error:", rlErr);
     }
 
     // --- Parse & Validate Input ---
@@ -296,17 +295,21 @@ serve(async (req) => {
       }
     }
 
+    const requestBody: any = {
+      model,
+      messages: [{ role: "user", content: contentParts }],
+    };
+    if (!isDirectGemini) {
+      requestBody.modalities = ["image", "text"];
+    }
+
     const response = await fetch(aiEndpoint, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: contentParts }],
-        modalities: ["image", "text"],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -321,8 +324,11 @@ serve(async (req) => {
         console.error("Failed to refund credits:", refundErr);
       }
 
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText.slice(0, 300));
+
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment and try again." }), {
+        return new Response(JSON.stringify({ error: "AI rate limit reached. Please wait a moment and try again." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -331,8 +337,6 @@ serve(async (req) => {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText.slice(0, 200));
       return new Response(JSON.stringify({ error: "Failed to process image. Please try again." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
