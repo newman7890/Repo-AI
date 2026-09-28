@@ -150,6 +150,11 @@ serve(async (req) => {
       });
     }
 
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     // --- Rate limiting: max 60 edits per minute ---
     try {
       const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin.rpc("check_rate_limit", {
@@ -408,10 +413,11 @@ serve(async (req) => {
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error("edit-photo error:", e);
+    const msg = e?.message || "An internal error occurred. Please try again.";
     return new Response(
-      JSON.stringify({ error: "An internal error occurred. Please try again." }),
+      JSON.stringify({ error: msg }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
