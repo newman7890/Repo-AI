@@ -94,7 +94,7 @@ const Auth = () => {
       <div className="w-full max-w-md md:max-w-lg space-y-6 md:space-y-8 bg-card/40 md:border md:border-border/40 md:rounded-3xl md:p-10 md:shadow-2xl backdrop-blur-sm">
         <div className="text-center space-y-2 md:space-y-3">
           <div className="inline-flex items-center gap-2 md:gap-3">
-            <img src="/app-logo.png" alt="Repo AI logo" width={48} height={48} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
+            <img src={`${import.meta.env.BASE_URL}app-logo.png`} alt="Repo AI logo" width={48} height={48} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
             <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-['Space_Grotesk']">
               Repo AI
             </span>

@@ -99,7 +99,7 @@ const Welcome = () => {
             aria-label="Repo AI, refresh page"
             title="Tap to refresh"
           >
-            <img src="/app-logo.png" alt="Repo AI logo" width={36} height={36} className="w-8 h-8 md:w-9 md:h-9 object-contain" />
+            <img src={`${import.meta.env.BASE_URL}app-logo.png`} alt="Repo AI logo" width={36} height={36} className="w-8 h-8 md:w-9 md:h-9 object-contain" />
             <span className="font-bold text-lg md:text-xl tracking-tight">Repo AI</span>
           </button>
           <div className="flex items-center gap-3 md:gap-4">
@@ -278,9 +278,9 @@ const Welcome = () => {
             <div className="relative rounded-3xl overflow-hidden border border-border/60 bg-card/40 shadow-2xl min-h-[220px]">
               <Suspense fallback={<div className="w-full aspect-video bg-muted/30" />}>
                 <LazyVideo
-                  src="/videos/tutorial.mp4"
+                  src={`${import.meta.env.BASE_URL}videos/tutorial.mp4`}
                   className="w-full h-auto block"
-                  poster="/placeholder.svg"
+                  poster={`${import.meta.env.BASE_URL}placeholder.svg`}
                 />
               </Suspense>
             </div>
@@ -437,7 +437,7 @@ const Welcome = () => {
       <footer className="px-6 md:px-12 py-12 md:py-16 border-t border-border/40 bg-background/50">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-3">
-            <img src="/app-logo.png" alt="Repo AI logo" width={28} height={28} className="w-7 h-7 object-contain" />
+            <img src={`${import.meta.env.BASE_URL}app-logo.png`} alt="Repo AI logo" width={28} height={28} className="w-7 h-7 object-contain" />
             <span>© {new Date().getFullYear()} Repo AI. All rights reserved.</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6">
