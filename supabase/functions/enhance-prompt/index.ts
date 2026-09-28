@@ -30,13 +30,28 @@ serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    let userId: string | null = null;
+    try {
+      const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+      if (userData?.user?.id && !userError) {
+        userId = userData.user.id;
+      }
+    } catch (_) {}
+
+    if (!userId && typeof (supabaseAuth.auth as any).getClaims === "function") {
+      try {
+        const { data: claimsData } = await (supabaseAuth.auth as any).getClaims(token);
+        if (claimsData?.claims?.sub) {
+          userId = claimsData.claims.sub as string;
+        }
+      } catch (_) {}
+    }
+
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized. Please sign in." }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = claimsData.claims.sub as string;
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,

@@ -21,20 +21,35 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Verify JWT by passing the token explicitly to getClaims
+    // Verify JWT by passing the token explicitly to getUser
     const token = authHeader.replace(/^Bearer\s+/i, "");
     const userClient = createClient(supabaseUrl, anonKey);
-    const { data: claims, error: claimsErr } = await userClient.auth.getClaims(token);
-    if (claimsErr || !claims?.claims?.sub) {
-      console.error("notify-new-user auth failed:", claimsErr?.message);
+    let userId: string | null = null;
+    let email: string = "unknown";
+    try {
+      const { data: userData, error: userError } = await userClient.auth.getUser(token);
+      if (userData?.user?.id && !userError) {
+        userId = userData.user.id;
+        email = userData.user.email || "unknown";
+      }
+    } catch (_) {}
+
+    if (!userId && typeof (userClient.auth as any).getClaims === "function") {
+      try {
+        const { data: claims } = await (userClient.auth as any).getClaims(token);
+        if (claims?.claims?.sub) {
+          userId = claims.claims.sub as string;
+          email = (claims.claims.email as string) || "unknown";
+        }
+      } catch (_) {}
+    }
+
+    if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const userId = claims.claims.sub as string;
-    const email = (claims.claims.email as string) || "unknown";
 
     const body = await req.json().catch(() => ({}));
     const rawDeviceInfo = body?.deviceInfo || {};
